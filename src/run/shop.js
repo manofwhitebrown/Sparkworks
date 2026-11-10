@@ -213,12 +213,15 @@ function findCell(run, x, y) {
   return null;
 }
 
-// The price of the next reroll. The first bonuses.freeRerolls of each shift are free.
+// The price of the next reroll. The first bonuses.freeRerolls of each shift are free;
+// after that the PAID price starts again at rerollStartPrice and goes up per paid reroll.
 export function rerollPrice(run) {
-  if (run.rerollsThisShift < run.bonuses.freeRerolls) {
+  const free = run.bonuses.freeRerolls;
+  if (run.rerollsThisShift < free) {
     return 0;
   }
-  return SHIFT_RULES.rerollStartPrice + SHIFT_RULES.rerollStep * run.rerollsThisShift;
+  const paidSoFar = run.rerollsThisShift - free;
+  return SHIFT_RULES.rerollStartPrice + SHIFT_RULES.rerollStep * paidSoFar;
 }
 
 export function rerollOffers(run, deps) {

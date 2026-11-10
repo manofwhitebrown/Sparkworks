@@ -136,3 +136,26 @@ test('a full bench sells the displaced part instead', () => {
   assert.equal(run.coins, coinsBefore + 1);
   assert.equal(run.bench.length, 5);
 });
+
+test('run.targetMultiplier (cheat menu) scales the target; a missing one means x1', () => {
+  const run = fresh();
+  const normal = getTarget(run);
+  run.targetMultiplier = 0.5;
+  assert.equal(getTarget(run), Math.round(normal * 0.5));
+  run.targetMultiplier = 'abc';
+  assert.equal(getTarget(run), normal);
+  delete run.targetMultiplier;
+  assert.equal(getTarget(run), normal);
+});
+
+test('startNextShift works after the cheat menu sets phase shop and shift N - 1, and keeps extra fields', () => {
+  const run = fresh();
+  run.cheated = true;
+  run.phase = 'shop';
+  run.shift = 5;
+  const out = startNextShift(run, makeDeps());
+  assert.equal(out.ok, true);
+  assert.equal(run.shift, 6);
+  assert.equal(run.phase, 'build');
+  assert.equal(run.cheated, true);
+});

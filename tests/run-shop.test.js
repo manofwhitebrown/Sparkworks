@@ -154,7 +154,11 @@ test('reroll prices rise, and free rerolls come first', () => {
   rerollOffers(free, DEPS);
   rerollOffers(free, DEPS);
   assert.equal(free.coins, 20);
-  assert.equal(rerollPrice(free), 3);
+  // the free ones are used up: the paid price starts again at 1
+  assert.equal(rerollPrice(free), 1);
+  rerollOffers(free, DEPS);
+  assert.equal(rerollPrice(free), 2);
+  assert.equal(free.coins, 19);
 });
 
 test('reroll refuses without coins and replaces sold offers', () => {

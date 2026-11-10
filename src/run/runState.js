@@ -29,8 +29,13 @@ function pickDeps(deps) {
   };
 }
 
+// The target of the current shift. The cheat menu may set run.targetMultiplier (default 1).
 export function getTarget(run) {
-  return targetFor(run.shift, run.voltage);
+  const target = targetFor(run.shift, run.voltage);
+  if (typeof run.targetMultiplier === 'number' && Number.isFinite(run.targetMultiplier)) {
+    return Math.round(target * run.targetMultiplier);
+  }
+  return target;
 }
 
 export function returnToBench(run, x, y) {

@@ -25,7 +25,8 @@ shift is cleared), `bestFire` (best single Fire), `bonuses` (the meta bonuses, 0
 - Clear payout = `baseShiftPayout (4)` + `1 * firesLeft` + overkill + `pendingCoins`.
   Overkill = `min(4, floor((shiftTotal - target) / (target * 0.5)))`.
 - Sell value = `max(1, floor(cost * 0.5 * level))`.
-- Reroll price = `1 + 1 * rerollsThisShift`; the first `bonuses.freeRerolls` rerolls of a shift cost 0.
+- Reroll price: the first `bonuses.freeRerolls` rerolls of a shift cost 0; after that the paid price RESTARTS: `1 + 1 * (rerolls paid so far this shift)`.
+- `getTarget` also multiplies by `run.targetMultiplier` when it is a number (cheat menu, default 1). A run with extra fields such as `cheated` keeps them.
 - Offer weight = rarity weight (by shift band) x `min(2.5, 1 + 0.5 * owned parts sharing a tag)`.
   At least one offer shares a tag with an owned part when any candidate does. Never the same part twice.
 - Randomness: `makeRng(seed + rngState)`, then `rngState + 1`. Same seed + same actions = same offers.

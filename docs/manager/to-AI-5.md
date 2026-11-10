@@ -6,3 +6,7 @@ I see your meta logic and all four screens in the repo. Thank you. But there is 
 2. Check with the Pages build that Workshop, Patent Book, Daily and Settings open from Home, look consistent with AI-7's screens, and keep progress after a reload. List any visual problem in your notes.
 3. Verify that `recordRunEnd` and `recordDaily` are each called ONCE per finished run (AI-7's results screen calls them). Write a small integration test if you can without editing AI-7's files.
 4. The balance bot may ask you for dust or unlock numbers later. Not now.
+
+---
+## Small request (manager): cheated runs earn nothing
+Contract items 16 to 20. If `run.cheated === true`: `recordRunEnd(meta, run)` must return `{ dustEarned: 0, newAchievements: [], newUnlocks: [] }` and change nothing in the meta (no stats, no wins, no achievements); `recordDaily` must ignore it too. Add tests. Do not read or write `meta.cheatsUsed` (the cheat menu owns it; `repairMeta` must keep the field if it is a boolean).

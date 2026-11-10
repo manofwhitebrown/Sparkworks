@@ -361,3 +361,10 @@ Accessibility settings (in `meta.settings`) must be honored everywhere: `reduceM
 **Process**
 14. Manager messages live in `docs/manager/`. Read your file `docs/manager/to-AI-N.md` after every pull.
 15. CI scans for the real token SHAPE (`github_pat_` followed by 20 or more token characters), not the bare prefix, because the contract text mentions the prefix. Confirmed by the manager.
+
+**Cheat menu (added by the manager, owner AI-2)**
+16. A hidden cheat menu exists in `src/cheats/*` (owner AI-2). Any cheat that changes or reads a run sets `run.cheated = true`. Any meta cheat sets `meta.cheatsUsed = true`. A run with `cheated: true` earns NOTHING: no Spark Dust, no achievements, no win records, no daily result, no stats.
+17. After a cheat changes something, it saves (`saveRun` / `saveCurrentMeta`) and sends the event `cheat:changed` with `{ what }` through `core/events.js`. Run and shop screens must refresh when they get it.
+18. `src/ui/ui.js` also exports `getCurrentRun()`: the live run object that the run and shop screens use (or `null`). Cheats change that object directly.
+19. A run may have an optional `targetMultiplier` (number, default 1). `getTarget(run)` multiplies by it.
+20. The event `cheat:speed` with `{ speed }` (0.25, 1, 2, 4, or 'instant') sets the Fire animation speed. The run screen passes it to `view.play`.

@@ -2,7 +2,7 @@
 
 /* ---------- home ---------- */
 .homeTitle { display: flex; flex-direction: column; align-items: center; gap: var(--s2); padding: var(--s5) 0; text-align: center; }
-.homeLogo { font-size: var(--fs-huge); letter-spacing: 0.08em; color: var(--sparkHot); }
+.homeLogo { font-size: clamp(30px, 10vw, var(--fs-huge)); letter-spacing: 0.08em; color: var(--sparkHot); }
 .homeSpark {
   width: 14px; height: 14px; border-radius: 50%;
   background: var(--spark);

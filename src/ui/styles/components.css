@@ -24,6 +24,7 @@
 .btn.danger { background: transparent; border-color: var(--bad); color: var(--bad); }
 .btn.small { min-height: var(--tap); padding: 0 var(--s3); font-size: var(--fs-small); }
 .btn.big { min-height: 64px; font-size: var(--fs-title); letter-spacing: 0.04em; width: 100%; }
+.btn[hidden] { display: none; }
 .btn[disabled], .btn.isDisabled { opacity: 0.4; pointer-events: none; }
 .btn .icon { width: 20px; height: 20px; }
 

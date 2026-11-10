@@ -4,10 +4,11 @@
 - Design system: tokens.css, base.css, components.css, Inter font (woff2, OFL), ASSETS.md, STYLE_GUIDE.md
 - Components: button, partCard, modal, toast, numberTicker
 - ui.js shell (go, Back button, getMeta/saveCurrentMeta, applySettingsFromMeta), flow.js helpers + tests/ui-flow.test.js
-- home.js
+- home.js, run.js (HUD, bench drag, selection panel, fire flow), shop.js, results.js (record once, dust ticker, unlock reveal, share), startRun.js
+- Browser smoke test (headless Chromium 360x740): home -> run -> fire, no console errors
 
 ## Working on
-- run.js, shop.js, results.js (waiting on real AI-4 runState and AI-6 boardView; building against the contract)
+- Browser-checking shop/results/merge, 412x915 + largeText + desktop, hand-test checklist
 
 ## Blocked / Questions for manager
 - index.html mounts into `#app` (not `#root`); I use `#app`. No change needed.

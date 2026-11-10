@@ -1,1 +1,97 @@
-/* STUB: owned by AI-7. The owner will replace this whole file. */
+/* Design tokens for Sparkworks: colors, spacing, radii, type, timing.
+   Every other stylesheet reads these variables, never raw numbers.
+   Owner: AI-7 */
+
+@font-face {
+  font-family: 'Inter';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/inter-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/inter-SemiBold.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Inter';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/inter-Bold.woff2') format('woff2');
+}
+
+:root {
+  /* palette (contract section 10) */
+  --bg: #0B0E14;
+  --panel: #141A24;
+  --panel2: #1C2432;
+  --line: #2A3446;
+  --text: #E8EDF5;
+  --textDim: #8A97AD;
+  --spark: #FFC857;
+  --sparkHot: #FFF1C2;
+  --accent: #4FD1C5;
+  --good: #7BE495;
+  --bad: #FF6B6B;
+  --common: #9FB3C8;
+  --rare: #5AA9FF;
+  --legendary: #C77DFF;
+  --coin: #FFD166;
+
+  /* spacing scale */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+
+  /* radii */
+  --r1: 8px;
+  --r2: 12px;
+  --r3: 16px;
+
+  /* type */
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --fs-base: 16px;
+  --fs-small: 13px;
+  --fs-tiny: 11px;
+  --fs-title: 22px;
+  --fs-big: 34px;
+  --fs-huge: 44px;
+
+  /* motion: one easing curve, three speeds */
+  --ease: cubic-bezier(0.22, 0.8, 0.28, 1);
+  --t-fast: 120ms;
+  --t-normal: 220ms;
+  --t-slow: 400ms;
+
+  /* layout */
+  --column-max: 480px;
+  --tap: 44px;
+
+  /* safe areas (notches, gesture bars) */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+}
+
+/* Accessibility: bigger text */
+html.largeText {
+  --fs-base: 19px;
+  --fs-small: 16px;
+  --fs-tiny: 13px;
+  --fs-title: 26px;
+}
+
+/* Accessibility: no long motion */
+html.reduceMotion {
+  --t-fast: 1ms;
+  --t-normal: 1ms;
+  --t-slow: 1ms;
+}

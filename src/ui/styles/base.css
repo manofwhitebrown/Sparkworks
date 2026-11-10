@@ -1,1 +1,75 @@
-/* STUB: owned by AI-7. The owner will replace this whole file. */
+/* Page reset and the centered phone column.
+   Owner: AI-7 */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-base);
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+body { overflow: hidden; }
+
+/* The whole game lives in one column, max 480 px, full height. */
+#app {
+  position: relative;
+  height: 100%;
+  max-width: var(--column-max);
+  margin: 0 auto;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+/* Laptop: a faint edge so the column reads as a device. */
+@media (min-width: 520px) {
+  #app { box-shadow: 0 0 0 1px var(--line); }
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: calc(var(--s4) + var(--safe-top)) calc(var(--s4) + var(--safe-right))
+    calc(var(--s4) + var(--safe-bottom)) calc(var(--s4) + var(--safe-left));
+  gap: var(--s3);
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  opacity: 0;
+  transition: opacity var(--t-normal) var(--ease);
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.isShown { opacity: 1; }
+
+h1, h2, h3, p { margin: 0; }
+h1 { font-size: var(--fs-title); font-weight: 700; }
+h2 { font-size: var(--fs-base); font-weight: 600; }
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+button:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.dim { color: var(--textDim); }
+.num { font-variant-numeric: tabular-nums; font-weight: 700; }
+.row { display: flex; align-items: center; gap: var(--s2); }
+.spacer { flex: 1 1 auto; }

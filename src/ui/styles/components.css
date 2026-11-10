@@ -1,0 +1,186 @@
+/* Shared components: buttons, panels, pills, bars, part cards, modal, toast.
+   Rules: animate only transform and opacity, no backdrop-filter,
+   no blurred shadows on moving things.
+   Owner: AI-7 */
+
+/* ---------- buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  min-height: var(--tap);
+  padding: 0 var(--s4);
+  border-radius: var(--r2);
+  font-weight: 600;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  transition: transform var(--t-fast) var(--ease), opacity var(--t-fast) var(--ease);
+}
+.btn:active { transform: scale(0.97); }
+.btn.primary { background: var(--spark); border-color: var(--spark); color: #1A1306; }
+.btn.secondary { background: var(--panel2); }
+.btn.ghost { background: transparent; border-color: transparent; color: var(--accent); }
+.btn.danger { background: transparent; border-color: var(--bad); color: var(--bad); }
+.btn.small { min-height: var(--tap); padding: 0 var(--s3); font-size: var(--fs-small); }
+.btn.big { min-height: 64px; font-size: var(--fs-title); letter-spacing: 0.04em; width: 100%; }
+.btn[disabled], .btn.isDisabled { opacity: 0.4; pointer-events: none; }
+.btn .icon { width: 20px; height: 20px; }
+
+/* ---------- panels, pills, bars ---------- */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r2);
+  padding: var(--s3);
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  min-height: 28px;
+  padding: 0 var(--s3);
+  border-radius: 999px;
+  background: var(--panel2);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+.pill.coin { color: var(--coin); }
+.pill.dust { color: var(--accent); }
+
+.bar {
+  position: relative;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--panel2);
+  overflow: hidden;
+}
+/* The fill is scaled with transform, never with width. */
+.bar > .fill {
+  position: absolute;
+  inset: 0;
+  background: var(--spark);
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform var(--t-slow) var(--ease);
+}
+.bar.done > .fill { background: var(--good); }
+
+/* ---------- part cards ---------- */
+.partCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s1);
+  padding: var(--s2);
+  min-width: 76px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r2);
+  text-align: center;
+  transition: transform var(--t-fast) var(--ease);
+}
+.partCard:active { transform: scale(0.97); }
+.partCard .pcIcon { width: 48px; height: 48px; border-radius: var(--r1); background: var(--panel2); object-fit: contain; }
+.partCard .pcName { font-size: var(--fs-small); font-weight: 600; line-height: 1.2; }
+.partCard .pcRarity { font-size: var(--fs-tiny); color: var(--textDim); text-transform: uppercase; letter-spacing: 0.06em; }
+.partCard .pcPips { display: flex; gap: 3px; }
+.partCard .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
+.partCard .pip.on { background: var(--spark); }
+.partCard .pcPrice { font-weight: 700; color: var(--coin); }
+.partCard .pcDesc { font-size: var(--fs-tiny); color: var(--textDim); }
+.partCard.isSelected { border-color: var(--accent); transform: translateY(-2px); }
+.partCard.compact { min-width: 56px; padding: var(--s1); }
+.partCard.compact .pcIcon { width: 36px; height: 36px; }
+.partCard.compact .pcName, .partCard.compact .pcRarity, .partCard.compact .pcDesc { display: none; }
+html.colorblind .partCard.compact .pcRarity { display: block; }
+.partCard.locked { opacity: 0.55; }
+.partCard.locked .pcIcon { filter: none; background: var(--line); }
+.partCard.isSold { opacity: 0.3; pointer-events: none; }
+
+/* rarity borders: thin / double / glowing (pseudo-element, opacity only) */
+.partCard.common { border-color: var(--common); }
+.partCard.rare { border-color: var(--rare); outline: 1px solid var(--rare); outline-offset: 2px; }
+.partCard.legendary { border-color: var(--legendary); }
+.partCard.legendary::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border: 2px solid var(--legendary);
+  border-radius: calc(var(--r2) + 3px);
+  pointer-events: none;
+  animation: legendPulse 2400ms ease-in-out infinite;
+}
+@keyframes legendPulse { 0%, 100% { opacity: 0.2; } 50% { opacity: 0.9; } }
+html.reduceMotion .partCard.legendary::after { animation: none; opacity: 0.6; }
+
+/* merge celebration */
+.partCard.merged { animation: mergePop var(--t-slow) var(--ease); }
+@keyframes mergePop { 0% { transform: scale(0.8); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+/* ---------- modal ---------- */
+.modalBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s4);
+  background: rgba(11, 14, 20, 0.82);
+  opacity: 0;
+  transition: opacity var(--t-normal) var(--ease);
+}
+.modalBackdrop.isShown { opacity: 1; }
+.modalBox {
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r3);
+  padding: var(--s5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  transform: translateY(12px);
+  transition: transform var(--t-normal) var(--ease);
+}
+.modalBackdrop.isShown .modalBox { transform: translateY(0); }
+
+/* ---------- toast ---------- */
+.toast {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--s4) + var(--safe-top));
+  z-index: 60;
+  max-width: calc(100% - var(--s6));
+  padding: var(--s3) var(--s4);
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: var(--r2);
+  font-weight: 600;
+  text-align: center;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -8px);
+  transition: opacity var(--t-normal) var(--ease), transform var(--t-normal) var(--ease);
+}
+.toast.isShown { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---------- tooltip ---------- */
+.tip { position: relative; }
+.tip[data-tip]:focus::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: var(--s1) var(--s2);
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  border-radius: var(--r1);
+  font-size: var(--fs-tiny);
+  white-space: nowrap;
+}

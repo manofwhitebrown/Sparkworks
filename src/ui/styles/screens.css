@@ -85,3 +85,13 @@ html.reduceMotion .homeSpark { animation: none; }
 .offerCard { min-height: 168px; justify-content: flex-start; padding: var(--s3) var(--s2); }
 .offerCard .pcIcon { width: 56px; height: 56px; }
 .miniBoard { position: relative; width: 60%; aspect-ratio: 5 / 4; align-self: center; pointer-events: none; }
+
+/* ---------- results ---------- */
+.resultsTitle { text-align: center; font-size: var(--fs-big); letter-spacing: 0.06em; padding: var(--s5) 0; }
+.resultsTitle.good { color: var(--good); }
+.resultsTitle.bad { color: var(--bad); }
+.statRow { min-height: 32px; }
+.dustNum { color: var(--accent); min-width: 6ch; text-align: right; }
+.revealList { display: flex; flex-direction: column; gap: var(--s2); }
+.revealItem { opacity: 0; transform: translateY(8px); transition: opacity var(--t-normal) var(--ease), transform var(--t-normal) var(--ease); }
+.revealItem.isShown { opacity: 1; transform: translateY(0); }

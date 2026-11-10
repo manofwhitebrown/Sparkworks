@@ -5,13 +5,10 @@ import { go, getMeta } from '../ui.js';
 import { makeButton } from '../components/button.js';
 import { INVENTORS, getInventor } from '../../data/inventors.js';
 import { VOLTAGES } from '../../data/voltage.js';
-import { loadRun, saveRun } from '../../core/save.js';
-import { newRun } from '../../run/runState.js';
-import { bonusesFor } from '../../meta/workshop.js';
-import { unlockedPartIds } from '../../meta/patentBook.js';
+import { loadRun } from '../../core/save.js';
+import { startNormalRun } from '../startRun.js';
 import { maxVoltageFor } from '../../meta/voltage.js';
 import { formatNumber } from '../../core/format.js';
-import { emit } from '../../core/events.js';
 
 // Remembered while the app is open, so New run keeps the same choice.
 let pickedInventor = 'tinkerbot';
@@ -22,24 +19,6 @@ function el(tag, className, text) {
   if (className) node.className = className;
   if (text !== undefined) node.textContent = text;
   return node;
-}
-
-function freshSeed() {
-  return (Date.now() + Math.floor(Math.random() * 1e9)) % 2147483647;
-}
-
-function startRun(meta) {
-  const run = newRun({
-    inventorId: pickedInventor,
-    voltage: pickedVoltage,
-    seed: freshSeed(),
-    poolIds: unlockedPartIds(meta),
-    bonuses: bonusesFor(meta),
-    daily: false
-  });
-  saveRun(run);
-  emit('ui:runStarted', { inventorId: pickedInventor, voltage: pickedVoltage });
-  go('run');
 }
 
 function makeTitle() {
@@ -121,7 +100,7 @@ function build(screen) {
     }, { kind: 'secondary' }));
   }
   const playLabel = saved ? 'NEW RUN' : 'PLAY';
-  screen.appendChild(makeButton(playLabel, function () { startRun(meta); },
+  screen.appendChild(makeButton(playLabel, function () { startNormalRun(meta, pickedInventor, pickedVoltage); },
     { kind: 'primary', big: true }));
   screen.appendChild(makeNav());
 }

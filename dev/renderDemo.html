@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sparkworks render demo (dev only)</title>
+    <style>
+      html, body { margin: 0; background: #0B0E14; color: #E8EDF5; font-family: system-ui, sans-serif; }
+      main { max-width: 480px; margin: 0 auto; padding: 12px; }
+      #board { background: #141A24; border-radius: 12px; overflow: hidden; }
+      .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+      button { background: #1C2432; color: #E8EDF5; border: 1px solid #2A3446; border-radius: 8px;
+        padding: 10px 12px; min-height: 44px; font-size: 14px; }
+      button.on { border-color: #4FD1C5; color: #4FD1C5; }
+      #stats { font: 13px ui-monospace, monospace; color: #8A97AD; font-variant-numeric: tabular-nums; }
+      #log { font: 12px ui-monospace, monospace; color: #8A97AD; max-height: 90px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div id="board"></div>
+      <div class="row">
+        <button id="fire">play sample fire</button>
+        <button id="big">play big fire (500 events)</button>
+        <button id="blockedFire">play blocked fire</button>
+        <button id="skip">skip</button>
+      </div>
+      <div class="row">
+        <button data-q="low">quality low</button>
+        <button data-q="medium" class="on">quality medium</button>
+        <button data-q="high">quality high</button>
+        <button id="reduce">reduce motion: off</button>
+        <button id="blocked">fake blocked cells: off</button>
+        <button id="fast">speed 1x</button>
+      </div>
+      <div id="stats">frame time: -</div>
+      <div id="log"></div>
+    </main>
+    <script type="module" src="./renderDemo.js"></script>
+  </body>
+</html>

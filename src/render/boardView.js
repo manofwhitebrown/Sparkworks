@@ -9,7 +9,7 @@ import { createParticles } from './particles.js';
 import { createSparkPlayer } from './sparkPlayer.js';
 import { drawFrame } from './boardDraw.js';
 import { attachInput } from './input.js';
-import { startLoop, stopLoop } from '../core/loop.js';
+import { startLoop } from '../core/loop.js';
 import { formatNumber } from '../core/format.js';
 import { getPart } from '../engine/parts/index.js';
 
@@ -20,7 +20,7 @@ export function createBoardView(container, options) {
   var opts = options || {};
   var deps = opts.deps || {};
   var loopStart = deps.startLoop || startLoop;
-  var loopStop = deps.stopLoop || stopLoop;
+  var destroyed = false;
   var canvas = document.createElement('canvas');
   canvas.style.display = 'block';
   canvas.style.width = '100%';
@@ -97,6 +97,7 @@ export function createBoardView(container, options) {
   }
 
   function frame(dt) {
+    if (destroyed) { return; }
     var safeDt = dt > 0.1 ? 0.1 : dt;
     S.player.update(safeDt);
     S.particles.update(safeDt);
@@ -166,7 +167,8 @@ export function createBoardView(container, options) {
     setQuality: setQuality, resize: resize,
     frame: frame,
     destroy: function () {
-      loopStop();
+      // stopLoop() would stop every callback of the app, so we only switch our own frame off
+      destroyed = true;
       detach();
       if (observer) { observer.disconnect(); }
       if (canvas.parentNode) { canvas.parentNode.removeChild(canvas); }

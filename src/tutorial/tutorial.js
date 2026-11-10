@@ -4,12 +4,18 @@
 
 import { on as realOn, off as realOff } from '../core/events.js';
 import { loadMeta as realLoadMeta, saveMeta as realSaveMeta } from '../core/save.js';
-import { go as realGo } from '../ui/ui.js';
 import { STEPS } from './steps.js';
 import { createOverlay } from './overlay.js';
 import { tutorialRun } from './tutorialRun.js';
 
 export { tutorialRun };
+
+// ui.js pulls in CSS, which plain Node cannot load, so it is imported only when needed.
+function realGo(name, params) {
+  return import('../ui/ui.js').then(function open(module) {
+    return module.go(name, params);
+  });
+}
 
 export function shouldShowTutorial(meta) {
   return !!meta && meta.tutorialDone === false;

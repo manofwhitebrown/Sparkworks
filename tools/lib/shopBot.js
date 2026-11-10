@@ -82,7 +82,7 @@ function sellWeakest(run, api, getPart) {
   if (weakest < 0) {
     return false;
   }
-  api.sellPart(run, { zone: 'bench', index: weakest });
+  api.sellPart(run, { kind: 'bench', index: weakest });
   return true;
 }
 

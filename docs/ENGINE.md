@@ -14,7 +14,9 @@ Same machine + same seed = the same events, every time. It never changes the mac
 3. The spark moves ONE cell in its CURRENT direction (a part may have turned it). `steps` goes up by 1.
    - Landed on `x = cols`: `bank`. Its value is added to the total.
    - Left by any other edge: `fizzle` (reason `edge`).
-   - `steps` above `CONFIG.maxSteps` (60): `fizzle` (reason `steps`). This is what stops loops.
+   - `steps` above `CONFIG.maxSteps` (60): `fizzle` (reason `steps`).
+   - The spark would enter the same cell for the `CONFIG.maxVisitsPerCell` + 1 = 5th time: `fizzle` (reason `steps`).
+     This ends closed loops early (see "Visit limit" below).
 4. Go to 2.
 
 A part acts every time a spark enters its cell, also when the spark comes back in a loop.
@@ -58,12 +60,27 @@ the parent enters x=1 (still 1), the child is born with value 1. The parent move
 The child's first action is to move to x=2 as well: +3 = 4, banks 4. Per spark **8**, so 24 for the Fire.
 The exact event order is in the captured log below.
 
+## Visit limit (contract section 12, item 8)
+
+A spark may ENTER the same cell at most `CONFIG.maxVisitsPerCell` (4) times. The 5th entry makes it fizzle
+with reason `steps`, at that cell, and that refused entry makes no `enter` event (the same way the 61st step
+makes none). Rules:
+
+- It is counted per spark, not per Fire: every spark, also every child, starts with a clean count.
+- A source spark's first cell `(0, sourceRow)` counts as visit 1. A child's birth cell does not count,
+  because the child moves away first.
+- Why: in a closed loop a part such as an Amplifier used to act on every lap until the 60-step limit,
+  and stacked up to about 1e100. With the limit, a ring with two level 3 Amplifiers on straight cells gets
+  8 passes (x6,561) instead of 20 (x3.5 billion).
+- Normal play is not touched: a Reverser double pass (Coil entered 3 times) works as before.
+  The step limit (60) stays as the second safety net for long walks that never repeat a cell 5 times.
+
 ## Edge cases
 
 - **Empty board:** each spark walks straight to the vault. Total = `sparkCount * startValue`.
 - **Blocked cell:** the spark fizzles there (`blocked`), the part on that cell (if any) never acts.
-- **Loops:** a loop ends by `maxSteps`; the spark fizzles with reason `steps`. Splitters inside a loop are
-  stopped by the 120-spark cap.
+- **Loops:** a closed loop ends by the visit limit (below); the spark fizzles with reason `steps`. A very long
+  walk that never repeats a cell 5 times still ends by `maxSteps`. Splitters inside a loop are stopped by the 120-spark cap.
 - **Bad machine:** a source row outside the board fizzles every spark. Cells outside the board are ignored.
   Use `validateMachine` in the UI to show a friendly message.
 

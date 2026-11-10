@@ -43,6 +43,7 @@ function safeGetPart(getPart, partId) {
 function buildBoard(run, machine, getPart) {
   const size = run.cols * run.rows;
   run.partAt = new Array(size).fill(null);
+  run.visits = new Uint8Array(size);
   run.blockedAt = new Array(size).fill(false);
   const banned = {};
   const bannedList = machine.banned || [];
@@ -342,6 +343,13 @@ function moveSpark(run, spark) {
     fizzle(run, spark, spark.x, spark.y, 'steps');
     return false;
   }
+  // A spark may enter the same cell only a few times. This ends closed loops
+  // early, before a part in the loop can stack up to a silly number.
+  const visits = ++run.visits[spark.y * run.cols + spark.x];
+  if (visits > CONFIG.maxVisitsPerCell) {
+    fizzle(run, spark, spark.x, spark.y, 'steps');
+    return false;
+  }
   return true;
 }
 
@@ -353,13 +361,17 @@ function walkSpark(run, spark) {
       x: spark.x, y: spark.y, dir: spark.dir, value: spark.value, parent: spark.parent
     });
   }
+  run.visits.fill(0);
   let alive = true;
   if (spark.parent !== 0) {
-    // A child starts by moving away; it does not trigger its birth cell again.
+    // A child starts by moving away; it does not trigger its birth cell again,
+    // and its birth cell does not count as a visit.
     alive = moveSpark(run, spark);
   } else if (spark.y < 0 || spark.y >= run.rows) {
     fizzle(run, spark, spark.x, spark.y, 'edge');
     alive = false;
+  } else {
+    run.visits[spark.y * run.cols + spark.x] = 1;
   }
   while (alive) {
     if (events !== null) {
@@ -397,7 +409,7 @@ export function simulate(machine, options) {
     total: 0, coins: 0, banked: 0, fizzled: 0, errors: 0,
     created: 0, sourceNumber: 0,
     family: null, spark: null, inst: null, ctx: null,
-    partAt: null, blockedAt: null, instances: null
+    partAt: null, blockedAt: null, visits: null, instances: null
   };
   // One rng per simulate call, so the draw order is always the same.
   run.ctx = makeCtx(run, makeRng(machine.seed));

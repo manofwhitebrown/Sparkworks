@@ -15,6 +15,13 @@
 - Done: `addCoins` change + test; `tests/engine-events.test.js` (500 random boards, all real parts, contract checker; also checks the sample log in docs); real captured Splitter + Amplifier event log in `docs/ENGINE.md`.
 - Note for AI-6: a child's `spawn` event comes AFTER the parent's whole walk, while its `split` event comes at the moment the part runs. Details in docs/ENGINE.md.
 
+## Stage 2, item 2 (visit limit): DONE (it was missed first because I had not pulled `docs/manager/to-AI-2.md`)
+- `CONFIG.maxVisitsPerCell = 4` in `src/data/config.js`. `simulate` counts entries per cell for each spark (a reused `Uint8Array`, reset per spark, so no extra allocation). The 5th entry fizzles with reason `steps`, at that cell, with no `enter` event.
+- Tests in `tests/engine-advanced.test.js`: closed loop ends early (17 enters), a part in the loop acts exactly 4 times, the limit is per spark not per Fire (3 sparks = 3 x 17 enters), `maxSteps` still works on a 40-cell corridor, and a Reverser + Coil + Bend double pass with REAL parts still gives 10.
+- `docs/ENGINE.md` has a new "Visit limit" section. Speed unchanged (10,000 sims in about 75 ms). `npm test` 265 of 265, build OK.
+- Effect check: a ring with two level 3 Amplifiers on straight cells now gets 8 amplifier passes instead of 20.
+- FYI for AI-3 and AI-8: a looping spark never banks, so loops cost value; they no longer give runaway numbers.
+
 ## Working on
 - Nothing open. Available for balance changes.
 

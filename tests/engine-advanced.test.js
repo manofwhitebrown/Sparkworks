@@ -6,6 +6,7 @@ import assert from 'node:assert';
 import { simulate } from '../src/engine/simulate.js';
 import { CONFIG } from '../src/data/config.js';
 import { makeRng } from '../src/core/rng.js';
+import { makeMachine, placePart } from '../src/engine/board.js';
 import {
   makeAdder, makeMultiplier, turner, makeSplitter, disabler, thrower, booster,
   counter, badNumbers, gambler, makeGetPart, machineWith
@@ -43,18 +44,80 @@ function ofType(result, type) {
   });
 }
 
-test('a turn that makes a loop ends by maxSteps (reason steps)', () => {
-  // A little square: (1,1) down, (1,2) right, (2,2) up, (2,1) left, back to (1,1).
-  const machine = machineWith([
-    [1, 1, 'turn', 1], [1, 2, 'turn', 0], [2, 2, 'turn', 3], [2, 1, 'turn', 2]
-  ]);
+// A little closed loop: (1,1) down, (1,2) right, (2,2) up, (2,1) left, back to (1,1).
+const LOOP = [[1, 1, 'turn', 1], [1, 2, 'turn', 0], [2, 2, 'turn', 3], [2, 1, 'turn', 2]];
+
+test('a closed loop ends early by the visit limit (reason steps)', () => {
+  const machine = machineWith(LOOP);
   machine.sparkCount = 1;
   const result = simulate(machine, { getPart });
   assert.strictEqual(result.total, 0);
   assert.strictEqual(result.fizzled, 1);
   const f = ofType(result, 'fizzle')[0];
   assert.strictEqual(f.reason, 'steps');
-  assert.strictEqual(ofType(result, 'enter').length, CONFIG.maxSteps + 1);
+  // the 5th entry of cell (1,1) is the one that fizzles; it makes no enter event
+  assert.strictEqual(f.x, 1);
+  assert.strictEqual(f.y, 1);
+  const enters = ofType(result, 'enter');
+  assert.strictEqual(enters.length, 17);
+  assert.ok(enters.length < CONFIG.maxSteps);
+  const sameCell = enters.filter(function (e) {
+    return e.x === 1 && e.y === 1;
+  });
+  assert.strictEqual(sameCell.length, CONFIG.maxVisitsPerCell);
+});
+
+test('visit limit: a part in the loop acts exactly maxVisitsPerCell times', () => {
+  // The part at (2,2) adds 1 and then turns the spark up, like the plain turner.
+  // It is entered 4 times and never a 5th, because (1,1) is the cell that runs out first.
+  const counted = {
+    id: 'counted',
+    onPass(ctx) {
+      ctx.setValue(ctx.value + 1, '+1');
+      ctx.turnToFacing();
+    }
+  };
+  const counting = makeGetPart({ turn: turner, counted: counted });
+  const machine = machineWith([[1, 1, 'turn', 1], [1, 2, 'turn', 0], [2, 2, 'counted', 3], [2, 1, 'turn', 2]]);
+  machine.sparkCount = 1;
+  const result = simulate(machine, { getPart: counting });
+  assert.strictEqual(ofType(result, 'value').length, CONFIG.maxVisitsPerCell);
+  assert.strictEqual(result.fizzled, 1);
+  assert.strictEqual(ofType(result, 'fizzle')[0].reason, 'steps');
+});
+
+test('visit limit is per spark, not per Fire', () => {
+  const machine = machineWith(LOOP);
+  machine.sparkCount = 3;
+  const result = simulate(machine, { getPart });
+  assert.strictEqual(result.fizzled, 3);
+  assert.strictEqual(ofType(result, 'enter').length, 3 * 17);
+  const fast = simulate(machine, { getPart, recordEvents: false });
+  assert.strictEqual(fast.fizzled, 3);
+  assert.strictEqual(fast.total, result.total);
+});
+
+test('maxSteps still ends a long walk that never visits a cell 5 times', () => {
+  // a 40 cell corridor: right to the end, a turner sends the spark back left
+  const machine = machineWith([[39, 0, 'turn', 2]], { seed: 1, cols: 40, rows: 1, sourceRow: 0, sparkCount: 1 });
+  const result = simulate(machine, { getPart });
+  const f = ofType(result, 'fizzle')[0];
+  assert.strictEqual(f.reason, 'steps');
+  assert.strictEqual(f.x, 39 - (CONFIG.maxSteps + 1 - 39));
+  assert.strictEqual(result.total, 0);
+});
+
+test('visit limit: a Reverser double pass with real parts still works', () => {
+  // Bend (1,1) turns right, Coil (2,1) +3, Reverser (3,1) turns the spark back.
+  // The coil is entered 3 times (under the limit of 4): 1 + 3 + 3 + 3 = 10.
+  const machine = makeMachine({ startValue: 1, sparkCount: 1, seed: 1 });
+  placePart(machine, 1, 1, 'bend', 1, 0);
+  placePart(machine, 2, 1, 'coil', 1, 0);
+  placePart(machine, 3, 1, 'reverser', 1, 0);
+  const result = simulate(machine);
+  assert.strictEqual(result.total, 10);
+  assert.strictEqual(result.banked, 1);
+  assert.strictEqual(result.fizzled, 0);
 });
 
 test('a part acts every time a spark re-enters its cell', () => {

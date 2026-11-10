@@ -8,6 +8,7 @@ export const CONFIG = {
   sparkCount: 3,
   startValue: 1,
   maxSteps: 60,
+  maxVisitsPerCell: 4,
   maxSparksPerFire: 120,
   maxValue: 1e300,
   firesPerShift: 2

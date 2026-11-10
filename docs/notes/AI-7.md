@@ -28,4 +28,9 @@ Headless Chromium via Playwright, viewports 360x740 and 412x915 (largeText on at
 - [x] Shop: 3 offers, buy, reroll, Next shift (button sticky at bottom)
 - [x] Results: run over, stats, Spark Dust ticker, unlock reveal, New run / Home
 - [x] No console errors in any of the above
-Not yet tested: drag from bench onto board with a real touch device, merge celebration (needs 3 equal parts), daily Share button, Android back button, desktop window, `reduceMotion` on.
+Also tested (1280x800 desktop, reduceMotion + colorblind on):
+- [x] Tap-select a bench part then tap a cell places it; bench count updates
+- [x] Browser Back on Run opens "Leave this run?"; "Keep playing" closes it and stays on Run
+- [x] Merge: buying a 3rd Coil merges to level 2, toast + celebration class, no errors
+- [x] Desktop: centered 480 px column, colorblind rarity labels on compact cards
+Not yet tested: dragging from bench with a real touch device, daily Share button, real Android back button, `Leave` path.

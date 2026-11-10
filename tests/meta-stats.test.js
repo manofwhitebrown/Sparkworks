@@ -70,3 +70,13 @@ test('a win records voltage progress and returns unlocks', () => {
   assert.ok(r.newAchievements.length > 0);
   assert.ok(r.newUnlocks.some((u) => u.type === 'part' && u.id === 'reverser'));
 });
+
+test('a daily run records the result of the day and the streak', () => {
+  const m = defaultMeta();
+  const run = { phase: 'lost', history: [] };
+  recordRunEnd(m, run, deps({ daily: '2026-11-10', shiftReached: 5, bestFire: 900 }));
+  assert.equal(m.daily.lastPlayed, '2026-11-10');
+  assert.equal(m.daily.streak, 1);
+  assert.equal(m.daily.best.shiftReached, 5);
+  assert.equal(m.daily.best.bestFire, 900);
+});

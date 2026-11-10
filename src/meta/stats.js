@@ -4,6 +4,7 @@ import { runSummary } from '../run/runState.js';
 import { checkAchievements } from './achievements.js';
 import { recordWin } from './voltage.js';
 import { upgradeLevel } from './workshop.js';
+import { recordDaily } from './daily.js';
 
 // dust = (2 + 2 x shiftsCleared + (won ? 10 : 0) + 3 x (voltage - 1)) x (1 + 0.1 x dustBoost)
 // Whole numbers only, so there is no floating point rounding surprise.
@@ -41,6 +42,10 @@ export function recordRunEnd(meta, run, deps) {
   run.recorded = true;
   updateStats(meta, run, summary);
   if (summary.won) recordWin(meta, summary.inventorId, summary.voltage);
+  // A daily run keeps its date string in summary.daily: record the result of the day here.
+  if (typeof summary.daily === 'string' && summary.daily !== '') {
+    recordDaily(meta, summary.daily, { won: summary.won, shiftReached: summary.shiftReached, bestFire: summary.bestFire || 0 });
+  }
   const dustEarned = dustFor(meta, summary);
   meta.dust += dustEarned;
   const newAchievements = checkAchievements(meta, summary, deps);
@@ -56,6 +61,7 @@ function normalizeForStats(summary, run) {
   if (typeof s.shiftsCleared !== 'number') s.shiftsCleared = s.won ? 8 : Math.max(0, (run.shift || 1) - 1);
   if (typeof s.shiftReached !== 'number') s.shiftReached = run.shift || 1;
   if (typeof s.totalBanked !== 'number') s.totalBanked = 0;
+  if (typeof s.bestFire !== 'number') s.bestFire = 0;
   if (!s.daily) s.daily = run.daily ? run.daily : false;
   return s;
 }

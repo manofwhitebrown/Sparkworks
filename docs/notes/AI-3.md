@@ -28,3 +28,9 @@
 - `prism` L3 gives 3 full-value roads; strong, but costs 10 and needs 3 roads to reach the vault.
 - `mint` may be too weak at L1 (max 3 coins). `echo` is weak when sparks bank late.
 - `ember` and `echo` do nothing for a 1-spark machine (`fewerSparks` twist hurts them).
+
+## Balance probe (my own, 6000 random 5x4 boards with 6 random parts, real `simulate`; AI-8's bot will confirm)
+- Typical effect (average log10 of total with / total without the part): top at L3 are `dynamo` 0.36, `prism` 0.28, `fuse` 0.27, `rectifier` 0.25, `coil` 0.24, `anvil` 0.24. No part is wildly dominant. Nothing is useless alone except the route parts, which look negative only because random rotations break the road.
+- `dynamo` leads at both levels. With 6+ parts it is +6/+12/+18 against `coil` +3/+5/+8, so it is clearly better than `coil` late in a run (early, with 2-3 parts, `coil` wins). I did NOT change it yet. If the bot agrees, try `perPart` 1 / 1.5 / 2.
+- `tollgate`, `mint` and `capacitor` score about 0 for score on random boards. That is expected for the economy parts (their value is coins), but `capacitor` looks a bit weak: try storing 50% / 70% / 90%.
+- Runaway loops: 0.1% of random L3 boards pass 1e6, a few reach 1e100+. A closed loop lets `compounder`, `amplifier` or `prism` stack up to the 60-step limit, because their caps apply per pass, not per Fire. That is an engine/loop-design question for the manager, not a part number. If it matters, ask AI-2 for a per-spark pass limit on one cell.

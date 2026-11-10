@@ -17,7 +17,8 @@ export function defaultMeta() {
     dust: 0,
     upgrades: {},
     unlockedParts: STARTING_PARTS.slice(),
-    seenParts: [],
+    // Starting parts count as seen, so only freshly unlocked parts show a NEW badge.
+    seenParts: STARTING_PARTS.slice(),
     unlockedInventors: ['tinkerbot'],
     achievements: {},
     wins: {},
@@ -141,7 +142,7 @@ export function repairMeta(meta, deps) {
       if (unlocked.indexOf(STARTING_PARTS[i]) === -1) unlocked.push(STARTING_PARTS[i]);
     }
     base.unlockedParts = unlocked;
-    base.seenParts = cleanIdList(m.seenParts, isKnownPart);
+    base.seenParts = Array.isArray(m.seenParts) ? cleanIdList(m.seenParts, isKnownPart) : STARTING_PARTS.slice();
     const inventors = cleanIdList(m.unlockedInventors, function (id) { return INVENTOR_IDS.indexOf(id) !== -1; });
     if (inventors.indexOf('tinkerbot') === -1) inventors.unshift('tinkerbot');
     base.unlockedInventors = inventors;

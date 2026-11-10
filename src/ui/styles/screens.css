@@ -1,1 +1,36 @@
-/* Screen layouts. Owner: AI-7 */
+/* Screen layouts for home, run, shop, results. Owner: AI-7 */
+
+/* ---------- home ---------- */
+.homeTitle { display: flex; flex-direction: column; align-items: center; gap: var(--s2); padding: var(--s5) 0; text-align: center; }
+.homeLogo { font-size: var(--fs-huge); letter-spacing: 0.08em; color: var(--sparkHot); }
+.homeSpark {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--spark);
+  animation: sparkPulse 1800ms var(--ease) infinite;
+}
+@keyframes sparkPulse { 0%, 100% { transform: scale(0.8); opacity: 0.6; } 50% { transform: scale(1.4); opacity: 1; } }
+html.reduceMotion .homeSpark { animation: none; }
+
+.inventorRow { display: flex; flex-direction: column; gap: var(--s2); }
+.inventorCard {
+  display: flex; flex-direction: column; gap: var(--s1);
+  min-height: var(--tap);
+  padding: var(--s3) var(--s4);
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--r2);
+  transition: transform var(--t-fast) var(--ease);
+}
+.inventorCard:active { transform: scale(0.98); }
+.inventorCard.isSelected { border-color: var(--accent); }
+.inventorCard.locked { opacity: 0.5; }
+.invName { font-weight: 700; }
+.invTag { font-size: var(--fs-small); }
+
+.voltageRow { display: flex; align-items: center; justify-content: space-between; }
+.voltageRow .btn { min-width: var(--tap); }
+.voltageMid { text-align: center; min-width: 140px; }
+
+.navRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s2); }
+.navRow .btn { padding: 0 var(--s1); }

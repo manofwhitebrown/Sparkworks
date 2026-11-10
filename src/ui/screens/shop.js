@@ -172,6 +172,7 @@ export function mount(root, params) {
   const panel = el('div');
   const next = makeButton('Next shift', onNext, { kind: 'primary', big: true });
   next.dataset.tut = 'continue';
+  next.classList.add('stickyBottom');
   screen.append(top, offers, reroll, mini, bench, panel, next);
   root.appendChild(screen);
   els = { coins: coins, offers: offers, reroll: reroll, bench: bench, panel: panel };

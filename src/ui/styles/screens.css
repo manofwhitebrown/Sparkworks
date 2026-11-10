@@ -95,3 +95,8 @@ html.reduceMotion .homeSpark { animation: none; }
 .revealList { display: flex; flex-direction: column; gap: var(--s2); }
 .revealItem { opacity: 0; transform: translateY(8px); transition: opacity var(--t-normal) var(--ease), transform var(--t-normal) var(--ease); }
 .revealItem.isShown { opacity: 1; transform: translateY(0); }
+
+/* Keep the main action of the shop always reachable. */
+.shopScreen .miniBoard { width: 46%; }
+.shopScreen .selectedPanel { min-height: 72px; }
+.stickyBottom { position: sticky; bottom: calc(-1 * var(--s4) - var(--safe-bottom)); padding-bottom: var(--s1); background: var(--bg); z-index: 5; }

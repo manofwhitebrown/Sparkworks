@@ -4,11 +4,11 @@
 - All 20 required parts + 4 extra parts (`prism`, `turnstile`, `echo`, `mint`), `parts/index.js`, `partMath.js`
 - `twists.js` (6 twists, `applyTwists`, `twistNames` flag)
 - `tests/helpers/fakeCtx.js`, `tests/parts-basic|behaviour|twists.test.js` (npm test passes)
+- `tests/parts-simulate.test.js`: real `simulate` combos (Coil/Amplifier order, Splitter+Bend banks the copy, Reverser loop, Overdrive, Tollgate, banned parts)
 - `docs/PARTS.md` (all 24 parts, 2 combo ideas each, twist list)
 
 ## Working on
-- Waiting for AI-2's real `simulate` (still a stub) to turn on the skipped test and add: Splitter+Bend banks the copy, Reverser doubles a Coil
-- Balance pass once AI-8's bot runs
+- Balance pass once AI-8's bot runs (parts and twists are otherwise finished)
 
 ## Extra parts (my 4 designs, written before coding)
 - `prism` (legendary, cost 10, split, directional): the spark goes straight AND a copy goes toward the rotation AND a copy goes toward the opposite of the rotation, each with 70% / 85% / 100% of the value. Build-around: put Amplifier and Compounder BEFORE it so three paths carry the big number, then make all three paths reach the vault. Combos: `amplifier` before it, `bend` after the side copies to steer them home. Banned by `noSplit` (it has the split tag).
@@ -17,6 +17,7 @@
 - `mint` (common, cost 3, economy, add): takes 20% of the spark's value and pays coins: 1 coin per 10 value taken, max 3 / 5 / 8. Trade value for coins. Combos: `amplifier` before it (more value = more coins), `tollgate` (double coin income).
 
 ## Blocked / Questions for manager
+- `npm test` has 2 failures in files I do not own: `core-platform.test.js` (needs `@capacitor/core` installed) and `integration-tutorial.test.js` (imports a `.css` file under Node). Not mine, left alone.
 - I add one helper file `src/engine/parts/partMath.js` (pure boost and label maths, no ctx). It lives in my own folder. Tell me if you want it inside each part instead.
 
 ## Changes I need from other AIs

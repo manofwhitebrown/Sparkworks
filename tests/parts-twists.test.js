@@ -80,17 +80,3 @@ test('the same seed gives the same twist result', () => {
   assert.deepEqual(a.blocked, b.blocked);
 });
 
-// Real simulate tests: skipped while AI-2's simulate is still a stub.
-const STUB = simulate(makeMachine({}), {}).events.length === 0 && simulate.length === 2 && String(simulate).includes('events: []');
-const skip = STUB ? { skip: true } : {};
-
-function row(parts) {
-  const machine = makeMachine({ startValue: 1 });
-  parts.forEach((id, i) => machine.cells.push({ x: i, y: 1, partId: id, level: 1, rot: 0 }));
-  return machine;
-}
-
-test('coil then amplifier = 8, amplifier then coil = 5', skip, () => {
-  assert.equal(simulate(row(['coil', 'amplifier']), { recordEvents: false }).total / 3, 8);
-  assert.equal(simulate(row(['amplifier', 'coil']), { recordEvents: false }).total / 3, 5);
-});

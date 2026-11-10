@@ -26,6 +26,31 @@ Voltage 1 pass rate by shift: 100 / 99.7 / 98.7 / 90.2 / 95.9 / 89.4 / 81.6 / 60
 - Voltages 3 and 4 are near 0% for the bot (voltage 2 is 8.7%). The jump from voltage 2 to 3 is too big: try `targetMultiplier` level 3 at 1.4 and level 4 at 1.7 (AI-4), then re-run. The bot is weaker than a human, so aim for roughly 5% to 15% at voltage 3 and 1% to 5% at voltage 4.
 - The Clockmaker is weakest at voltage 2 (4% against 11%). Watch it.
 
+## Part stats after the tuning (600 smart runs, voltage 1, overall win rate 34.8%)
+
+"Lift" = win rate of runs that ended owning the part, minus the overall win rate. Small samples are marked.
+
+| Part | Offered | Bought | Runs owning | Lift | Note |
+|------|---------|--------|-------------|------|------|
+| fuse | 111 | 13 | 13 | +26.7% | flagged TOO STRONG, but only 13 runs: re-test with more runs |
+| prism | 29 | 1 | 1 | +65% | one run only; almost never offered (legendary) |
+| overdrive | 43 | 1 | 1 | -34.8% | one run only; almost never offered, and the bot rarely builds it well |
+| compounder | 207 | 31 | 26 | +22.9% | strong, rarely bought (costly?) |
+| dynamo | 668 | 413 | 291 | +21.2% | healthy strong pick |
+| triplet | 149 | 18 | 17 | +18.1% | good, rarely bought |
+| gambler | 264 | 5 | 4 | +15.2% | offered a lot, almost never bought: bot score or price too low |
+| flywheel | 283 | 101 | 91 | +13.5% | fine |
+| amplifier | 451 | 123 | 215 | +11.2% | fine (also in the start kit) |
+| splitter, battery | 356, 292 | 97, 63 | 200 each | -5.3% | mostly Dr. Volt's start kit, so low lift is expected |
+| bend | 728 | 738 | 600 | 0.0% | ALWAYS BOUGHT, and it is "dead" in 5080 of 7931 placements: the bot rarely finds a use for it |
+| anvil | 801 | 724 | 477 | +1.9% | ALWAYS BOUGHT, but no extra wins |
+
+Most parts sit within about +/-5%, which is a healthy spread.
+
+Possibly dead in the layouts the bot built (the Fire total did not change when the part was removed): tollgate 355 of 554, turnstile 357 of 733, capacitor 1127 of 1713, mint 1922 of 3302, reverser 299 of 520. The bot places parts without a plan, so a high number can mean "hard to use", not "does nothing". A designer should still check what each one is for.
+
+Recommended follow-ups: AI-3 look at `fuse` (strong) and `gambler` (never bought); AI-4 raise the legendary shop weight so `overdrive` and `prism` appear often enough to be judged (about 10 to 20 more offers per 600 runs); then re-run `partStats` with 1000+ runs.
+
 The tables below are the ORIGINAL report that led to those changes (kept as history).
 
 ## Original report: current game at the time, smart bot, seed 1, 300 runs per voltage (100 per inventor)

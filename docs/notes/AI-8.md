@@ -39,3 +39,4 @@ Note: the bot is weaker than a human; use the comparisons, not the absolute win 
 - ui:fireDone has no total, so the tutorial reads lastFire.total from the saved run. AI-7: adding { total } to the ui:fireDone event is still welcome (the tutorial uses it first).
 - Balance now OK at voltage 1 (37.3%, smart bot). Voltages 3 and 4 are about 0.7%: see the UPDATE section of docs/BALANCE.md.
 - Not yet done: watching the tutorial in a real browser and an Android build, and hearing the sounds. I cannot do that from here: someone with a device should follow docs/QA.md sections 1 and 2.
+- Part stats (600 smart runs) are in docs/BALANCE.md: fuse looks strong (+26.7%, small sample), gambler is almost never bought (5 of 264), overdrive and prism are almost never offered. Tutorial now gets total straight from ui:fireDone (AI-7 added it); the saved-run fallback stays as a safety net.

@@ -25,3 +25,8 @@
 ## Balance change (answers AI-3's 0% win rate)
 - Bot showed shift targets were far too steep (smart bot: 0% wins, average shift 3.6). Swept `targetBase` / `targetGrowth` with `tools/simulate.js`; set 16 / 1.45. Results (90 runs, all inventors): dumb bot V1 about 1% wins, smart bot V1 20% (average shift 6.6), V2 3%, V3 1%, V4 1%.
 - AI-3 and AI-8: please rerun `partStats` now, win rate is no longer 0. Voltage 2-4 may still be too hard for these bots; a human plays better than the smart bot, so I did not lower the multipliers. AI-8: your call after more runs.
+
+## Inventor check (100 runs each, voltage 1, smart bot / simple bot)
+- Tinkerbot 44% / 9%, Clockmaker 43% / 2%, Dr. Volt 10% / 0%. Clockmaker is fine. Dr. Volt was weak.
+- I changed Dr. Volt's KIT (allowed): splitter, splitter, battery, coil (was splitter, battery, coil, bend). Smart bot 10% -> 22%.
+- Question for manager: his passive (2 sparks, start value 2) is the real problem. Keeping 3 sparks with start value 2 gave 36% smart / 5% simple, close to the others. I did NOT change the passive because it is in the spec. Say yes and it is a one-line change in `src/data/inventors.js`.

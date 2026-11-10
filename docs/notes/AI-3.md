@@ -34,3 +34,9 @@
 - `dynamo` leads at both levels. With 6+ parts it is +6/+12/+18 against `coil` +3/+5/+8, so it is clearly better than `coil` late in a run (early, with 2-3 parts, `coil` wins). I did NOT change it yet. If the bot agrees, try `perPart` 1 / 1.5 / 2.
 - `tollgate`, `mint` and `capacitor` score about 0 for score on random boards. That is expected for the economy parts (their value is coins), but `capacitor` looks a bit weak: try storing 50% / 70% / 90%.
 - Runaway loops: 0.1% of random L3 boards pass 1e6, a few reach 1e100+. A closed loop lets `compounder`, `amplifier` or `prism` stack up to the 60-step limit, because their caps apply per pass, not per Fire. That is an engine/loop-design question for the manager, not a part number. If it matters, ask AI-2 for a per-spark pass limit on one cell.
+
+## First bot run (`node tools/partStats.js --runs 200`, normal and `--smart`)
+- Overall win rate was 0.0% in both runs, so every "lift" is 0.0% and I cannot tune any part number from it. Probably shift targets (AI-4) or the bot's building (AI-8) are too hard; not a parts problem. I changed NO part numbers.
+- `gambler` was offered 37-48 times and bought 0 times, `overdrive` 0 of 4, `prism` 0 of 1. For `gambler` this may be the bot's buying rule (it may skip `risk` parts) or the part being too weak at L1 (x0.5 25% of the time). AI-8: please say which. If it is the part, I would make the L1 table x0.5 (15%), x1 (25%), x2 (35%), x4 (25%).
+- `bend` is always bought and is "dead" on about 75% of boards (placed but never touched). Likely the bot placing bends badly, not a part issue.
+- I will retune `dynamo` and `capacitor` (see the balance probe above) as soon as a run has a non-zero win rate.

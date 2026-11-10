@@ -34,3 +34,47 @@ html.reduceMotion .homeSpark { animation: none; }
 
 .navRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s2); }
 .navRow .btn { padding: 0 var(--s1); }
+
+/* ---------- run ---------- */
+.runScreen { gap: var(--s2); }
+.hud { display: flex; flex-direction: column; gap: var(--s2); }
+.hudShift { font-weight: 600; }
+.hudTotal { font-size: var(--fs-title); color: var(--sparkHot); min-width: 8ch; text-align: right; }
+.hudFires { font-size: var(--fs-small); }
+.twistChips { display: flex; gap: var(--s1); flex-wrap: wrap; justify-content: flex-end; }
+.pill.twist { color: var(--bad); border: 1px solid var(--bad); background: transparent; }
+
+.boardSlot { position: relative; display: flex; justify-content: center; flex: 1 1 auto; min-height: 0; }
+.boardWrap {
+  position: relative;
+  width: min(100%, calc(40dvh * 1.25));
+  aspect-ratio: 5 / 4;
+  align-self: center;
+}
+.fireBanner {
+  position: absolute; left: 50%; top: 50%;
+  padding: var(--s3) var(--s5);
+  background: var(--panel2); border: 1px solid var(--spark); border-radius: var(--r2);
+  font-size: var(--fs-title); font-weight: 700; color: var(--sparkHot);
+  white-space: nowrap; pointer-events: none;
+  opacity: 0; transform: translate(-50%, -40%);
+  transition: opacity var(--t-normal) var(--ease), transform var(--t-normal) var(--ease);
+}
+.fireBanner.isShown { opacity: 1; transform: translate(-50%, -50%); }
+.fireBanner.bad { border-color: var(--bad); color: var(--bad); }
+.fireBanner.good { border-color: var(--good); color: var(--good); }
+
+.benchWrap { display: flex; flex-direction: column; gap: var(--s1); }
+.benchLabel { font-size: var(--fs-small); }
+.benchRow { display: flex; gap: var(--s2); overflow-x: auto; scrollbar-width: none; padding: var(--s1) 0; min-height: 64px; }
+.benchRow::-webkit-scrollbar { display: none; }
+.benchRow .partCard { touch-action: pan-x; flex: 0 0 auto; }
+.benchEmpty { align-self: center; font-size: var(--fs-small); }
+.dragGhost { position: fixed; left: 0; top: 0; z-index: 70; pointer-events: none; opacity: 0.9; }
+
+.selectedPanel { min-height: 96px; display: flex; flex-direction: column; justify-content: center; gap: var(--s2); }
+.selName { font-weight: 700; }
+.selDesc { font-size: var(--fs-small); }
+.selActions { flex-wrap: wrap; }
+.fireRow { display: flex; gap: var(--s2); }
+.fireRow .fireBtn { flex: 1 1 auto; }

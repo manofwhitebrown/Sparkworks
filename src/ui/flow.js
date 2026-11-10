@@ -50,3 +50,30 @@ export function backAction(screenName) {
   if (screenName === 'home') return 'stay';
   return 'home';
 }
+
+// Plain-English text for the reason codes AI-4 returns when an action is refused.
+const REASONS = {
+  outside_board: 'That is outside the board.',
+  blocked_cell: 'That cell is blocked this shift.',
+  cell_occupied: 'That cell is taken.',
+  bench_full: 'Your bench is full.',
+  wrong_phase: 'You cannot do that right now.',
+  not_shop_phase: 'The shop is closed.',
+  no_fires_left: 'No Fires left.',
+  not_enough_coins: 'Not enough coins.',
+  already_sold: 'That one is already sold.',
+  no_part_there: 'There is no part there.',
+  no_such_bench_part: 'That part is gone.',
+  no_such_offer: 'That offer is gone.',
+  no_such_part: 'That part is gone.'
+};
+
+export function reasonText(reason) {
+  return REASONS[reason] || 'That did not work.';
+}
+
+// The shift total to show while a Fire plays: the total before the Fire
+// plus what this Fire has banked so far (`runningTotal` from the bank event).
+export function shownTotalDuring(totalBefore, runningTotal) {
+  return totalBefore + runningTotal;
+}

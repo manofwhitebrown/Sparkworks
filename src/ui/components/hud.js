@@ -1,0 +1,58 @@
+// The top HUD of the run screen: shift, coins, target, progress bar, Fires left.
+// Owner: AI-7
+
+import { formatNumber } from '../../core/format.js';
+import { getTarget } from '../../run/runState.js';
+import { progressRatio, shiftText, totalText, firesLeftText } from '../flow.js';
+
+const TOTAL_SHIFTS = 8;
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+// Returns { element, update(run, shownTotal) }.
+export function makeHud() {
+  const element = el('div', 'panel hud');
+  element.dataset.tut = 'hud';
+
+  const top = el('div', 'row');
+  const shift = el('div', 'hudShift');
+  const coins = el('div', 'pill coin');
+  top.append(shift, el('div', 'spacer'), coins);
+
+  const targetRow = el('div', 'row hudTarget');
+  targetRow.appendChild(el('div', 'dim', 'TARGET'));
+  const total = el('div', 'num hudTotal');
+  targetRow.append(el('div', 'spacer'), total);
+
+  const bar = el('div', 'bar');
+  const fill = el('div', 'fill');
+  bar.appendChild(fill);
+
+  const bottom = el('div', 'row');
+  const fires = el('div', 'dim hudFires');
+  const twists = el('div', 'twistChips');
+  bottom.append(fires, el('div', 'spacer'), twists);
+
+  element.append(top, targetRow, bar, bottom);
+
+  function update(run, shownTotal) {
+    const target = getTarget(run);
+    shift.textContent = shiftText(run.shift, TOTAL_SHIFTS);
+    coins.textContent = formatNumber(run.coins) + ' coins';
+    total.textContent = totalText(shownTotal, target);
+    fill.style.transform = 'scaleX(' + progressRatio(shownTotal, target) + ')';
+    bar.classList.toggle('done', shownTotal >= target);
+    fires.textContent = firesLeftText(run.firesLeft);
+    twists.textContent = '';
+    const names = run.machine.flags && run.machine.flags.twistNames ? run.machine.flags.twistNames : [];
+    for (let i = 0; i < names.length; i++) {
+      twists.appendChild(el('span', 'pill twist', names[i]));
+    }
+  }
+  return { element: element, update: update };
+}

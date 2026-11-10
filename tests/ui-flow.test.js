@@ -39,3 +39,14 @@ test('backAction', () => {
   assert.equal(backAction('home'), 'stay');
   assert.equal(backAction('settings'), 'home');
 });
+
+import { reasonText, shownTotalDuring } from '../src/ui/flow.js';
+
+test('reasonText has a sentence for known codes and a fallback', () => {
+  assert.equal(reasonText('bench_full'), 'Your bench is full.');
+  assert.equal(reasonText('???'), 'That did not work.');
+});
+
+test('shownTotalDuring adds the running total to the earlier total', () => {
+  assert.equal(shownTotalDuring(40, 12), 52);
+});

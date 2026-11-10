@@ -1,4 +1,12 @@
-// STUB: owned by AI-7. The owner will replace this whole file.
+// The app shell: mounts screens, fades between them, handles the Back button,
+// keeps the one loaded meta object, applies accessibility settings.
+// Owner: AI-7
+
+import './styles/tokens.css';
+import './styles/base.css';
+import './styles/components.css';
+import './styles/screens.css';
+
 import * as home from './screens/home.js';
 import * as run from './screens/run.js';
 import * as shop from './screens/shop.js';
@@ -8,17 +16,123 @@ import * as patentBook from './screens/patentBook.js';
 import * as daily from './screens/daily.js';
 import * as settings from './screens/settings.js';
 
-const SCREENS = { home, run, shop, results, workshop, patentBook, daily, settings };
-let current = null;
+import { loadMeta, saveMeta } from '../core/save.js';
+import { initAudio, applySettings as applyAudioSettings } from '../audio/audio.js';
+import { startMusic } from '../audio/music.js';
+import { setHapticsEnabled } from '../platform/haptics.js';
+import { shouldShowTutorial, startTutorial, tutorialRun } from '../tutorial/tutorial.js';
+import { saveRun } from '../core/save.js';
+import { openModal, isModalOpen } from './components/modal.js';
+import { makeButton } from './components/button.js';
+import { backAction } from './flow.js';
 
-export function go(screenName, params) {
+const SCREENS = { home, run, shop, results, workshop, patentBook, daily, settings };
+const FADE_MS = 160;
+
+let meta = null;
+let current = null;
+let currentName = '';
+let audioStarted = false;
+let tutorialHandle = null;
+
+// ---------- meta access (AI-5 screens use these) ----------
+export function getMeta() { return meta; }
+export function saveCurrentMeta() { if (meta) saveMeta(meta); }
+
+// Applies largeText / reduceMotion / colorblind classes and audio + haptics flags.
+// Screens that change a setting call this afterwards.
+export function applySettingsFromMeta() {
+  const s = meta.settings;
+  const html = document.documentElement;
+  html.classList.toggle('largeText', !!s.largeText);
+  html.classList.toggle('reduceMotion', !!s.reduceMotion);
+  html.classList.toggle('colorblind', !!s.colorblind);
+  applyAudioSettings(s);
+  setHapticsEnabled(s.haptics !== false);
+}
+
+// ---------- screen switching ----------
+function showScreen(name, params) {
   const root = document.getElementById('app');
   if (current) current.unmount();
   root.innerHTML = '';
-  current = SCREENS[screenName] || SCREENS.home;
+  current = SCREENS[name] || SCREENS.home;
+  currentName = SCREENS[name] ? name : 'home';
   current.mount(root, params);
 }
 
+export function go(screenName, params) {
+  const root = document.getElementById('app');
+  const old = root.firstElementChild;
+  const reduce = document.documentElement.classList.contains('reduceMotion');
+  history.pushState({ screen: screenName }, '');
+  if (old && !reduce) {
+    old.classList.remove('isShown'); // fade out (opacity only)
+    setTimeout(function () { showScreen(screenName, params); }, FADE_MS);
+  } else {
+    showScreen(screenName, params);
+  }
+}
+
+export function currentScreenName() { return currentName; }
+
+// ---------- Back button ----------
+function askLeaveRun() {
+  history.pushState({ screen: currentName }, ''); // undo the pop, stay here
+  const box = document.createElement('div');
+  box.className = 'dialogBody';
+  const title = document.createElement('h1');
+  title.textContent = 'Leave this run?';
+  const text = document.createElement('p');
+  text.className = 'dim';
+  text.textContent = 'It is saved.';
+  const modal = { close: null };
+  const stay = makeButton('Keep playing', function () { modal.close(); }, { kind: 'primary' });
+  const leave = makeButton('Leave', function () {
+    modal.close();
+    setTimeout(function () { go('home'); }, 260);
+  }, { kind: 'secondary' });
+  box.append(title, text, stay, leave);
+  modal.close = openModal(box).close;
+}
+
+function onPopState() {
+  if (isModalOpen()) return; // the modal handles its own Back
+  const action = backAction(currentName);
+  if (action === 'confirm') askLeaveRun();
+  else if (action === 'home') showScreen('home');
+  else history.pushState({ screen: 'home' }, ''); // already home: stay
+}
+
+// ---------- start ----------
+function onFirstTap() {
+  if (audioStarted) return;
+  audioStarted = true;
+  initAudio();
+  if (meta.settings.music) startMusic();
+}
+
 export function startApp() {
-  go('home');
+  meta = loadMeta();
+  applySettingsFromMeta();
+  window.addEventListener('popstate', onPopState);
+  document.addEventListener('pointerdown', onFirstTap, { once: true });
+  history.replaceState({ screen: 'home' }, '');
+
+  const root = document.getElementById('app');
+  if (shouldShowTutorial(meta)) {
+    tutorialHandle = startTutorial(root);
+    const scripted = tutorialRun();
+    if (scripted) {
+      saveRun(scripted);
+      showScreen('run', { tutorial: true });
+      return;
+    }
+  }
+  showScreen('home');
+}
+
+export function stopTutorial() {
+  if (tutorialHandle) tutorialHandle.stop();
+  tutorialHandle = null;
 }

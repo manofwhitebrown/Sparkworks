@@ -1,0 +1,52 @@
+// Small pure helpers for the UI: HUD texts, progress ratio, what comes next.
+// No DOM here, so node:test can check them.
+// Owner: AI-7
+
+import { formatNumber } from '../core/format.js';
+
+// 0..1 for the shift progress bar. Safe for a zero or missing target.
+export function progressRatio(shiftTotal, target) {
+  if (!target || target <= 0) return 0;
+  const ratio = shiftTotal / target;
+  if (!(ratio > 0)) return 0;
+  return ratio > 1 ? 1 : ratio;
+}
+
+// "Shift 3 of 8"
+export function shiftText(shift, totalShifts) {
+  return 'Shift ' + shift + ' of ' + totalShifts;
+}
+
+// "120 / 300"
+export function totalText(shiftTotal, target) {
+  return formatNumber(shiftTotal) + ' / ' + formatNumber(target);
+}
+
+// "2 Fires left" / "1 Fire left"
+export function firesLeftText(firesLeft) {
+  return firesLeft + (firesLeft === 1 ? ' Fire left' : ' Fires left');
+}
+
+// Which screen comes after a Fire finished. `run.phase` is set by AI-4's fire().
+export function nextScreenAfterFire(run) {
+  if (run.phase === 'won' || run.phase === 'lost') return 'results';
+  if (run.phase === 'shop') return 'shop';
+  return 'run'; // still building: stay on the run screen
+}
+
+// Text of the banner shown after a Fire.
+export function fireBannerText(run) {
+  const last = run.lastFire;
+  if (!last) return '';
+  if (run.phase === 'won') return 'Run complete!';
+  if (run.phase === 'lost') return 'Out of Fires';
+  if (last.passed) return 'Shift cleared!';
+  return 'Not enough. ' + firesLeftText(run.firesLeft);
+}
+
+// What the Back button does on each screen: 'confirm', 'home' or 'stay'.
+export function backAction(screenName) {
+  if (screenName === 'run' || screenName === 'shop') return 'confirm';
+  if (screenName === 'home') return 'stay';
+  return 'home';
+}

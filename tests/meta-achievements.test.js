@@ -89,3 +89,13 @@ test('Patent Book status: locked, new, seen', () => {
   assert.equal(partStatus(m, 'prism'), 'locked');
   assert.ok(unlockedPartIds(m).includes('ember'));
 });
+
+test('bookPartIds lists library, unlocked and promised parts without repeats', async () => {
+  const { bookPartIds, inventorUnlockHint } = await import('../src/meta/patentBook.js');
+  const m = defaultMeta();
+  const ids = bookPartIds(m, ['coil', 'ember']);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const id of STARTING_PARTS.concat(PROMISED)) assert.ok(ids.includes(id), id);
+  assert.ok(inventorUnlockHint('clockmaker').length > 3);
+  assert.equal(inventorUnlockHint('tinkerbot'), '');
+});

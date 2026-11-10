@@ -26,3 +26,28 @@ export function unlockHint(partId, deps) {
   }
   return 'Keep playing to find this part.';
 }
+
+// How to unlock an inventor, from the achievement that rewards it ('' for the starting inventor).
+export function inventorUnlockHint(inventorId, deps) {
+  const list = deps && deps.achievements ? deps.achievements : ACHIEVEMENTS;
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i].reward;
+    if (r && r.type === 'inventor' && r.id === inventorId) return list[i].description;
+  }
+  return '';
+}
+
+// Every part the book shows: the parts library plus anything unlocked or promised by an achievement,
+// so a locked silhouette still appears while the library is growing.
+export function bookPartIds(meta, libraryIds, deps) {
+  const list = deps && deps.achievements ? deps.achievements : ACHIEVEMENTS;
+  const out = Array.isArray(libraryIds) ? libraryIds.slice() : [];
+  for (let i = 0; i < meta.unlockedParts.length; i++) {
+    if (out.indexOf(meta.unlockedParts[i]) === -1) out.push(meta.unlockedParts[i]);
+  }
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i].reward;
+    if (r && r.type === 'part' && out.indexOf(r.id) === -1) out.push(r.id);
+  }
+  return out;
+}

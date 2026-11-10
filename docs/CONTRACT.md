@@ -335,3 +335,29 @@ Accessibility settings (in `meta.settings`) must be honored everywhere: `reduceM
 - A task is DONE only when: (1) your logic has tests and `npm test` passes; (2) `npm run build` passes; (3) you edited no file you do not own; (4) `git grep -i github_pat` prints nothing; (5) your notes file is updated; (6) it is pushed and CI is green.
 - Stages: **Stage 0** skeleton (AI-1) -> **Stage 1** your core files, pushed in small steps -> **Stage 2** fixes after the manager's review -> **Stage 3** polish and balance.
 - If you are blocked, do NOT wait silently and do NOT edit someone else's file. Write the question in your notes file, build against the contract, and move to your next item.
+
+
+---
+
+## 12. AMENDMENTS v1.1 (added by the manager, 2026-11-10; these override anything above)
+
+**Engine (AI-2 decisions, now official)**
+1. Split order: first-in-first-out per source spark. A source spark runs, then its children, then their children, and only then the next source spark. Spark ids follow creation order.
+2. A spark fizzles when `steps > CONFIG.maxSteps` (60).
+3. Source sparks always get a slot: splits stop early enough to leave room for source sparks that are not born yet. Total sparks stay at 120 or fewer.
+4. If a part's `onPass` throws, the effects it already had stay and the rest is skipped. The result has an extra field `errors` (a count).
+5. `fizzle` with reason `'edge'` reports `x, y` = the LAST cell inside the board (so the renderer can draw it at the edge). The `end` event has `spark: 0`.
+6. `ctx` is one reused object per `simulate` call. Parts must never keep a reference to it.
+7. `ctx.addCoins(n)`: ignored unless `n` is a finite number above 0; it is floored to a whole number. Coins are never negative or fractional.
+8. NEW: a spark may enter the same cell at most `CONFIG.maxVisitsPerCell` (4) times. The next entry makes it fizzle with reason `'steps'`. This stops closed loops from stacking a part to 1e100.
+9. `ctx.fire.partsOnBoard` = placed parts that are not banned and have a known part id (parts on blocked cells still count). It is fixed at the start of the Fire.
+
+**Run shape (AI-4)**
+10. The run also has `pendingCoins` (coins from parts during this shift), `bestFire` (best single Fire total so far) and `bonuses` (the object given to `newRun`). `tutorial: true` may be present on a tutorial run.
+11. Rerolls: the first `freeRerolls` rerolls of a shift are free. After that the PAID price restarts: price = `rerollStartPrice + rerollStep * (rerolls paid so far this shift)`.
+12. An inventor's `passive` REPLACES the field value (it is not added), except `benchSize` and `shopSlots`, which are added.
+13. `sellPart(run, where)`: `where` is `{ kind: 'bench', index }` or `{ kind: 'board', x, y }`. Failed actions return `{ ok: false, reason }` and change nothing.
+
+**Process**
+14. Manager messages live in `docs/manager/`. Read your file `docs/manager/to-AI-N.md` after every pull.
+15. CI scans for the real token SHAPE (`github_pat_` followed by 20 or more token characters), not the bare prefix, because the contract text mentions the prefix. Confirmed by the manager.

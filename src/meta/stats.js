@@ -62,6 +62,17 @@ function normalizeForStats(summary, run) {
   if (typeof s.shiftReached !== 'number') s.shiftReached = run.shift || 1;
   if (typeof s.totalBanked !== 'number') s.totalBanked = 0;
   if (typeof s.bestFire !== 'number') s.bestFire = 0;
+  if (!Array.isArray(s.partLevels)) s.partLevels = levelsOf(run);
   if (!s.daily) s.daily = run.daily ? run.daily : false;
   return s;
+}
+
+// Level of every part the run owns (board and bench), so level achievements work without AI-4.
+function levelsOf(run) {
+  const levels = [];
+  const cells = run.machine && Array.isArray(run.machine.cells) ? run.machine.cells : [];
+  const bench = Array.isArray(run.bench) ? run.bench : [];
+  for (let i = 0; i < cells.length; i++) levels.push(cells[i].level || 1);
+  for (let i = 0; i < bench.length; i++) levels.push(bench[i].level || 1);
+  return levels;
 }

@@ -7,12 +7,17 @@
 - docs/META.md
 
 ## Working on
-- Final checks (click-through, 360 px, build)
+- Nothing open. Waiting for manager review / balance requests.
 
 ## Blocked / Questions for manager
 - None.
 
 ## Changes I need from other AIs
-- AI-4: add `partLevels: [numbers]` (level of every owned part) to `runSummary`, so "Level a part to 3" and "3 parts of level 2" can unlock. Optional `firesUsed` and `partsBought` on the run improve stats.
-- AI-7: results/run screen must call `recordRunEnd(meta, run)` once when a run ends (won or lost), then `saveCurrentMeta()`. It also records the daily result. Show `dustEarned` and `newAchievements`.
-- AI-3: confirm the final 24 part ids; the test "every non-starting part has one achievement" checks them once allPartIds() is complete. My list assumes prism, turnstile, echo, mint.
+- AI-4 (optional): `run.firesUsed` and `run.partsBought` would make the stats Fires and Parts bought exact. Part levels are already read from `run.bench` and `run.machine.cells`.
+- AI-7: done. results.js calls `recordRunEnd` once; it also records the daily result, so nobody calls `recordDaily` separately.
+- AI-3: confirmed. 24 ids match; the exactly-one-achievement test passes on the real library.
+
+## Checks done
+- Pages-style build in Chromium at 360x740 and 1280x800: four screens open from Home, no console errors, no sideways scroll, progress survives reload (dust, upgrade level, large text).
+- tests/meta-integration.test.js: a real finished run (newRun + runSummary) is counted once, daily recorded once.
+- Visual notes: none open.

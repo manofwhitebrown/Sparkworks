@@ -1,0 +1,188 @@
+// Tests for fire, payouts, winning, losing, save/load and a whole 8-shift run.
+// Owner: AI-4
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { newRun, fire, startNextShift, runSummary, getTarget } from '../src/run/runState.js';
+import { buyOffer, rerollOffers } from '../src/run/shop.js';
+import { makeDeps, FAKE_POOL } from './run-fakes.js';
+
+function fresh(deps, options) {
+  const opts = Object.assign({ inventorId: 'tinkerbot', voltage: 1, seed: 5, poolIds: FAKE_POOL }, options || {});
+  return newRun(opts, deps);
+}
+
+test('fire refuses outside the build phase', () => {
+  const deps = makeDeps([10]);
+  const run = fresh(deps);
+  run.phase = 'shop';
+  assert.equal(fire(run, deps).reason, 'wrong_phase');
+  run.phase = 'build';
+  run.firesLeft = 0;
+  assert.equal(fire(run, deps).reason, 'no_fires_left');
+});
+
+test('a Fire that reaches the target clears the shift and opens the shop', () => {
+  const deps = makeDeps([30]);
+  const run = fresh(deps);
+  const out = fire(run, deps);
+  assert.equal(out.ok, true);
+  assert.equal(out.passed, true);
+  assert.equal(out.shiftCleared, true);
+  assert.equal(out.runOver, false);
+  assert.equal(run.phase, 'shop');
+  assert.equal(run.offers.length, 3);
+  assert.deepEqual(run.history, [{ shift: 1, total: 30, target: 24 }]);
+  assert.equal(out.result.total, 30);
+});
+
+test('payout = base 4 + 1 per unused Fire + overkill + coins from parts', () => {
+  const deps = makeDeps([30], 3);
+  const run = fresh(deps);
+  const before = run.coins;
+  fire(run, deps);
+  // 4 base + 1 unused Fire + 0 overkill (30 vs 24) + 3 from parts
+  assert.equal(run.coins - before, 8);
+  assert.equal(run.lastFire.coinsEarned, 8);
+});
+
+test('overkill pays +1 per 50% over target, capped at 4', () => {
+  const big = makeDeps([24 * 2]); // 100% over = 2 steps
+  const a = fresh(big);
+  const coinsA = a.coins;
+  fire(a, big);
+  assert.equal(a.coins - coinsA, 4 + 1 + 2);
+  const huge = makeDeps([24 * 100]);
+  const b = fresh(huge);
+  const coinsB = b.coins;
+  fire(b, huge);
+  assert.equal(b.coins - coinsB, 4 + 1 + 4);
+});
+
+test('fail then retry: totals add up over the Fires of a shift', () => {
+  const deps = makeDeps([10, 20]);
+  const run = fresh(deps);
+  const first = fire(run, deps);
+  assert.equal(first.passed, false);
+  assert.equal(run.phase, 'build');
+  assert.equal(run.firesLeft, 1);
+  assert.equal(run.shiftTotal, 10);
+  const second = fire(run, deps);
+  assert.equal(second.passed, true);
+  assert.equal(run.shiftTotal, 30);
+  assert.equal(run.lastFire.shiftTotal, 30);
+  assert.equal(run.phase, 'shop');
+  // no unused Fires left, so: 4 base only
+  assert.equal(run.lastFire.coinsEarned, 4);
+});
+
+test('running out of Fires below target loses the run', () => {
+  const deps = makeDeps([5]);
+  const run = fresh(deps);
+  fire(run, deps);
+  const out = fire(run, deps);
+  assert.equal(out.runOver, true);
+  assert.equal(run.phase, 'lost');
+  assert.equal(run.history.length, 1);
+  assert.equal(fire(run, deps).reason, 'wrong_phase');
+  assert.equal(runSummary(run).won, false);
+});
+
+test('each Fire gets a fresh machine seed and simulates a copy', () => {
+  const deps = makeDeps([1]);
+  const run = fresh(deps);
+  fire(run, deps);
+  const seeds = deps.simulate.state.machines.map((m) => m.seed);
+  fire(run, deps);
+  const all = deps.simulate.state.machines.map((m) => m.seed);
+  assert.equal(seeds.length, 1);
+  assert.notEqual(all[0], all[1]);
+  assert.notEqual(deps.simulate.state.machines[0], run.machine);
+});
+
+test('startNextShift resets the shift counters and applies twists', () => {
+  const deps = makeDeps([1000]);
+  const run = fresh(deps);
+  fire(run, deps);
+  const out = startNextShift(run, deps);
+  assert.equal(out.shift, 2);
+  assert.equal(run.phase, 'build');
+  assert.equal(run.shiftTotal, 0);
+  assert.equal(run.firesLeft, 2);
+  assert.equal(run.rerollsThisShift, 0);
+  assert.equal(getTarget(run), 50);
+});
+
+test('voltage 3 shift 2 twist (fewerSparks) lasts one shift only', () => {
+  const deps = makeDeps([100000]);
+  const run = fresh(deps, { voltage: 3 });
+  fire(run, deps);
+  startNextShift(run, deps);
+  assert.equal(run.machine.sparkCount, 2);
+  fire(run, deps);
+  startNextShift(run, deps);
+  assert.equal(run.machine.sparkCount, 3);
+  assert.deepEqual(run.machine.blocked, []);
+});
+
+test('Dr. Volt keeps his passive after a twist shift', () => {
+  const deps = makeDeps([100000]);
+  const run = fresh(deps, { inventorId: 'drvolt', voltage: 3 });
+  fire(run, deps);
+  startNextShift(run, deps);
+  assert.equal(run.machine.sparkCount, 1);
+  fire(run, deps);
+  startNextShift(run, deps);
+  assert.equal(run.machine.sparkCount, 2);
+  assert.equal(run.machine.startValue, 2);
+});
+
+test('a whole 8-shift run can be played with plain calls and ends in a win', () => {
+  const deps = makeDeps([100000]);
+  const run = fresh(deps);
+  for (let shift = 1; shift <= 8; shift++) {
+    assert.equal(run.shift, shift);
+    const out = fire(run, deps);
+    assert.equal(out.shiftCleared, true);
+    if (shift < 8) {
+      assert.equal(run.phase, 'shop');
+      buyOffer(run, 0, deps);
+      rerollOffers(run, deps);
+      assert.equal(startNextShift(run, deps).ok, true);
+    }
+  }
+  assert.equal(run.phase, 'won');
+  assert.equal(run.history.length, 8);
+  const summary = runSummary(run);
+  assert.equal(summary.won, true);
+  assert.equal(summary.shiftReached, 8);
+  assert.equal(summary.shiftsCleared, 8);
+  assert.equal(summary.bestFire, 100000);
+  assert.equal(summary.totalBanked, 800000);
+  assert.ok(summary.partsOwned.length >= 4);
+});
+
+test('save and load in the middle of a run gives identical results', () => {
+  const depsA = makeDeps([10, 60, 200, 400]);
+  const depsB = makeDeps([10, 60, 200, 400]);
+  const a = fresh(depsA);
+  fire(a, depsA);
+  const b = JSON.parse(JSON.stringify(a));
+  depsB.simulate.state.calls = 1; // B starts after the first Fire, like A did
+  fire(a, depsA);
+  fire(b, depsB);
+  assert.deepEqual(a, b);
+  startNextShift(a, depsA);
+  startNextShift(b, depsB);
+  assert.deepEqual(a, b);
+  const c = JSON.parse(JSON.stringify(a));
+  rerollOffers(a, depsA);
+  rerollOffers(c, depsB);
+  assert.deepEqual(a, c);
+});
+
+test('the run stays plain JSON (no functions)', () => {
+  const deps = makeDeps([100]);
+  const run = fresh(deps);
+  fire(run, deps);
+  assert.deepEqual(JSON.parse(JSON.stringify(run)), run);
+});

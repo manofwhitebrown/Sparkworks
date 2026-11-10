@@ -61,13 +61,13 @@ function buildBoard(run, api, options, rng, stats) {
   }
 }
 
-function newStats() {
+export function newStats() {
   return { offered: {}, bought: {}, onBoard: {}, dead: {} };
 }
 
-// options: { inventorId, voltage, seed, layouts, smart }
-export function playRun(options, api) {
-  const run = api.newRun({
+// A fresh run for the bot. options: { inventorId, voltage, seed }
+export function newBotRun(options, api) {
+  return api.newRun({
     inventorId: options.inventorId,
     voltage: options.voltage,
     seed: options.seed,
@@ -75,26 +75,39 @@ export function playRun(options, api) {
     bonuses: {},
     daily: false
   });
+}
+
+// One bot turn: build + fire in the build phase, shop + next shift in the shop phase.
+// Returns the total of the Fire it made (0 when it only shopped).
+export function stepRun(run, api, options, rng, stats, coinsAtShop) {
+  if (run.phase === 'build') {
+    buildBoard(run, api, options, rng, stats);
+    api.fire(run);
+    return run.lastFire ? run.lastFire.total : 0;
+  }
+  if (run.phase === 'shop') {
+    coinsAtShop.push(run.coins);
+    doShopping(run, api, api.getPart, stats);
+    api.startNextShift(run);
+  }
+  return 0;
+}
+
+export function isOver(run) {
+  return run.phase === 'won' || run.phase === 'lost';
+}
+
+// options: { inventorId, voltage, seed, layouts, smart }
+export function playRun(options, api) {
+  const run = newBotRun(options, api);
   const rng = api.makeRng(options.seed * 7 + 1);
   const stats = newStats();
   const coinsAtShop = [];
   let bestFire = 0;
-  for (let guard = 0; guard < 200; guard++) {
-    if (run.phase === 'won' || run.phase === 'lost') {
-      break;
-    }
-    if (run.phase === 'build') {
-      buildBoard(run, api, options, rng, stats);
-      api.fire(run);
-      if (run.lastFire && run.lastFire.total > bestFire) {
-        bestFire = run.lastFire.total;
-      }
-    } else if (run.phase === 'shop') {
-      coinsAtShop.push(run.coins);
-      doShopping(run, api, api.getPart, stats);
-      api.startNextShift(run);
-    } else {
-      break;
+  for (let guard = 0; guard < 200 && !isOver(run); guard++) {
+    const total = stepRun(run, api, options, rng, stats, coinsAtShop);
+    if (total > bestFire) {
+      bestFire = total;
     }
   }
   return {
@@ -105,6 +118,7 @@ export function playRun(options, api) {
     coinsAtShop: coinsAtShop,
     owned: ownedParts(run).map(function id(p) { return p.partId; }),
     stats: stats,
-    finished: run.phase === 'won' || run.phase === 'lost'
+    finished: isOver(run),
+    run: run
   };
 }

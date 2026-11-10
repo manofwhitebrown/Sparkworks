@@ -1,0 +1,69 @@
+# Balance report (AI-8)
+
+Made with `tools/simulate.js` and `tools/partStats.js`, against the game as pushed on 2026-11-10.
+Every number below is from the bot, and the bot plays WORSE than a thoughtful human (random layouts
+plus 200 hill-climbing steps, simple shopping). Read the absolute win rates as a floor; the
+comparisons between settings are what matter. Re-run after every data change:
+
+```
+node tools/simulate.js --runs 300 --voltage 1 --seed 1 --smart
+node tools/partStats.js --runs 600 --voltage 1 --seed 1 --smart
+```
+
+## Current game, smart bot, seed 1, 300 runs per voltage (100 per inventor)
+
+| Voltage | Win rate | Avg shift reached | Pass rate by shift (1 to 5) |
+|---------|----------|-------------------|-----------------------------|
+| 1 | 0.0% | 3.67 | 100 / 92.0 / 66.7 / 19.6 / 11.1 |
+| 2 | 0.0% | 3.20 | 100 / 81.7 / 44.1 / 4.6 / 20.0 |
+| 3 | 0.0% | 2.25 | 94.7 / 22.5 / 40.6 / 3.8 / 0 |
+| 4 | 0.0% | 2.05 | 73.0 / 41.1 / 5.6 / 0 / - |
+
+Verdict at voltage 1 with `--smart`: **TOO HARD** (target is 15% to 70%).
+
+Average coins when the shop opens: 10.5 after shift 1, then about 5 to 7. That is one part per shop.
+
+## What the bot found
+
+1. **The target curve is too steep.** Targets start at 24 and grow x2.1 per shift. The bot's typical best Fire is 70 to 260, so shift 4 and later are out of reach. Shift 4 (the first Overload) is the wall: only 19.6% pass it at voltage 1, against 66.7% for shift 3.
+2. **Sweep of `targetGrowth` and `targetBase`** (voltage 1, smart, 300 runs, changed in memory only):
+
+| targetGrowth | targetBase | Win rate | Avg shift | Tinkerbot | Clockmaker | Dr. Volt |
+|--------------|-----------|----------|-----------|-----------|------------|----------|
+| 2.1 (now) | 24 (now) | 0.0% | 3.67 | 0% | 0% | 0% |
+| 1.8 | 24 | 0.3% | 4.20 | 0% | 0% | 1% |
+| 1.6 | 24 | 1.7% | 4.95 | 3% | 1% | 1% |
+| 1.5 | 24 | 4.0% | 5.51 | 7% | 5% | 0% |
+| 1.4 | 24 | 12.7% | 6.13 | 23% | 15% | 0% |
+| 1.3 | 24 | 32.7% | 6.72 | 52% | 39% | 7% |
+| 1.6 | 16 | 4.7% | 5.99 | 7% | 6% | 1% |
+| 1.5 | 16 | 16.7% | 6.52 | 25% | 23% | 2% |
+| 1.4 | 16 | 39.3% | 6.94 | 52% | 54% | 12% |
+| 1.3 | 16 | 56.7% | 7.24 | 65% | 76% | 29% |
+
+3. **Dr. Volt is the weakest inventor by far** (2 sparks, start value 2, plus the Overload at shift 4 turns splitting off at voltage 1... check `noSplit`). At growth 1.4 / base 16 he wins 12% while the others win 52% to 54%.
+4. **Runaway Fires.** Dr. Volt split chains reach 1.8e18, 8.3e20 and even 3.76e183 in one Fire (seed 9, 37, 40). Parts seen in those runs: splitter, battery, compounder, echo, counter, overdrive. The same runs still lost at the shift 4 Overload, so the outliers are a "build for one twist" problem as well as a scaling problem.
+5. **Higher voltages are too punishing early.** Voltage 3 shift 2 (`fewerSparks`) passes only 22.5%. Voltage 4 shift 1 passes only 73%.
+6. **Parts nobody buys.** `overdrive` (offered 9 times, bought 0) and `prism` (offered 4, bought 0) are almost never in the shop (legendary weight is 0 for shifts 1 and 2 and 5%/12% later). `gambler` is offered 130 times and bought once.
+7. **Always bought:** `bend` (355 of 367 offers). It is cheap and every build wants one; fine, but check it is not mandatory.
+8. **Possibly dead parts** (removing the part did not change the Fire total, in layouts the bot built): capacitor 385 of 414, tollgate 51 of 68, turnstile 89 of 132, reverser 97 of 133, mint 713 of 996, switch 626 of 832, bend 3790 of 4807. Many of these are the bot placing direction parts badly, so treat as "worth a look", not as proven. Part win-rate lift could not be computed because nobody wins at the current numbers. Re-run `partStats` after the target change.
+
+## Recommended changes
+
+| # | File | Number | Now | Try | Owner |
+|---|------|--------|-----|-----|-------|
+| 1 | `src/data/shifts.js` | `targetGrowth` | 2.1 | 1.5 (then tune 1.4 to 1.6) | AI-4 |
+| 2 | `src/data/shifts.js` | `targetBase` | 24 | 16 | AI-4 |
+| 3 | `src/data/shifts.js` or `data/voltage.js` | target of shift 4 (Overload) | see data | make it no harder than a normal shift (pass rate 19.6% vs 66.7%) | AI-4 |
+| 4 | `src/data/voltage.js` | `targetMultiplier` level 3 | 1.8 | 1.4 | AI-4 |
+| 5 | `src/data/voltage.js` | `targetMultiplier` level 4 | 2.4 | 1.7 | AI-4 |
+| 6 | `src/data/voltage.js` | level 3 `fewerSparks` at shift 2 | shift 2 | move to shift 4 or later | AI-4 |
+| 7 | `src/data/inventors.js` | Dr. Volt `startValue` | 2 | 3 (or keep `sparkCount` 3) | AI-4 |
+| 8 | `src/data/shifts.js` | `rarityBands` legendary weight | 0 / 5 / 12 | 3 / 8 / 18 so `overdrive` and `prism` show up | AI-4 |
+| 9 | `src/engine/parts/` (`compounder`, `echo`, `battery`, `splitter`) | growth per level | unbounded chains reach 1e183 | cap or flatten the strongest scaling | AI-3 |
+| 10 | `src/engine/parts/gambler.js` | payoff | bought 1 of 130 offers | raise the upside or lower the cost | AI-3 |
+| 11 | `src/data/shifts.js` | `baseShiftPayout` | 4 | 6 (shops give about 1 part now) | AI-4 |
+| 12 | `src/engine/parts/` (`capacitor`, `tollgate`, `turnstile`, `reverser`) | usefulness | often no effect on the total | check each one has a clear use | AI-3 |
+
+Do #1 and #2 first, then re-run. Target after the change: win rate 15% to 40% for the smart bot at
+voltage 1, and a pass rate that falls gently by shift instead of dropping off a cliff at shift 4.

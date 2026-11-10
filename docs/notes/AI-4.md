@@ -8,7 +8,8 @@
 - Smoke test against the real engine and real parts: newRun, place, fire, offers all work.
 
 ## Working on
-- Checking `npm run build` and CI.
+- Waiting for the manager's review and AI-8's bot tuning. `npm run build` passes; all my run tests pass.
+- Not mine: `tests/integration-tutorial.test.js` fails under `node --test` (it imports `src/ui/styles/tokens.css`, Node cannot load .css). Owner: AI-8 / AI-7.
 
 ## Blocked / Questions for manager
 - Run shape: I added `pendingCoins`, `bestFire` and `bonuses` to the run (needed for payouts, the summary and bench/shop/reroll numbers). Please add them to CONTRACT section 9.

@@ -14,6 +14,7 @@ export function createEffects() {
   var popAmp = new Float32Array(64);
   var flicker = new Float32Array(64);
   var flash = new Float32Array(64);
+  var disabled = new Uint8Array(64);
   var noteAge = new Float32Array(64);
   var noteText = [];
   var popups = [];
@@ -37,6 +38,7 @@ export function createEffects() {
       popAmp = new Float32Array(n);
       flicker = new Float32Array(n);
       flash = new Float32Array(n);
+      disabled = new Uint8Array(n);
       noteAge = new Float32Array(n);
     }
     for (i = 0; i < n; i++) {
@@ -45,6 +47,7 @@ export function createEffects() {
       popAmp[i] = 0;
       flicker[i] = 0;
       flash[i] = 0;
+      disabled[i] = 0;
       noteAge[i] = 9;
       noteText[i] = '';
     }
@@ -80,7 +83,7 @@ export function createEffects() {
 
   function flickerTile(x, y) {
     var k = idx(x, y);
-    if (k >= 0) { flicker[k] = 1; }
+    if (k >= 0) { flicker[k] = 1; disabled[k] = 1; }
   }
 
   function flashCell(x, y) {
@@ -186,6 +189,8 @@ export function createEffects() {
     reset: reset, idx: idx, lightCell: lightCell, popTile: popTile, flickerTile: flickerTile,
     flashCell: flashCell, setNote: setNote, addPopup: addPopup, valuePopup: valuePopup,
     bank: bank, setVaultTarget: setVaultTarget, setPlaying: setPlaying, update: update,
+    clearDisabled: function () { for (var d = 0; d < disabled.length; d++) { disabled[d] = 0; } },
+    isDisabled: function (k) { return disabled[k] === 1; },
     busy: busy, shakeOffset: shakeOffset,
     light: function (k) { return light[k]; },
     popProgress: function (k) { return popAge[k]; },

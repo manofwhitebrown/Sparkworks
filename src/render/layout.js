@@ -2,13 +2,16 @@
 // Cells are always square. One half-cell is left on each side for the source and the vault.
 // Owner: AI-6
 
+export var FOOTER = 0.45;
+
 export function computeLayout(width, height, cols, rows) {
   var safeCols = Math.max(1, cols | 0);
   var safeRows = Math.max(1, rows | 0);
   var w = Math.max(1, width);
   var h = Math.max(1, height);
   // the grid is cols cells wide, plus a half cell on each side
-  var cell = Math.floor(Math.min(w / (safeCols + 1), h / safeRows));
+  // a little room under the grid is kept for the running total of the vault
+  var cell = Math.floor(Math.min(w / (safeCols + 1), h / (safeRows + FOOTER)));
   if (cell < 1) {
     cell = 1;
   }
@@ -16,7 +19,7 @@ export function computeLayout(width, height, cols, rows) {
   var gridH = cell * safeRows;
   var totalW = gridW + cell;
   var left = Math.floor((w - totalW) / 2) + Math.floor(cell / 2);
-  var top = Math.floor((h - gridH) / 2);
+  var top = Math.floor((h - gridH - cell * FOOTER) / 2);
   return {
     cell: cell,
     cols: safeCols,

@@ -145,6 +145,7 @@ export function createSparkPlayer(env) {
     state.playing = false;
     state.skipping = false;
     env.effects.setPlaying(false);
+    env.effects.clearDisabled();
     var done = state.resolve;
     state.resolve = null;
     if (done) { done(); }

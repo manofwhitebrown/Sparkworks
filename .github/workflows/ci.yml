@@ -1,0 +1,25 @@
+# Runs on every push and pull request: secret scan, tests, build.
+name: CI
+on:
+  push:
+  pull_request:
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Secret scan (fail if a GitHub token is in the repo)
+        run: |
+          # We look for the real token SHAPE (prefix + 20 or more token characters).
+          # docs/CONTRACT.md talks ABOUT the prefix, so a bare prefix search would always fail.
+          if git grep -nIiE 'github_pat_[A-Za-z0-9_]{20,}'; then
+            echo "::error::A GitHub token was found in the repo. Revoke it and remove it."
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

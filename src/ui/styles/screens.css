@@ -78,3 +78,10 @@ html.reduceMotion .homeSpark { animation: none; }
 .selActions { flex-wrap: wrap; }
 .fireRow { display: flex; gap: var(--s2); }
 .fireRow .fireBtn { flex: 1 1 auto; }
+
+/* ---------- shop ---------- */
+.shopScreen { gap: var(--s3); }
+.offerGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: var(--s2); }
+.offerCard { min-height: 168px; justify-content: flex-start; padding: var(--s3) var(--s2); }
+.offerCard .pcIcon { width: 56px; height: 56px; }
+.miniBoard { position: relative; width: 60%; aspect-ratio: 5 / 4; align-self: center; pointer-events: none; }

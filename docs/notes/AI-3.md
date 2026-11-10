@@ -48,3 +48,16 @@
 4. **"TOO STRONG" `compounder` (+25.5%) rests on 11 owned runs** (16 bought). Too few to act on. Its cap applies per pass, so unbounded loops are the real danger, and the visit limit should fix that. I did NOT change it.
 5. **Decisions:** no part numbers changed. `dynamo` lift is +15.3%, below the tool's 25% "too strong" line, so I am not applying 1 / 1.5 / 2 yet. `capacitor` lift is +6.9% with 155 bought, so it is not too weak; I am not applying 50 / 70 / 90 yet.
 6. `docs/PARTS.md` lists all 4 extra parts (`prism`, `turnstile`, `echo`, `mint`) with combos.
+
+## Covering for AI-4 (owner asked me to; AI-4 seems away). I changed NO file of AI-4's.
+- Checked the whole of `docs/manager/to-AI-4.md`: reroll price restart (`shop.js`, test, `RUN.md`), `getTarget` x `run.targetMultiplier` (+ test), `startNextShift` from a cheat-set shop phase keeping `cheated` (+ test), and the kit tuning (Dr. Volt: `startValue: 2` only, kit back to spec) are ALL already done and tested. `npm test`: 280 of 281 pass (only `core-platform`, needs `npm install`).
+- Only open item: manager item 5, apply a sweep in `src/data/shifts.js` once approved. Here is a sweep (`tools/simulate.js --runs 150 --voltage 1 --inventor all --seed 1`, `targetBase` 16, only `targetGrowth` changed, then reverted):
+
+| targetGrowth | normal bot wins | smart bot wins |
+|--------------|-----------------|----------------|
+| 1.45 (now)   | 2.0%            | 35.3%          |
+| 1.40         | 9.3%            | 50.7%          |
+| 1.35         | 16.7%           | 55.3%          |
+| 1.30         | 24.0%           | 62.0%          |
+
+- Goal was smart 30-50% and normal 10-25% at Voltage 1. The two cannot both be met by this one number. **1.40 is the closest** (normal 9.3%, smart 50.7%). Voltage 2 at 1.45 is 0% normal and 11.3% smart, so V2 needs the multipliers looked at too. Manager: say "apply 1.40" and it is a one-line change (`targetGrowth: 1.40`), or tell me another number.

@@ -10,7 +10,25 @@ node tools/simulate.js --runs 300 --voltage 1 --seed 1 --smart
 node tools/partStats.js --runs 600 --voltage 1 --seed 1 --smart
 ```
 
-## Current game, smart bot, seed 1, 300 runs per voltage (100 per inventor)
+## UPDATE (after AI-4 and AI-3 tuned the numbers)
+
+Smart bot, seed 1, 300 runs per voltage. Verdict at voltage 1: **OK**.
+
+| Voltage | Win rate | Avg shift | Tinkerbot | Clockmaker | Dr. Volt |
+|---------|----------|-----------|-----------|------------|----------|
+| 1 | 37.3% | 7.10 | 43% | 38% | 31% |
+| 2 | 8.7% | 6.53 | 11% | 4% | 11% |
+| 3 | 0.7% | 4.29 | 2% | 0% | 0% |
+| 4 | 0.7% | 3.65 | 1% | 0% | 1% |
+
+Voltage 1 pass rate by shift: 100 / 99.7 / 98.7 / 90.2 / 95.9 / 89.4 / 81.6 / 60.2. The shift 4 wall is gone and the inventors are close together. What is left:
+- Shift 8 (the last Overload) still stops 40% of the runs that reach it. That is a fine finale, so leave it unless players find it unfair.
+- Voltages 3 and 4 are near 0% for the bot (voltage 2 is 8.7%). The jump from voltage 2 to 3 is too big: try `targetMultiplier` level 3 at 1.4 and level 4 at 1.7 (AI-4), then re-run. The bot is weaker than a human, so aim for roughly 5% to 15% at voltage 3 and 1% to 5% at voltage 4.
+- The Clockmaker is weakest at voltage 2 (4% against 11%). Watch it.
+
+The tables below are the ORIGINAL report that led to those changes (kept as history).
+
+## Original report: current game at the time, smart bot, seed 1, 300 runs per voltage (100 per inventor)
 
 | Voltage | Win rate | Avg shift reached | Pass rate by shift (1 to 5) |
 |---------|----------|-------------------|-----------------------------|

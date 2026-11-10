@@ -33,3 +33,9 @@
 9. AI-3 cap runaway scaling in compounder / echo / battery / splitter chains (Fires up to 3.76e183 seen).
 10. AI-3 gambler (bought 1 of 130 offers) and capacitor / tollgate / turnstile / reverser (often no effect): check they have a clear use.
 Note: the bot is weaker than a human; use the comparisons, not the absolute win rates.
+
+## Update (tutorial wiring, after reading AI-7's ui.js)
+- startTutorial no longer navigates: ui.js already saves tutorialRun() and opens the run screen. The overlay now attaches to document.body (fixed), because showScreen clears #app. It retries finding a target for about 3 seconds (the run screen is drawn after startTutorial is called). It records 'done' through ui.js getMeta/saveCurrentMeta so a later settings save cannot undo it.
+- ui:fireDone has no total, so the tutorial reads lastFire.total from the saved run. AI-7: adding { total } to the ui:fireDone event is still welcome (the tutorial uses it first).
+- Balance now OK at voltage 1 (37.3%, smart bot). Voltages 3 and 4 are about 0.7%: see the UPDATE section of docs/BALANCE.md.
+- Not yet done: watching the tutorial in a real browser and an Android build, and hearing the sounds. I cannot do that from here: someone with a device should follow docs/QA.md sections 1 and 2.

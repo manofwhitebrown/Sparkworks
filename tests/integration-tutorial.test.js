@@ -48,33 +48,54 @@ test('tutorialRun gives a fixed run with the lesson parts', () => {
   assert.equal(run.offers[0].partId, 'coil');
 });
 
-test('startTutorial walks every step and skipping saves tutorialDone', () => {
+function runTutorial(getLastTotal) {
   const handlers = {};
-  const saved = [];
-  let wentTo = '';
-  const fakeOverlay = { showStep() {}, destroy() {} };
+  let finished = 0;
   let callbacks = null;
   const handle = startTutorial({}, {
     on(name, fn) { handlers[name] = fn; },
     off(name) { delete handlers[name]; },
-    go(name) { wentTo = name; },
-    loadMeta() { return { tutorialDone: false }; },
-    saveMeta(meta) { saved.push(meta); },
+    finish() { finished = finished + 1; },
+    lastTotal: getLastTotal,
     findTarget() { return null; },
-    createOverlay(root, cb) { callbacks = cb; return fakeOverlay; }
+    createOverlay(host, cb) { callbacks = cb; return { showStep() {}, destroy() {} }; }
   });
-  callbacks.onGotIt(); // welcome
-  handlers['ui:placed']({});
-  handlers['ui:fireDone']({ total: 12 });
-  handlers['ui:fireDone']({ total: 15 });
-  handlers['ui:fireDone']({ total: 10 }); // worse: must NOT advance
-  assert.ok(handlers['ui:fireDone']);
-  handlers['ui:fireDone']({ total: 24 }); // better: advances
-  handlers['ui:shopOpened']({});
-  callbacks.onGotIt(); // shop
-  callbacks.onGotIt(); // done
-  assert.equal(saved.length, 1);
-  assert.equal(saved[0].tutorialDone, true);
-  assert.equal(wentTo, 'home');
-  handle.stop();
+  return { handlers: handlers, callbacks: callbacks, handle: handle, finished() { return finished; } };
+}
+
+test('startTutorial walks every step and only accepts a BETTER swap', () => {
+  const t = runTutorial(function none() { return null; });
+  t.callbacks.onGotIt(); // welcome
+  t.handlers['ui:placed']({});
+  t.handlers['ui:fireDone']({ total: 12 });
+  t.handlers['ui:fireDone']({ total: 15 });
+  t.handlers['ui:fireDone']({ total: 10 }); // worse: must NOT advance
+  assert.ok(t.handlers['ui:fireDone']);
+  t.handlers['ui:fireDone']({ total: 24 }); // better: advances
+  assert.ok(t.handlers['ui:shopOpened']);
+  t.handlers['ui:shopOpened']({});
+  t.callbacks.onGotIt(); // shop
+  assert.equal(t.finished(), 0);
+  t.callbacks.onGotIt(); // done
+  assert.equal(t.finished(), 1);
+  t.handle.stop();
+});
+
+test('when the event has no total, the saved run is used', () => {
+  const totals = [12, 15, 15, 24];
+  const t = runTutorial(function next() { return totals.shift(); });
+  t.callbacks.onGotIt();
+  t.handlers['ui:placed']({});
+  t.handlers['ui:fireDone']({ passed: false }); // 12
+  t.handlers['ui:fireDone']({ passed: false }); // 15
+  t.handlers['ui:fireDone']({ passed: false }); // 15 again: not higher, stays
+  assert.ok(t.handlers['ui:fireDone']);
+  t.handlers['ui:fireDone']({ passed: true });  // 24: advances
+  assert.ok(!t.handlers['ui:fireDone']);
+});
+
+test('skip finishes right away', () => {
+  const t = runTutorial(function none() { return null; });
+  t.callbacks.onSkip();
+  assert.equal(t.finished(), 1);
 });

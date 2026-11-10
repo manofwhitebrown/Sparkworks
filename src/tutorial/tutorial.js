@@ -1,21 +1,19 @@
-// Runs the guided tutorial: starts the tutorial run, shows the overlay, and moves through
-// STEPS as the player does each action for real (ui:* events from core/events.js).
+// Runs the guided tutorial: shows the overlay and moves through STEPS as the player does each
+// action for real (ui:* events from core/events.js). ui.js starts the guided run itself
+// (it saves tutorialRun() and opens the run screen), so this file only guides.
 // Owner: AI-8
 
 import { on as realOn, off as realOff } from '../core/events.js';
-import { loadMeta as realLoadMeta, saveMeta as realSaveMeta } from '../core/save.js';
+import { loadRun as realLoadRun } from '../core/save.js';
 import { STEPS } from './steps.js';
 import { createOverlay } from './overlay.js';
 import { tutorialRun } from './tutorialRun.js';
 
 export { tutorialRun };
 
-// ui.js pulls in CSS, which plain Node cannot load, so it is imported only when needed.
-function realGo(name, params) {
-  return import('../ui/ui.js').then(function open(module) {
-    return module.go(name, params);
-  });
-}
+// How often and how many times to look for a target that its screen has not drawn yet.
+const FIND_RETRY_MS = 120;
+const FIND_RETRY_MAX = 25;
 
 export function shouldShowTutorial(meta) {
   return !!meta && meta.tutorialDone === false;
@@ -26,30 +24,64 @@ export function markTutorialDone(meta) {
   return meta;
 }
 
-// deps (for tests): { on, off, go, loadMeta, saveMeta, createOverlay, findTarget }
+// ui.js is imported only when needed: it pulls in CSS, which plain Node cannot load.
+// It also owns the live meta, so we record "done" there (a later settings save must not undo it).
+function realFinish() {
+  return import('../ui/ui.js').then(function open(module) {
+    markTutorialDone(module.getMeta());
+    module.saveCurrentMeta();
+    module.go('home');
+  });
+}
+
+// The total of the Fire that just ended, read from the saved run when the event has none.
+function realLastTotal() {
+  const run = realLoadRun();
+  if (run && run.lastFire && typeof run.lastFire.total === 'number') {
+    return run.lastFire.total;
+  }
+  return null;
+}
+
+// deps (for tests): { on, off, finish, lastTotal, createOverlay, findTarget }
 export function startTutorial(root, deps) {
   const d = deps || {};
   const on = d.on || realOn;
   const off = d.off || realOff;
-  const go = d.go || realGo;
-  const loadMeta = d.loadMeta || realLoadMeta;
-  const saveMeta = d.saveMeta || realSaveMeta;
+  const finishApp = d.finish || realFinish;
+  const lastTotalOf = d.lastTotal || realLastTotal;
   const makeOverlay = d.createOverlay || createOverlay;
   const findTarget = d.findTarget || function find(name) {
     return name ? document.querySelector('[data-tut="' + name + '"]') : null;
   };
+  const host = d.host || (typeof document !== 'undefined' ? document.body : root);
 
   let index = 0;
   let stopped = false;
   let listening = null; // { name, handler } for the event we wait for
+  let retryTimer = null;
   let lastTotal = -1;
 
-  const overlay = makeOverlay(root, { onGotIt: next, onSkip: finish });
+  const overlay = makeOverlay(host, { onGotIt: next, onSkip: finish });
 
   function stopListening() {
     if (listening) {
       off(listening.name, listening.handler);
       listening = null;
+    }
+  }
+
+  // The screen may not have drawn the target yet: keep looking for a short while.
+  function placeSpotlight(step, tries) {
+    if (stopped || STEPS[index] !== step) {
+      return;
+    }
+    const target = findTarget(step.target);
+    overlay.showStep(step.text, target, !step.waitFor);
+    if (!target && step.target && tries < FIND_RETRY_MAX) {
+      retryTimer = setTimeout(function again() {
+        placeSpotlight(step, tries + 1);
+      }, FIND_RETRY_MS);
     }
   }
 
@@ -59,7 +91,11 @@ export function startTutorial(root, deps) {
     }
     const step = STEPS[index];
     stopListening();
-    overlay.showStep(step.text, findTarget(step.target), !step.waitFor);
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
+    placeSpotlight(step, 0);
     if (step.waitFor) {
       const handler = function onEvent(data) {
         handleEvent(step, data);
@@ -70,13 +106,18 @@ export function startTutorial(root, deps) {
   }
 
   function handleEvent(step, data) {
-    if (step.waitFor === 'ui:fireDone' && data && typeof data.total === 'number') {
-      const better = data.total > lastTotal;
-      // Remember the best number so far: the swap must beat the Fire before it.
-      if (step.needsHigher && !better) {
+    if (step.waitFor === 'ui:fireDone') {
+      let total = data && typeof data.total === 'number' ? data.total : lastTotalOf();
+      if (typeof total !== 'number') {
+        total = null;
+      }
+      // "Order matters": only move on when the swap really gave the bigger number.
+      if (step.needsHigher && total !== null && total <= lastTotal) {
         return;
       }
-      lastTotal = data.total;
+      if (total !== null) {
+        lastTotal = total;
+      }
     }
     next();
   }
@@ -95,20 +136,20 @@ export function startTutorial(root, deps) {
     if (stopped) {
       return;
     }
-    const meta = loadMeta();
-    markTutorialDone(meta);
-    saveMeta(meta);
     stop();
-    go('home');
+    finishApp();
   }
 
   function stop() {
     stopped = true;
     stopListening();
+    if (retryTimer) {
+      clearTimeout(retryTimer);
+      retryTimer = null;
+    }
     overlay.destroy();
   }
 
-  go('run', { run: tutorialRun(), tutorial: true });
   show();
   return { stop: stop };
 }

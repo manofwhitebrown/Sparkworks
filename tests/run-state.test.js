@@ -30,7 +30,7 @@ test('newRun applies bonuses and the inventor passive', () => {
   const run = fresh({ inventorId: 'drvolt', bonuses: bonuses });
   assert.equal(run.coins, 8);
   assert.equal(run.firesLeft, 3);
-  assert.equal(run.machine.sparkCount, 2);
+  assert.equal(run.machine.sparkCount, 3);
   assert.equal(run.machine.startValue, 2);
 });
 

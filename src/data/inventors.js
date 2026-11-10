@@ -21,10 +21,10 @@ export const INVENTORS = [
   {
     id: 'drvolt',
     name: 'Dr. Volt',
-    tagline: 'Loves splitting. Fewer sparks, but each one starts stronger.',
-    startParts: ['splitter', 'splitter', 'battery', 'coil'],
+    tagline: 'Loves splitting. Every spark starts at 2 instead of 1.',
+    startParts: ['splitter', 'battery', 'coil', 'bend'],
     startCoins: 5,
-    passive: { sparkCount: 2, startValue: 2 }
+    passive: { startValue: 2 }
   }
 ];
 

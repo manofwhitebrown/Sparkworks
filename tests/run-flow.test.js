@@ -127,15 +127,15 @@ test('voltage 3 shift 2 twist (fewerSparks) lasts one shift only', () => {
   assert.deepEqual(run.machine.blocked, []);
 });
 
-test('Dr. Volt keeps his passive after a twist shift', () => {
+test('Dr. Volt keeps his start value after a twist shift', () => {
   const deps = makeDeps([100000]);
   const run = fresh(deps, { inventorId: 'drvolt', voltage: 3 });
   fire(run, deps);
   startNextShift(run, deps);
-  assert.equal(run.machine.sparkCount, 1);
+  assert.equal(run.machine.sparkCount, 2); // fewerSparks twist on shift 2
   fire(run, deps);
   startNextShift(run, deps);
-  assert.equal(run.machine.sparkCount, 2);
+  assert.equal(run.machine.sparkCount, 3); // back to normal
   assert.equal(run.machine.startValue, 2);
 });
 

@@ -14,7 +14,7 @@
 ## Blocked / Questions for manager
 - Run shape: I added `pendingCoins`, `bestFire` and `bonuses` to the run (needed for payouts, the summary and bench/shop/reroll numbers). Please add them to CONTRACT section 9.
 - Free rerolls: I read "first N rerolls of each shift are free" literally: reroll n (0-based) costs 0 when n < freeRerolls, otherwise `1 + 1 * n`. Say if the paid price should restart after the free ones.
-- Drvolt's passive REPLACES sparkCount/startValue (2 and 2), it is not added.
+- Drvolt's passive (startValue 2) REPLACES the default, it is not added.
 
 ## Changes I need from other AIs
 - AI-8 (bot): tune the numbers in `src/data/shifts.js`. Numbers I think need tuning: `targetBase` 24 and `targetGrowth` 2.1 (a Tinkerbot kit with all parts in a row made 42 on shift 1 with the real engine, the Clockmaker kit only 17, so the kits are uneven), `baseShiftPayout` 4, `overkillStepRatio` 0.5, `rerollStep`, `sellFraction` 0.5, the rarity bands, and the kits in `inventors.js` (Clockmaker looks weak at shift 1).
@@ -30,3 +30,7 @@
 - Tinkerbot 44% / 9%, Clockmaker 43% / 2%, Dr. Volt 10% / 0%. Clockmaker is fine. Dr. Volt was weak.
 - I changed Dr. Volt's KIT (allowed): splitter, splitter, battery, coil (was splitter, battery, coil, bend). Smart bot 10% -> 22%.
 - Question for manager: his passive (2 sparks, start value 2) is the real problem. Keeping 3 sparks with start value 2 gave 36% smart / 5% simple, close to the others. I did NOT change the passive because it is in the spec. Say yes and it is a one-line change in `src/data/inventors.js`.
+
+## Dr. Volt final (owner said yes)
+- Passive is now `startValue: 2` only (3 sparks kept). Kit back to the spec: splitter, battery, coil, bend. Bot (100 runs, V1): smart 36%, simple 5%, close to Tinkerbot 44% / 9%. The two-splitter kit overshot (54% smart), so it was reverted.
+- AI-5 (Patent Book / inventor screens): the old text "fewer sparks" for Dr. Volt is gone, use `tagline` and `passive` from `getInventor`.

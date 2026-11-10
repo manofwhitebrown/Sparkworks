@@ -38,7 +38,7 @@ Shift rarity weights (common / rare / legendary): shifts 1-2 = 85/15/0, 3-5 = 65
 |----------|-----|-------|---------|
 | tinkerbot | coil, coil, bend, amplifier | 6 | none |
 | clockmaker | counter, anvil, bend, bend | 4 | benchSize +1 |
-| drvolt | splitter, splitter, battery, coil | 5 | sparkCount 2, startValue 2 |
+| drvolt | splitter, battery, coil, bend | 5 | startValue 2 |
 
 | Voltage | Target x | Twists by shift |
 |---------|----------|-----------------|

@@ -221,7 +221,7 @@ function finishFire(out) {
   const good = out.passed || run.phase === 'won';
   showBanner(text, good ? 'good' : 'bad');
   playSfx(good ? 'bank' : 'fizzle');
-  emit('ui:fireDone', { passed: out.passed });
+  emit('ui:fireDone', { total: out.result.total, passed: out.passed });
   const next = nextScreenAfterFire(run);
   later(function () {
     ui.banner.classList.remove('isShown');
@@ -232,7 +232,8 @@ function finishFire(out) {
 
 // ---------- mount ----------
 export function mount(root, params) {
-  run = loadRun();
+  // The tutorial hands over its own scripted run in params.run.
+  run = params && params.run ? params.run : loadRun();
   if (!run) { later(function () { go('home'); }, 0); return; }
   if (run.phase === 'shop') { later(function () { go('shop'); }, 0); return; }
   if (run.phase === 'won' || run.phase === 'lost') { later(function () { go('results'); }, 0); return; }

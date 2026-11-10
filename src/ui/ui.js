@@ -25,6 +25,7 @@ import { saveRun } from '../core/save.js';
 import { openModal, isModalOpen } from './components/modal.js';
 import { makeButton } from './components/button.js';
 import { backAction } from './flow.js';
+import { on } from '../core/events.js';
 
 const SCREENS = { home, run, shop, results, workshop, patentBook, daily, settings };
 const FADE_MS = 160;
@@ -116,6 +117,8 @@ export function startApp() {
   meta = loadMeta();
   applySettingsFromMeta();
   window.addEventListener('popstate', onPopState);
+  // main.js says the page is being hidden: write the meta now (runs save after every action).
+  on('core:flush', saveCurrentMeta);
   document.addEventListener('pointerdown', onFirstTap, { once: true });
   history.replaceState({ screen: 'home' }, '');
 
@@ -125,7 +128,7 @@ export function startApp() {
     const scripted = tutorialRun();
     if (scripted) {
       saveRun(scripted);
-      showScreen('run', { tutorial: true });
+      showScreen('run', { run: scripted, tutorial: true });
       return;
     }
   }

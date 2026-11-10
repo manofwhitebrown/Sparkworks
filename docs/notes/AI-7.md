@@ -7,6 +7,8 @@
 - home.js, run.js (HUD, bench drag, selection panel, fire flow), shop.js, results.js (record once, dust ticker, unlock reveal, share), startRun.js
 - Browser smoke test (headless Chromium 360x740): home -> run -> fire, no console errors
 
+- Requests handled: core:flush saves meta (AI-1), run screen takes params.run + ui:fireDone carries { total } (AI-8), applySettings called on load
+
 ## Working on
 - Browser-checking shop/results/merge, 412x915 + largeText + desktop, hand-test checklist
 

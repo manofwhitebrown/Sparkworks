@@ -6,6 +6,18 @@ import { defaultMeta } from '../src/meta/metaState.js';
 import { maxVoltageFor, recordWin } from '../src/meta/voltage.js';
 import { dailyConfig, shareCode, hasPlayedDaily, recordDaily, yesterdayOf, todayString } from '../src/meta/daily.js';
 
+// A simple real hash, so these tests do not depend on AI-1's unfinished rng.js.
+const deps = {
+  hashString: function (text) {
+    let h = 2166136261;
+    for (let i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+};
+
 test('maxVoltageFor starts at 1 and opens the next voltage after a win', () => {
   const m = defaultMeta();
   assert.equal(maxVoltageFor(m, 'tinkerbot'), 1);
@@ -21,11 +33,11 @@ test('maxVoltageFor never goes past the number of voltages', () => {
 });
 
 test('dailyConfig is the same for a date and differs across dates', () => {
-  assert.deepEqual(dailyConfig('2026-11-10'), dailyConfig('2026-11-10'));
+  assert.deepEqual(dailyConfig('2026-11-10', deps), dailyConfig('2026-11-10', deps));
   const seeds = {};
-  for (let d = 1; d <= 20; d++) seeds[dailyConfig('2026-11-' + (d < 10 ? '0' + d : d)).seed] = true;
+  for (let d = 1; d <= 20; d++) seeds[dailyConfig('2026-11-' + (d < 10 ? '0' + d : d), deps).seed] = true;
   assert.equal(Object.keys(seeds).length, 20);
-  assert.equal(dailyConfig('2026-11-10').voltage, 1);
+  assert.equal(dailyConfig('2026-11-10', deps).voltage, 1);
 });
 
 test('todayString is a local YYYY-MM-DD', () => {
@@ -57,7 +69,7 @@ test('yesterdayOf works across a month and year edge', () => {
 });
 
 test('shareCode is short and has no line breaks', () => {
-  const code = shareCode('2026-11-10', { won: false, shiftReached: 6, bestFire: 12400 });
+  const code = shareCode('2026-11-10', { won: false, shiftReached: 6, bestFire: 12400 }, deps);
   assert.ok(code.length < 100);
   assert.ok(!code.includes('\n'));
   assert.ok(code.includes('Shift 6/8'));

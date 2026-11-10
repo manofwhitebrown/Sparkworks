@@ -26,9 +26,11 @@ export function yesterdayOf(dateString) {
   return dateToString(d);
 }
 
-export function dailyConfig(dateString) {
-  const seed = hashString('sparkworks-daily-' + dateString);
-  const pick = hashString('sparkworks-inventor-' + dateString) % DAILY_INVENTORS.length;
+// deps.hashString lets tests replace the hash function.
+export function dailyConfig(dateString, deps) {
+  const hash = deps && deps.hashString ? deps.hashString : hashString;
+  const seed = hash('sparkworks-daily-' + dateString);
+  const pick = hash('sparkworks-inventor-' + dateString) % DAILY_INVENTORS.length;
   return { seed: seed, inventorId: DAILY_INVENTORS[pick], voltage: 1 };
 }
 
@@ -60,8 +62,8 @@ function shortNumber(n) {
 }
 
 // One line, no line breaks, easy to paste.
-export function shareCode(dateString, result) {
-  const config = dailyConfig(dateString);
+export function shareCode(dateString, result, deps) {
+  const config = dailyConfig(dateString, deps);
   const name = INVENTOR_NAMES[config.inventorId];
   return 'SPARKWORKS ' + dateString + ' | ' + name + ' V' + config.voltage +
     ' | Shift ' + result.shiftReached + '/8 | Best fire ' + shortNumber(result.bestFire);

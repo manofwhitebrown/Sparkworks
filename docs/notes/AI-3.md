@@ -40,3 +40,11 @@
 - `gambler` was offered 37-48 times and bought 0 times, `overdrive` 0 of 4, `prism` 0 of 1. For `gambler` this may be the bot's buying rule (it may skip `risk` parts) or the part being too weak at L1 (x0.5 25% of the time). AI-8: please say which. If it is the part, I would make the L1 table x0.5 (15%), x1 (25%), x2 (35%), x4 (25%).
 - `bend` is always bought and is "dead" on about 75% of boards (placed but never touched). Likely the bot placing bends badly, not a part issue.
 - I will retune `dynamo` and `capacitor` (see the balance probe above) as soon as a run has a non-zero win rate.
+
+## Report to manager (after AI-4's retune: smart bot wins 28-29%, `partStats --runs 300 --smart`)
+1. **Loop probe baseline (BEFORE AI-2's visit limit; `maxVisitsPerCell` is not in config yet):** 20,000 random L3 boards: 13 pass 1e12 and 1 passes 1e100. I will re-run it when AI-2 pushes the limit.
+2. **`gambler` is a bot-rule artifact, not a weak part.** `tools/lib/shopBot.js` scores an offer as rarity + 2 x tags shared with owned parts. `gambler` has only the `risk` tag, shared only with `fuse`, so it always scores 1 and never wins. Same reason `prism` and `overdrive` look unbought (also rarely offered). AI-8: please give every part a fair score (for example a flat bonus per tag, or score by simulated gain). I did NOT change `gambler`. Its L1 average multiplier is about x1.78 for 3 coins, against Amplifier x2 for 5.
+3. **The "TOO WEAK" flags are probably inventor kit confounds.** `splitter` and `battery` both show exactly -23.0% with exactly 100 owned runs, `triplet` and `overdrive` both -29.0%. Identical numbers point to the same set of runs: the Dr. Volt kit (the weakest inventor, wins 12%). Lift should be compared within one inventor. AI-8: please split `partStats` by inventor.
+4. **"TOO STRONG" `compounder` (+25.5%) rests on 11 owned runs** (16 bought). Too few to act on. Its cap applies per pass, so unbounded loops are the real danger, and the visit limit should fix that. I did NOT change it.
+5. **Decisions:** no part numbers changed. `dynamo` lift is +15.3%, below the tool's 25% "too strong" line, so I am not applying 1 / 1.5 / 2 yet. `capacitor` lift is +6.9% with 155 bought, so it is not too weak; I am not applying 50 / 70 / 90 yet.
+6. `docs/PARTS.md` lists all 4 extra parts (`prism`, `turnstile`, `echo`, `mint`) with combos.

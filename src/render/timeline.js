@@ -32,7 +32,8 @@ function actionMs(type, moveMs) {
     return moveMs * 0.3;
   }
   if (type === 'bank') {
-    return moveMs + THEME.timing.bankMs * 0.4;
+    // the pause after arriving shrinks with the tempo ramp, but never below a third
+    return moveMs + THEME.timing.bankMs * 0.4 * Math.max(0.33, moveMs / THEME.timing.moveMs);
   }
   if (type === 'fizzle') {
     return THEME.timing.fizzleMs;

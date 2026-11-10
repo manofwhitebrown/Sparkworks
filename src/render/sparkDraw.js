@@ -19,13 +19,23 @@ function getSprites() {
   return sprites;
 }
 
+// Parts next to the spark glow a little too.
+function neighborLight(fx, x, y, cols, rows) {
+  var best = 0;
+  if (x > 0) { best = Math.max(best, fx.light(y * cols + x - 1)); }
+  if (x < cols - 1) { best = Math.max(best, fx.light(y * cols + x + 1)); }
+  if (y > 0) { best = Math.max(best, fx.light((y - 1) * cols + x)); }
+  if (y < rows - 1) { best = Math.max(best, fx.light((y + 1) * cols + x)); }
+  return best * 0.4;
+}
+
 // Soft light on cells the spark has just passed.
 export function drawCellLight(ctx, L, fx, cols, rows) {
   var sp = getSprites();
   for (var y = 0; y < rows; y++) {
     for (var x = 0; x < cols; x++) {
       var k = y * cols + x;
-      var a = fx.light(k);
+      var a = Math.max(fx.light(k), neighborLight(fx, x, y, cols, rows));
       if (a > 0.02) {
         var cx = L.gridX + x * L.cell + L.cell / 2;
         var cy = L.gridY + y * L.cell + L.cell / 2;
@@ -56,8 +66,8 @@ export function drawSparks(ctx, L, player, flags) {
     drawTrail(ctx, s, L, flags, sp);
     var x = L.gridX + s.x * L.cell + L.cell / 2;
     var y = L.gridY + s.y * L.cell + L.cell / 2;
-    drawGlow(ctx, sp.spark, x, y, L.cell * 0.42, 0.9 * s.fade);
-    drawGlow(ctx, sp.hot, x, y, L.cell * 0.17, s.fade);
+    drawGlow(ctx, sp.spark, x, y, L.cell * 0.36, 0.75 * s.fade);
+    drawGlow(ctx, sp.hot, x, y, L.cell * 0.11, 0.9 * s.fade);
   }
 }
 
@@ -118,13 +128,18 @@ export function drawPopups(ctx, L, fx) {
   }
 }
 
+// Part of the 'lighter' batch.
+export function drawVaultGlow(ctx, L, fx) {
+  var v = fx.vault;
+  if (v.pulse > 0.02) {
+    var cx = L.gridX + L.gridW + L.cell / 4;
+    drawGlow(ctx, getSprites().spark, cx, L.gridY + L.gridH / 2, L.cell * (0.9 + v.pulse * 0.6), v.pulse * 0.7);
+  }
+}
+
 export function drawVault(ctx, L, fx, formatNumber) {
   var v = fx.vault;
-  var cx = L.gridX + L.gridW + L.cell / 2;
-  var sp = getSprites();
-  if (v.pulse > 0.02) {
-    drawGlow(ctx, sp.spark, cx, L.gridY + L.gridH / 2, L.cell * (0.9 + v.pulse * 0.6), v.pulse * 0.7);
-  }
+  var cx = L.gridX + L.gridW + L.cell / 4;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = v.shown > 0 ? THEME.colors.sparkHot : THEME.colors.textDim;

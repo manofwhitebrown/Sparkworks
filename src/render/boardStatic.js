@@ -70,8 +70,8 @@ function drawSocket(ctx, cx, cy, r, color) {
 }
 
 function drawVaultSlot(ctx, L) {
-  var w = L.cell * 0.36;
-  var x = L.gridX + L.gridW + (L.cell - w) / 2 + L.cell * 0.04;
+  var w = L.cell * 0.3;
+  var x = L.gridX + L.gridW + L.cell / 4 - w / 2;
   roundRect(ctx, x, L.gridY + 4, w, L.gridH - 8, w / 2);
   ctx.fillStyle = THEME.colors.bg;
   ctx.fill();
@@ -162,7 +162,7 @@ export function drawStaticLayer(ctx, L, machine) {
   drawCells(ctx, L, machine);
   drawTrace(ctx, L, machine.sourceRow);
   var sy = L.gridY + machine.sourceRow * L.cell + L.cell / 2;
-  drawSocket(ctx, L.gridX - L.cell / 2, sy, L.cell * 0.2, THEME.colors.spark);
+  drawSocket(ctx, L.gridX - L.cell / 4, sy, L.cell * 0.15, THEME.colors.spark);
   drawVaultSlot(ctx, L);
   drawVignette(ctx, L);
 }

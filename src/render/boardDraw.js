@@ -3,9 +3,9 @@
 // particles, popups, notes, vault total, drag ghost.
 // Owner: AI-6
 import { THEME } from './theme.js';
-import { drawPartTile } from './partTile.js';
+import { drawPartTile, drawTileCached } from './partTile.js';
 import { popCurve } from './juice.js';
-import { drawCellLight, drawFlashes, drawSparks, drawPopups, drawNotes, drawVault } from './sparkDraw.js';
+import { drawCellLight, drawFlashes, drawSparks, drawPopups, drawNotes, drawVault, drawVaultGlow } from './sparkDraw.js';
 
 var shakeOut = { x: 0, y: 0 };
 
@@ -36,16 +36,6 @@ function drawMarks(ctx, S) {
   }
 }
 
-function neighborLight(fx, S, x, y) {
-  var best = 0;
-  var cols = S.machine.cols;
-  if (x > 0) { best = Math.max(best, fx.light(y * cols + x - 1)); }
-  if (x < cols - 1) { best = Math.max(best, fx.light(y * cols + x + 1)); }
-  if (y > 0) { best = Math.max(best, fx.light((y - 1) * cols + x)); }
-  if (y < S.machine.rows - 1) { best = Math.max(best, fx.light((y + 1) * cols + x)); }
-  return best * 0.5;
-}
-
 function drawParts(ctx, S) {
   var L = S.L;
   var fx = S.effects;
@@ -60,10 +50,10 @@ function drawParts(ctx, S) {
     if (fx.isDisabled(k)) { dim = 1; }
     if (fx.flickerOf(k) > 0 && Math.sin(S.time * 60) > 0) { dim = 1; }
     if (S.drag && S.drag.fromX === c.x && S.drag.fromY === c.y) { dim = 1; }
-    var state = { scale: scale, glow: Math.max(fx.light(k), neighborLight(fx, S, c.x, c.y)), dim: dim,
-      banned: banned.indexOf(c.partId) >= 0 };
-    drawPartTile(ctx, L, c, L.gridX + c.x * L.cell + L.cell / 2, L.gridY + c.y * L.cell + L.cell / 2,
-      state, S.getPart);
+    var state = { scale: scale, dim: dim, banned: banned.indexOf(c.partId) >= 0 };
+    if (!S.tileSlots[k]) { S.tileSlots[k] = {}; }
+    drawTileCached(ctx, L, c, L.gridX + c.x * L.cell + L.cell / 2, L.gridY + c.y * L.cell + L.cell / 2,
+      state, S.getPart, S.tileSlots[k], S.dpr);
   }
 }
 
@@ -99,10 +89,15 @@ export function drawFrame(ctx, S) {
     ctx.fillRect(L.gridX, L.gridY, L.gridW, L.gridH);
     ctx.globalAlpha = 1;
   }
-  drawCellLight(ctx, L, fx, S.machine.cols, S.machine.rows);
   drawFlashes(ctx, L, fx, S.machine.cols, S.machine.rows);
+  // all glows in one batch: 'lighter' is switched on once, not per stamp
+  ctx.globalCompositeOperation = 'lighter';
+  drawCellLight(ctx, L, fx, S.machine.cols, S.machine.rows);
   drawSparks(ctx, L, S.player, S.flags);
   S.particles.draw(ctx);
+  drawVaultGlow(ctx, L, fx);
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.globalAlpha = 1;
   drawPopups(ctx, L, fx);
   drawNotes(ctx, L, fx, S.machine.cols, S.machine.rows);
   drawVault(ctx, L, fx, S.formatNumber);

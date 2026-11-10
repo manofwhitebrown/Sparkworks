@@ -60,7 +60,6 @@ export function drawPartTile(ctx, L, cellData, px, py, state, lookup) {
   var x = -w / 2;
   var y = -w / 2;
   var alpha = 1 - (state.dim || 0) * 0.6;
-  if (state.banned) { alpha = 0.4; }
   ctx.globalAlpha = alpha;
   roundRect(ctx, x, y, w, w, w * 0.16);
   ctx.fillStyle = THEME.colors.panel2;
@@ -90,4 +89,30 @@ export function drawPartTile(ctx, L, cellData, px, py, state, lookup) {
     ctx.stroke();
   }
   ctx.restore();
+}
+
+// Part tiles are drawn once into a small picture and then re-used every frame (much cheaper
+// than redrawing paths). A "slot" belongs to one cell and is redrawn only when its look changes.
+export function drawTileCached(ctx, L, cellData, px, py, state, lookup, slot, dpr) {
+  var w = L.cell * 0.84;
+  var box = w + 6;
+  var pixels = Math.round(box * dpr);
+  var level = cellData.level || 1;
+  var rot = cellData.rot || 0;
+  var banned = !!state.banned;
+  if (!slot.canvas || slot.partId !== cellData.partId || slot.level !== level || slot.rot !== rot ||
+      slot.banned !== banned || slot.pixels !== pixels) {
+    if (!slot.canvas) { slot.canvas = document.createElement('canvas'); }
+    slot.canvas.width = pixels;
+    slot.canvas.height = pixels;
+    var sctx = slot.canvas.getContext('2d');
+    sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawPartTile(sctx, L, cellData, box / 2, box / 2, { scale: 1, glow: 0, dim: 0, banned: banned }, lookup);
+    slot.partId = cellData.partId; slot.level = level; slot.rot = rot; slot.banned = banned;
+    slot.pixels = pixels;
+  }
+  var scale = state.scale || 1;
+  ctx.globalAlpha = banned ? 0.4 : 1 - (state.dim || 0) * 0.6;
+  ctx.drawImage(slot.canvas, px - box * scale / 2, py - box * scale / 2, box * scale, box * scale);
+  ctx.globalAlpha = 1;
 }

@@ -32,7 +32,7 @@ export function createBoardView(container, options) {
 
   var S = {
     L: computeLayout(360, 300, 5, 4), machine: DEFAULT_MACHINE, staticCanvas: staticCanvas, dpr: 1,
-    selected: null, highlights: [], drag: null, time: 0, dirty: true,
+    tileSlots: [], selected: null, highlights: [], drag: null, time: 0, dirty: true,
     flags: { quality: 'medium', reduceMotion: false },
     effects: createEffects(), particles: createParticles(),
     formatNumber: deps.formatNumber || formatNumber, getPart: deps.getPart || getPart
@@ -59,12 +59,15 @@ export function createBoardView(container, options) {
   }
 
   function resize() {
+    // measure the container without our own canvas, or its old height would feed back into it
+    canvas.style.display = 'none';
     var rect = container.getBoundingClientRect();
+    canvas.style.display = 'block';
     var w = rect.width > 0 ? rect.width : 360;
     var m = S.machine;
     var aspectH = Math.round(w * (m.rows + FOOTER) / (m.cols + 1));
     var h = rect.height > 60 ? Math.min(rect.height, aspectH) : aspectH;
-    S.dpr = clampDpr(window.devicePixelRatio, THEME.maxDpr);
+    S.dpr = clampDpr(window.devicePixelRatio, S.flags.quality === 'low' ? THEME.lowDpr : THEME.maxDpr);
     canvas.width = Math.round(w * S.dpr);
     canvas.height = Math.round(h * S.dpr);
     canvas.style.height = h + 'px';
@@ -120,9 +123,12 @@ export function createBoardView(container, options) {
 
   function setQuality(level) {
     if (QUALITY_ORDER.indexOf(level) < 0) { return; }
+    var before = S.dpr;
     S.flags.quality = level;
     S.particles.setCap(THEME.particleCaps[level]);
     S.dirty = true;
+    // a new quality can mean a new pixel density, which needs a new canvas size
+    if (clampDpr(window.devicePixelRatio, level === 'low' ? THEME.lowDpr : THEME.maxDpr) !== before) { resize(); }
   }
 
   function play(events, playOptions) {

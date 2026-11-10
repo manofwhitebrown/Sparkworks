@@ -1,4 +1,4 @@
-// Glow without shadowBlur: draw one small radial-gradient picture once,
+// Glow without any blur effect: draw one small radial-gradient picture once,
 // then stamp it many times with 'lighter' blending.
 // Owner: AI-6
 
@@ -37,14 +37,12 @@ export function getGlowSprite(color, size) {
   return canvas;
 }
 
-// Stamp a glow centered at (x, y). `radius` is the drawn radius in CSS pixels.
+// Stamp a glow centered at (x, y). Leaves globalAlpha changed: reset it after the batch. `radius` is the drawn radius in CSS pixels.
 export function drawGlow(ctx, sprite, x, y, radius, alpha) {
   if (!sprite || alpha <= 0.01) {
     return;
   }
-  ctx.globalCompositeOperation = 'lighter';
+  // the caller sets globalCompositeOperation = 'lighter' once for a whole batch of glows
   ctx.globalAlpha = alpha > 1 ? 1 : alpha;
   ctx.drawImage(sprite, x - radius, y - radius, radius * 2, radius * 2);
-  ctx.globalAlpha = 1;
-  ctx.globalCompositeOperation = 'source-over';
 }

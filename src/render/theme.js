@@ -35,6 +35,8 @@ export const THEME = {
     numbers: 'ui-monospace, "SF Mono", Menlo, Consolas, monospace'
   },
   maxDpr: 2,
+  // 'low' quality also draws fewer pixels (weak phones are limited by fill rate, not by JavaScript)
+  lowDpr: 1.25,
   particleCaps: { low: 30, medium: 80, high: 150 },
   timing: {
     moveMs: 130,

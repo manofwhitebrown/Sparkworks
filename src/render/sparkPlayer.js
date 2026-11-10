@@ -5,6 +5,9 @@ import { THEME } from './theme.js';
 import { buildTimeline } from './timeline.js';
 import { PCOLOR } from './particles.js';
 
+// the source and the vault sit in the half-cell margins: centers are a quarter cell off the grid
+var SOURCE_X = -0.75;
+var VAULT_OFFSET = -0.25;
 var MAX_SPARKS = 16;
 var TRAIL = 8;
 
@@ -51,14 +54,14 @@ export function createSparkPlayer(env) {
     if (ev.type === 'spawn') {
       s = findSpark(ev.spark, true);
       if (s) {
-        if (ev.parent === 0) { placeSpark(s, ev.x - 1, ev.y); } else { placeSpark(s, ev.x, ev.y); }
+        if (ev.parent === 0) { placeSpark(s, SOURCE_X, ev.y); } else { placeSpark(s, ev.x, ev.y); }
       }
     } else if (ev.type === 'enter' || ev.type === 'blocked') {
       s = findSpark(ev.spark, true);
       if (s) { moveSpark(s, ev.x, ev.y, step.start, step.moveMs); }
     } else if (ev.type === 'bank') {
       s = findSpark(ev.spark, true);
-      if (s) { moveSpark(s, machine.cols, s.y, step.start, step.moveMs); }
+      if (s) { moveSpark(s, machine.cols + VAULT_OFFSET, s.y, step.start, step.moveMs); }
     } else if (ev.type === 'fizzle') {
       s = findSpark(ev.spark, false);
       if (s) { s.dying = true; moveSpark(s, s.x + s.dx * 0.5, s.y + s.dy * 0.5, step.start, step.dur); }
@@ -82,7 +85,7 @@ export function createSparkPlayer(env) {
       fx.setVaultTarget(ev.runningTotal);
       if (!silent) {
         fx.bank(f.quality === 'low' || f.reduceMotion ? 0 : ev.value);
-        burstAt(px(env.getMachine().cols), ppyOfSpark(ev.spark), 18, 160, PCOLOR.hot);
+        burstAt(px(env.getMachine().cols + VAULT_OFFSET), ppyOfSpark(ev.spark), 18, 160, PCOLOR.hot);
         var s0 = findSpark(ev.spark, false);
         if (s0) { s0.dying = true; }
       }

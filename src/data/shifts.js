@@ -1,13 +1,13 @@
 // Numbers for the shifts of a run. Only numbers here, so they are easy to tune.
-// These are STARTING GUESSES: AI-8's bot will tune them.
+// Tuned with AI-8's bot (tools/simulate.js): 16 / 1.45 gave smart bot ~20% wins at V1, ~3% at V2.
 // Owner: AI-4
 
 export const SHIFT_RULES = {
   shiftsPerRun: 8,
   overloadShifts: [4, 8],
   firesPerShift: 2,
-  targetBase: 24,
-  targetGrowth: 2.1,
+  targetBase: 16,
+  targetGrowth: 1.45,
   baseShiftPayout: 4,
   unusedFireCoins: 1,
   overkillStepRatio: 0.5,

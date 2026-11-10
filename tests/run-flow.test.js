@@ -5,6 +5,9 @@ import assert from 'node:assert/strict';
 import { newRun, fire, startNextShift, runSummary, getTarget } from '../src/run/runState.js';
 import { buyOffer, rerollOffers } from '../src/run/shop.js';
 import { makeDeps, FAKE_POOL } from './run-fakes.js';
+import { SHIFT_RULES } from '../src/data/shifts.js';
+
+const T1 = Math.round(SHIFT_RULES.targetBase);
 
 function fresh(deps, options) {
   const opts = Object.assign({ inventorId: 'tinkerbot', voltage: 1, seed: 5, poolIds: FAKE_POOL }, options || {});
@@ -31,27 +34,27 @@ test('a Fire that reaches the target clears the shift and opens the shop', () =>
   assert.equal(out.runOver, false);
   assert.equal(run.phase, 'shop');
   assert.equal(run.offers.length, 3);
-  assert.deepEqual(run.history, [{ shift: 1, total: 30, target: 24 }]);
+  assert.deepEqual(run.history, [{ shift: 1, total: 30, target: T1 }]);
   assert.equal(out.result.total, 30);
 });
 
 test('payout = base 4 + 1 per unused Fire + overkill + coins from parts', () => {
-  const deps = makeDeps([30], 3);
+  const deps = makeDeps([T1 + 1], 3);
   const run = fresh(deps);
   const before = run.coins;
   fire(run, deps);
-  // 4 base + 1 unused Fire + 0 overkill (30 vs 24) + 3 from parts
+  // 4 base + 1 unused Fire + 0 overkill (just over target) + 3 from parts
   assert.equal(run.coins - before, 8);
   assert.equal(run.lastFire.coinsEarned, 8);
 });
 
 test('overkill pays +1 per 50% over target, capped at 4', () => {
-  const big = makeDeps([24 * 2]); // 100% over = 2 steps
+  const big = makeDeps([T1 * 2]); // 100% over = 2 steps
   const a = fresh(big);
   const coinsA = a.coins;
   fire(a, big);
   assert.equal(a.coins - coinsA, 4 + 1 + 2);
-  const huge = makeDeps([24 * 100]);
+  const huge = makeDeps([T1 * 100]);
   const b = fresh(huge);
   const coinsB = b.coins;
   fire(b, huge);
@@ -59,24 +62,24 @@ test('overkill pays +1 per 50% over target, capped at 4', () => {
 });
 
 test('fail then retry: totals add up over the Fires of a shift', () => {
-  const deps = makeDeps([10, 20]);
+  const deps = makeDeps([5, T1]);
   const run = fresh(deps);
   const first = fire(run, deps);
   assert.equal(first.passed, false);
   assert.equal(run.phase, 'build');
   assert.equal(run.firesLeft, 1);
-  assert.equal(run.shiftTotal, 10);
+  assert.equal(run.shiftTotal, 5);
   const second = fire(run, deps);
   assert.equal(second.passed, true);
-  assert.equal(run.shiftTotal, 30);
-  assert.equal(run.lastFire.shiftTotal, 30);
+  assert.equal(run.shiftTotal, 5 + T1);
+  assert.equal(run.lastFire.shiftTotal, 5 + T1);
   assert.equal(run.phase, 'shop');
   // no unused Fires left, so: 4 base only
   assert.equal(run.lastFire.coinsEarned, 4);
 });
 
 test('running out of Fires below target loses the run', () => {
-  const deps = makeDeps([5]);
+  const deps = makeDeps([1]);
   const run = fresh(deps);
   fire(run, deps);
   const out = fire(run, deps);
@@ -109,7 +112,7 @@ test('startNextShift resets the shift counters and applies twists', () => {
   assert.equal(run.shiftTotal, 0);
   assert.equal(run.firesLeft, 2);
   assert.equal(run.rerollsThisShift, 0);
-  assert.equal(getTarget(run), 50);
+  assert.equal(getTarget(run), Math.round(SHIFT_RULES.targetBase * SHIFT_RULES.targetGrowth));
 });
 
 test('voltage 3 shift 2 twist (fewerSparks) lasts one shift only', () => {

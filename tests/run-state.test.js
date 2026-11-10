@@ -4,6 +4,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { newRun, getTarget, placeFromBench, moveOnBoard, rotatePart, returnToBench, startNextShift } from '../src/run/runState.js';
 import { makeDeps, FAKE_POOL } from './run-fakes.js';
+import { SHIFT_RULES } from '../src/data/shifts.js';
+
+function expected(shift, mult) {
+  return Math.round(SHIFT_RULES.targetBase * Math.pow(SHIFT_RULES.targetGrowth, shift - 1) * mult);
+}
 
 function fresh(options) {
   const opts = Object.assign({ inventorId: 'tinkerbot', voltage: 1, seed: 7, poolIds: FAKE_POOL }, options || {});
@@ -31,16 +36,16 @@ test('newRun applies bonuses and the inventor passive', () => {
 
 test('targets per shift and voltage', () => {
   const run = fresh();
-  assert.equal(getTarget(run), 24);
+  assert.equal(getTarget(run), expected(1, 1));
   run.shift = 2;
-  assert.equal(getTarget(run), 50);
+  assert.equal(getTarget(run), expected(2, 1));
   run.shift = 8;
-  assert.equal(getTarget(run), Math.round(24 * Math.pow(2.1, 7)));
+  assert.equal(getTarget(run), expected(8, 1));
   run.voltage = 2;
-  assert.equal(getTarget(run), Math.round(24 * Math.pow(2.1, 7) * 1.35));
+  assert.equal(getTarget(run), expected(8, 1.35));
   run.voltage = 4;
   run.shift = 1;
-  assert.equal(getTarget(run), Math.round(24 * 2.4));
+  assert.equal(getTarget(run), expected(1, 2.4));
 });
 
 test('place, move (swap), rotate and return to bench', () => {

@@ -21,7 +21,7 @@ shift is cleared), `bestFire` (best single Fire), `bonuses` (the meta bonuses, 0
 5. Merges (3 equal parts, same level, below max level -> 1 part of level + 1) are applied after every buy and at the start.
 
 ## Formulas
-- `target(shift) = round(targetBase * targetGrowth^(shift - 1) * voltageMultiplier)` = `round(24 * 2.1^(shift-1) * mult)`.
+- `target(shift) = round(targetBase * targetGrowth^(shift - 1) * voltageMultiplier)` = `round(16 * 1.45^(shift-1) * mult)`.
 - Clear payout = `baseShiftPayout (4)` + `1 * firesLeft` + overkill + `pendingCoins`.
   Overkill = `min(4, floor((shiftTotal - target) / (target * 0.5)))`.
 - Sell value = `max(1, floor(cost * 0.5 * level))`.

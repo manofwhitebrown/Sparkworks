@@ -56,7 +56,7 @@ With 3 sparks that is 24 and 15. Order matters.
 **Splitter** (a part at x=1 that calls `ctx.split('right', ctx.value)`, Coil at x=2):
 the parent enters x=1 (still 1), the child is born with value 1. The parent moves to x=2: +3 = 4, banks 4.
 The child's first action is to move to x=2 as well: +3 = 4, banks 4. Per spark **8**, so 24 for the Fire.
-Event order: `spawn 1`, `enter`, `split`, `enter`, `value`, `bank`, `spawn 2`, `enter`, `value`, `bank`, then the next source spark.
+The exact event order is in the captured log below.
 
 ## Edge cases
 
@@ -72,3 +72,54 @@ Event order: `spawn 1`, `enter`, `split`, `enter`, `value`, `bank`, `spawn 2`, `
 `{ events, total, coins, banked, fizzled, errors }`. With `recordEvents: false`, `events` is `[]` and no event
 objects are built (much faster); every other number is identical. `end` is always the last event.
 Positions in `fizzle` events: for `edge`, the last cell INSIDE the board; for `blocked` and `steps`, the cell the spark is in.
+
+## Coins
+
+`ctx.addCoins(n)` ignores anything that is not a finite number above 0 and rounds down to a whole number
+(0.9 gives nothing, 2.7 gives 2). So `coins` is always a whole number that is never negative.
+
+## A real captured event log (Splitter + Amplifier)
+
+Made by running the real parts with `simulate()`. A test (`tests/engine-events.test.js`) re-runs this machine
+and fails if the log below ever stops matching, so it can be trusted as a sample.
+
+Machine: Splitter (level 1, pointing right, rot 0) at x=1, Amplifier (level 1) at x=2, `sparkCount` 1, seed 1.
+The Splitter sends a copy with 50% of the value to the right.
+
+<!-- captured-machine -->
+```json
+{"cols":5,"rows":4,"sourceRow":1,"sparkCount":1,"startValue":1,"cells":[{"x":1,"y":1,"partId":"splitter","level":1,"rot":0},{"x":2,"y":1,"partId":"amplifier","level":1,"rot":0}],"blocked":[],"banned":[],"flags":{},"seed":1}
+```
+
+Result: `{ total: 3, coins: 0, banked: 2, fizzled: 0, errors: 0 }`. One event per line:
+
+<!-- captured-log -->
+```json
+{"n":0,"type":"spawn","spark":1,"x":0,"y":1,"dir":"right","value":1,"parent":0}
+{"n":1,"type":"enter","spark":1,"x":0,"y":1,"dir":"right","value":1}
+{"n":2,"type":"enter","spark":1,"x":1,"y":1,"dir":"right","value":1}
+{"n":3,"type":"split","spark":1,"x":1,"y":1,"partId":"splitter","child":2,"dir":"right","value":0.5,"label":"50%"}
+{"n":4,"type":"enter","spark":1,"x":2,"y":1,"dir":"right","value":1}
+{"n":5,"type":"value","spark":1,"x":2,"y":1,"partId":"amplifier","before":1,"after":2,"label":"x2"}
+{"n":6,"type":"enter","spark":1,"x":3,"y":1,"dir":"right","value":2}
+{"n":7,"type":"enter","spark":1,"x":4,"y":1,"dir":"right","value":2}
+{"n":8,"type":"bank","spark":1,"value":2,"runningTotal":2}
+{"n":9,"type":"spawn","spark":2,"x":1,"y":1,"dir":"right","value":0.5,"parent":1}
+{"n":10,"type":"enter","spark":2,"x":2,"y":1,"dir":"right","value":0.5}
+{"n":11,"type":"value","spark":2,"x":2,"y":1,"partId":"amplifier","before":0.5,"after":1,"label":"x2"}
+{"n":12,"type":"enter","spark":2,"x":3,"y":1,"dir":"right","value":1}
+{"n":13,"type":"enter","spark":2,"x":4,"y":1,"dir":"right","value":1}
+{"n":14,"type":"bank","spark":2,"value":1,"runningTotal":3}
+{"n":15,"type":"end","spark":0,"total":3,"coins":0}
+```
+
+Things to notice when you compare with a hand-written sample:
+
+- The `split` event (n=3) is emitted at the moment the part runs. The child's `spawn` event (n=9) only comes
+  AFTER the parent has finished its whole walk. The child spark first shows up at `spawn`.
+- The child's first `enter` is the NEXT cell (x=2), not the cell it was born in (x=1).
+- `spawn` for a source spark is followed by an `enter` of cell (0, sourceRow). Every cell the spark visits has an `enter`,
+  also empty ones.
+- `spark` on a `split` event is the PARENT; the new spark's id is in `child`.
+- `bank` has no x and y. `end` has `spark: 0`.
+- `value` is made only when the value really changes (the Splitter does not change the parent, so it has none).

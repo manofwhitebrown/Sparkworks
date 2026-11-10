@@ -253,17 +253,23 @@ function split(run, dir, value, label) {
   }
 }
 
+// Coins are whole numbers and never negative: anything that is not a finite
+// number above 0 is ignored, and fractions are rounded down (0.9 gives nothing).
 function addCoins(run, n) {
-  if (!isGoodNumber(n) || n === 0) {
+  if (!isGoodNumber(n) || n <= 0) {
     return;
   }
-  run.coins += n;
+  const whole = Math.floor(n);
+  if (whole < 1) {
+    return;
+  }
+  run.coins += whole;
   const events = run.events;
   if (events !== null) {
     events.push({
       n: events.length, type: EVT.COINS, spark: run.spark.id,
       x: run.inst.cell.x, y: run.inst.cell.y, partId: run.inst.cell.partId,
-      amount: n
+      amount: whole
     });
   }
 }

@@ -273,3 +273,24 @@ test('a source row outside the board fizzles instead of crashing', () => {
   assert.strictEqual(result.total, 0);
   assert.strictEqual(result.fizzled, 3);
 });
+
+test('addCoins: only whole numbers above 0 count, fractions are floored', () => {
+  const calls = [-3, 0, -0.5, 0.9, NaN, Infinity, -Infinity, undefined, '5', null, 2.7, 4];
+  const payer = {
+    id: 'payer',
+    onPass(ctx) {
+      for (let i = 0; i < calls.length; i++) {
+        ctx.addCoins(calls[i]);
+      }
+    }
+  };
+  const machine = machineWith([[1, 1, 'payer']]);
+  machine.sparkCount = 1;
+  const result = simulate(machine, { getPart: makeGetPart({ payer: payer }) });
+  assert.strictEqual(result.coins, 2 + 4);
+  const events = ofType(result, 'coins');
+  assert.deepStrictEqual(events.map(function (e) { return e.amount; }), [2, 4]);
+  assert.ok(Number.isInteger(result.coins) && result.coins >= 0);
+  const fast = simulate(machine, { getPart: makeGetPart({ payer: payer }), recordEvents: false });
+  assert.strictEqual(fast.coins, 6);
+});

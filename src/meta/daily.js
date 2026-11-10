@@ -40,6 +40,8 @@ export function hasPlayedDaily(meta, dateString) {
 
 // result: { shiftReached, bestFire, won } (best result of the day is kept).
 export function recordDaily(meta, dateString, result) {
+  // A cheated run never counts for the daily contract.
+  if (result && result.cheated === true) return;
   const daily = meta.daily;
   if (daily.lastPlayed !== dateString) {
     daily.streak = daily.lastPlayed === yesterdayOf(dateString) ? daily.streak + 1 : 1;

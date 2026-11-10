@@ -36,6 +36,8 @@ function unlocksFrom(newAchievements) {
 export function recordRunEnd(meta, run, deps) {
   const empty = { dustEarned: 0, newAchievements: [], newUnlocks: [] };
   if (!run || run.recorded === true) return empty;
+  // Contract item 16: a cheated run earns NOTHING (no dust, stats, wins, achievements or daily result).
+  if (run.cheated === true) return empty;
   if (run.phase !== 'won' && run.phase !== 'lost') return empty;
   const getSummary = deps && deps.runSummary ? deps.runSummary : runSummary;
   const summary = normalizeForStats(getSummary(run), run);

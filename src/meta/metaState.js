@@ -156,6 +156,8 @@ export function repairMeta(meta, deps) {
     base.daily = repairDaily(m.daily);
     base.tutorialDone = m.tutorialDone === true;
     base.settings = repairSettings(m.settings);
+    // Owned by the cheat menu (AI-2): keep it as it is, only when it is a real boolean.
+    if (typeof m.cheatsUsed === 'boolean') base.cheatsUsed = m.cheatsUsed;
   } catch (e) {
     return defaultMeta();
   }

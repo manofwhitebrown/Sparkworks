@@ -78,12 +78,12 @@ function makeCell(meta, partId) {
   const status = partStatus(meta, partId);
   const cell = el('div', 'pbCell');
   if (status === 'locked') {
-    cell.appendChild(makePartCard(partId, { locked: true, compact: true }));
+    cell.appendChild(makePartCard(partId, { locked: true }));
     cell.appendChild(el('div', 'pbHint', unlockHint(partId)));
     return cell;
   }
   if (status === 'new') cell.appendChild(el('div', 'pbNew', 'NEW'));
-  cell.appendChild(makePartCard(partId, { compact: true, onClick: function () { onPartTap(meta, partId); } }));
+  cell.appendChild(makePartCard(partId, { onClick: function () { onPartTap(meta, partId); } }));
   return cell;
 }
 

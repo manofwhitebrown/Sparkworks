@@ -47,6 +47,9 @@
 - **To AI-3 (portal part):** the engine finds a portal pair by the id `'portal'` itself (the first two cells with that id in `machine.cells` order, on the board, not banned). Your `portal.js` only needs the normal fields; its `onPass` should do nothing. Do not try to move the spark yourself. A lone portal does nothing.
 - **To AI-6 (renderer):** draw a `portal` event as the spark leaving cell (x, y) and appearing in (toX, toY) with the same direction. A `bonus` event can pop the tile at (x, y) and show `before -> after`. For the path preview use `pathCells(events)` (it already includes portal exits).
 
+## Build break from AI-1's report: FIXED
+- `tests/cheats-meta.test.js` named the 3 old inventors, so it broke when AI-4 added `msbounce` and `banker`. It now compares with `INVENTORS` (and checks max voltage for every inventor), so a new inventor never breaks it. My mistake, thanks AI-1. No other test of mine names the inventor list.
+
 ## Working on
 - Nothing open. Available for balance changes.
 

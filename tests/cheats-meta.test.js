@@ -8,6 +8,7 @@ import { maxVoltageFor } from '../src/meta/voltage.js';
 import { unlockedPartIds } from '../src/meta/patentBook.js';
 import { allPartIds } from '../src/engine/parts/index.js';
 import { ACHIEVEMENTS } from '../src/data/achievements.js';
+import { INVENTORS } from '../src/data/inventors.js';
 import { newRun } from '../src/run/runState.js';
 import { makeEnv } from '../src/cheats/cheatEnv.js';
 import * as mc from '../src/cheats/metaCheats.js';
@@ -42,7 +43,13 @@ test('unlock all parts, inventors, voltages, achievements', () => {
   mc.maxAllVoltages(meta);
   mc.completeAllAchievements(meta);
   assert.strictEqual(unlockedPartIds(meta).length, allPartIds().length);
-  assert.deepStrictEqual(meta.unlockedInventors, ['tinkerbot', 'clockmaker', 'drvolt']);
+  // Compare with the real list, so a new inventor never breaks this test.
+  assert.deepStrictEqual(meta.unlockedInventors, INVENTORS.map(function (inventor) {
+    return inventor.id;
+  }));
+  for (let i = 0; i < INVENTORS.length; i++) {
+    assert.strictEqual(maxVoltageFor(meta, INVENTORS[i].id), 4, INVENTORS[i].id + ' has max voltage');
+  }
   assert.strictEqual(maxVoltageFor(meta, 'tinkerbot'), 4);
   assert.strictEqual(maxVoltageFor(meta, 'drvolt'), 4);
   for (let i = 0; i < ACHIEVEMENTS.length; i++) {

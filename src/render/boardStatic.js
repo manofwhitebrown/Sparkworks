@@ -2,6 +2,8 @@
 // source socket and vault slot. Drawn once, then re-used as one picture.
 // Owner: AI-6
 import { THEME } from './theme.js';
+import { bonusLabel } from './bonusTiles.js';
+import { dirVector } from './previewPath.js';
 
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
@@ -204,6 +206,101 @@ function drawCells(ctx, L, machine) {
   }
 }
 
+
+// Bonus floor tile (contract 23): a glowing floor plate with a dashed inner frame and a label.
+// "add" tiles use the add color (amber), "mult" tiles the mult color (teal). The label is text,
+// so colorblind players can read it. If a part sits on the tile, only a ring and a small corner
+// badge stay visible around the part tile.
+export function bonusColor(bonus) {
+  return bonus && bonus.kind === 'mult' ? THEME.tagColors.mult : THEME.tagColors.add;
+}
+
+function drawBonusTile(ctx, L, bonus, hasPart) {
+  var color = bonusColor(bonus);
+  var x0 = L.gridX + bonus.x * L.cell + 3;
+  var y0 = L.gridY + bonus.y * L.cell + 3;
+  var w = L.cell - 6;
+  var cx = x0 + w / 2;
+  var cy = y0 + w / 2;
+  drawHalo(ctx, cx, cy, L.cell * 0.62, color, hasPart ? 0.18 : 0.3);
+  roundRect(ctx, x0, y0, w, w, w * 0.14);
+  ctx.fillStyle = color;
+  ctx.globalAlpha = hasPart ? 0.1 : 0.16;
+  ctx.fill();
+  ctx.globalAlpha = 0.9;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  if (!hasPart) {
+    ctx.globalAlpha = 0.55;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 4]);
+    roundRect(ctx, x0 + w * 0.12, y0 + w * 0.12, w * 0.76, w * 0.76, w * 0.1);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  if (!hasPart) { // with a part on it, the label is a small badge drawn above the part (boardDraw)
+    ctx.font = 'bold ' + Math.max(9, Math.round(L.cell * 0.34)) + 'px ' + THEME.font.numbers;
+    ctx.fillText(bonusLabel(bonus), cx, cy);
+  }
+}
+
+function drawBonusTiles(ctx, L, machine) {
+  var list = Array.isArray(machine.bonusCells) ? machine.bonusCells : [];
+  var cells = machine.cells || [];
+  for (var i = 0; i < list.length; i++) {
+    var b = list[i];
+    if (!b || b.x < 0 || b.y < 0 || b.x >= L.cols || b.y >= L.rows) { continue; }
+    if (isIn(machine.blocked || [], b.x, b.y)) { continue; }
+    drawBonusTile(ctx, L, b, isIn(cells, b.x, b.y));
+  }
+}
+
+// The path preview (contract 25): a thin amber line through the cells the sparks will enter, and
+// a small arrow on every step. It is drawn into its OWN picture, only when the list changes, and
+// drawn above the parts. The line stops at the edge of a part tile and the arrows sit on the cell
+// borders, so no part icon is covered. Shows the road only, never numbers.
+export function drawPreviewLayer(ctx, L, segments, machine) {
+  ctx.clearRect(0, 0, L.width, L.height);
+  var cells = machine.cells || [];
+  var tileHalf = L.cell * 0.42;
+  ctx.lineCap = 'round';
+  ctx.lineWidth = Math.max(1.5, L.cell * 0.035);
+  ctx.strokeStyle = THEME.colors.spark;
+  ctx.fillStyle = THEME.colors.spark;
+  for (var i = 0; i < segments.length; i++) {
+    var sg = segments[i];
+    var v = dirVector(sg.dir);
+    var ax = L.gridX + sg.x1 * L.cell + L.cell / 2;
+    var ay = L.gridY + sg.y1 * L.cell + L.cell / 2;
+    var bx = L.gridX + sg.x2 * L.cell + L.cell / 2;
+    var by = L.gridY + sg.y2 * L.cell + L.cell / 2;
+    var inA = isIn(cells, sg.x1, sg.y1) ? tileHalf : 0;
+    var inB = isIn(cells, sg.x2, sg.y2) ? tileHalf : 0;
+    ctx.globalAlpha = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(ax + v[0] * inA, ay + v[1] * inA);
+    ctx.lineTo(bx - v[0] * inB, by - v[1] * inB);
+    ctx.stroke();
+    // arrow on the border between the two cells
+    var mx = (ax + bx) / 2;
+    var my = (ay + by) / 2;
+    var s = Math.max(3, L.cell * 0.075);
+    ctx.globalAlpha = 0.85;
+    ctx.beginPath();
+    ctx.moveTo(mx + v[0] * s, my + v[1] * s);
+    ctx.lineTo(mx - v[0] * s - v[1] * s, my - v[1] * s + v[0] * s);
+    ctx.lineTo(mx - v[0] * s + v[1] * s, my - v[1] * s - v[0] * s);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
 // The footer under the grid: a thin divider and the "VAULT" label. The running total is drawn live on top.
 function drawFooter(ctx, L) {
   var y = L.gridY + L.gridH;
@@ -240,6 +337,7 @@ export function drawStaticLayer(ctx, L, machine) {
   drawGrid(ctx, L);
   drawCells(ctx, L, machine);
   drawTrace(ctx, L, machine.sourceRow);
+  drawBonusTiles(ctx, L, machine);
   var sy = L.gridY + machine.sourceRow * L.cell + L.cell / 2;
   drawSocket(ctx, L.gridX - L.cell / 4, sy, L.cell * 0.13, THEME.colors.spark);
   drawVaultSlot(ctx, L);

@@ -48,6 +48,7 @@ export const THEME = {
     bankMs: 420,
     fizzleMs: 300,
     blockedMs: 200,
+    lostMs: 900,
     endMs: 350,
     shakeMs: 260,
     skipBurstMs: 4,

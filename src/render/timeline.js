@@ -25,7 +25,7 @@ function actionMs(type, moveMs) {
   if (type === 'enter') {
     return moveMs;
   }
-  if (type === 'value' || type === 'split') {
+  if (type === 'value' || type === 'split' || type === 'bonus') {
     return moveMs * 0.55;
   }
   if (type === 'turn' || type === 'state' || type === 'coins' || type === 'disable') {

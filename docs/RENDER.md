@@ -89,3 +89,50 @@ including the tap delay. Real phones have a GPU, so expect better; still, please
 `/dev/renderDemo.html` (Vite dev server only, not in the production build): sample fire, big fire (500 events), blocked
 fire, **play REAL fire** (real engine + real parts), **REAL random machine**, skip, quality, reduce motion, fake blocked
 cells, speed, and a frame-time readout.
+
+## Round 4 additions (path preview, dim, lost marker, bonus tiles, diagrams)
+All of these stay inside the rules: no `shadowBlur`, no `filter`, no new loop, no per-frame allocation.
+
+**New view methods** (on top of `createBoardView`'s API):
+- `setPreview(cells)`: `cells` = `[{ x, y }, ...]` the SOURCE sparks enter, in order (contract 25). `null` clears. Pure math in
+  `previewPath.js` (`buildPreview`) turns it into segments (one line per step, three sparks on one road draw one line). The line is
+  drawn into its OWN offscreen picture, only when the list or the size changes, and blitted above the parts while NOT playing.
+  The line stops at the edge of a part tile and each arrow sits on the border between two cells, so no part icon is covered.
+  Thin amber line (alpha 0.5), small arrows (alpha 0.85). It shows the road only, never numbers.
+- `setDim(cells)`: parts on these cells are drawn at lower brightness with a small "?" badge (parts the last Fire never touched).
+  `null` clears.
+- `resetEffects()`: clears vault total, popups, light and marks (used by diagrams between loops).
+
+**Lost spark marker**: a `fizzle` with reason `edge` (never the right edge, that is a bank) draws a red "x" just inside the edge
+cell, growing a little and fading over 900 ms (`THEME.timing.lostMs`). Pure strokes, drawn on every quality level, also with
+`reduceMotion` (it is information, not decoration). Not drawn while skipping (no live spark to read the heading from).
+`ui:sparkLost` is AI-7's to emit.
+
+**Bonus tiles** (contract 23): `machine.bonusCells = [{ x, y, kind: 'add'|'mult', amount }]`. Drawn into the static picture as a
+glowing floor plate (amber for add, teal for mult) with a dashed inner frame and a big label (`+3`, `x2`). That is different from a
+part tile (solid raised tile with an icon) and from a blocked cell (dark, red hatching). If a part sits on the tile, a tinted ring
+stays visible and the label becomes a small pill badge in the top-left corner, drawn above the part. The label is text, so it
+works in colorblind mode. A `bonus` event plays like a value event: the tile flashes, a number pops, a small burst on medium and
+high. AI-2's exact event shape was not in the repo when this was written, so every field is optional: `x`, `y` (needed),
+`label` (or `kind` + `amount` to build one), `before` / `after` (for the size of the pop).
+
+**Diagram mode**: `createDiagram(container, machineLike, events, options)` in `src/render/diagram.js`. It builds a normal board view
+(the SAME drawing code) in the container and loops `view.play(events)` with a pause between rounds (`pauseMs`, default 1200).
+`machineLike` is `{ cols, rows, sourceRow, cells, blocked, bonusCells }` (3x2, 4x3, 5x3 all work), `events` is any event log; the
+diagram never calls the engine. `options`: `{ speed, pauseMs, quality, reduceMotion }`. Returns `{ restart(), setData(machine, events), destroy() }`.
+Cheap on purpose: all diagrams share ONE callback on the app loop (`core/loop` has no remove), run at 30 fps, and do nothing while
+the tab is hidden or the box is scrolled out of view (IntersectionObserver). The canvas ignores pointer events. `destroy()` removes
+the canvas, the observer and the diagram's slot in the shared list. Wait time between rounds is counted in frame time, not with
+timers, so a paused diagram also stops waiting.
+
+**Demo page**: new buttons "path preview", "dim untouched", "bonus tiles", "play lost-spark fire", and three live diagrams under
+the buttons (1: Coil then Amplifier, 2: two Bends around a corner, 3: a spark steered out through the top edge and lost), all made
+from real engine logs.
+
+**Frame times after Round 4** (same setup as above, CDP 4x CPU throttle, headless Chromium without GPU, path preview and bonus
+tiles ON and the three diagrams looping at the same time):
+
+| CPU | quality | real fire | 500-event fire |
+|-----|---------|-----------|----------------|
+| 4x | low | 16.6 avg, 0.0% over 24 ms | 16.7 avg, 0.2% over 24 ms |
+| 4x | medium | 16.7 avg, 0.3% over 24 ms | 16.9 avg, 1.0% over 24 ms |

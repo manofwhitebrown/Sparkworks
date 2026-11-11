@@ -5,6 +5,7 @@ import { sampleEvents, bigEvents, blockedEvents } from './sampleEvents.js';
 import { simulate } from '../src/engine/simulate.js';
 import { makeMachine as makeRealMachine, placePart } from '../src/engine/board.js';
 import { allPartIds } from '../src/engine/parts/index.js';
+import { createDiagram } from '../src/render/diagram.js';
 
 var IDS = ['coil', 'dynamo', 'ember', 'amplifier', 'compounder', 'overdrive', 'bend', 'switch',
   'reverser', 'splitter', 'triplet', 'capacitor', 'counter', 'anvil', 'flywheel', 'battery',
@@ -176,3 +177,72 @@ for (var wi = 0; wi < wButtons.length; wi++) {
 }
 window.__view = view;
 window.__ids = IDS;
+
+// ---- Round 4: path preview, dim, bonus tiles, lost spark, diagrams ----
+var toggles = { preview: false, dim: false, bonus: false };
+
+function previewCells(machine) {
+  var result = simulate(machine);
+  var list = [];
+  for (var i = 0; i < result.events.length; i++) {
+    var e = result.events[i];
+    if (e.type === 'enter') { list.push({ x: e.x, y: e.y }); }
+  }
+  return list;
+}
+
+// The demo machine with the bonus tiles added when that toggle is on.
+function currentMachine() {
+  var m = realCuratedMachine();
+  if (toggles.bonus) {
+    m.bonusCells = [{ x: 0, y: 0, kind: 'add', amount: 3 }, { x: 3, y: 3, kind: 'mult', amount: 2 },
+      { x: 1, y: 1, kind: 'add', amount: 5 }];
+  }
+  return m;
+}
+
+document.getElementById('previewBtn').onclick = function (e) {
+  toggles.preview = !toggles.preview;
+  e.target.textContent = 'path preview: ' + (toggles.preview ? 'on' : 'off');
+  var m = currentMachine();
+  view.setMachine(m);
+  view.setPreview(toggles.preview ? previewCells(m) : null);
+};
+document.getElementById('dimBtn').onclick = function (e) {
+  toggles.dim = !toggles.dim;
+  e.target.textContent = 'dim untouched: ' + (toggles.dim ? 'on' : 'off');
+  view.setDim(toggles.dim ? [{ x: 1, y: 0 }, { x: 4, y: 2 }] : null);
+};
+document.getElementById('bonusBtn').onclick = function (e) {
+  toggles.bonus = !toggles.bonus;
+  e.target.textContent = 'bonus tiles: ' + (toggles.bonus ? 'on' : 'off');
+  view.setMachine(currentMachine());
+};
+// A spark steered up through the top edge: shows the red "x" marker.
+document.getElementById('lostFire').onclick = function () {
+  var m = makeRealMachine({ sparkCount: 2, seed: 3 });
+  placePart(m, 1, 1, 'bend', 1, 3);
+  view.setMachine(m);
+  playReal(m);
+};
+
+// Three tiny looping diagrams made with REAL engine logs (the diagram itself never calls the engine).
+function diagramMachine(cols, rows, sourceRow) {
+  return makeRealMachine({ cols: cols, rows: rows, sourceRow: sourceRow, sparkCount: 1, seed: 5 });
+}
+var d1 = diagramMachine(3, 2, 0);
+placePart(d1, 0, 0, 'coil', 1, 0);
+placePart(d1, 1, 0, 'amplifier', 1, 0);
+var d2 = diagramMachine(4, 3, 0);
+placePart(d2, 1, 0, 'bend', 1, 1);
+placePart(d2, 1, 1, 'bend', 1, 0);
+var d3 = diagramMachine(3, 2, 1);
+placePart(d3, 1, 1, 'bend', 1, 3);
+var diagramBoxes = document.getElementById('diagrams');
+var DIAGRAMS = [d1, d2, d3];
+window.__diagrams = [];
+for (var di = 0; di < DIAGRAMS.length; di++) {
+  var box = document.createElement('div');
+  diagramBoxes.appendChild(box);
+  window.__diagrams.push(createDiagram(box, DIAGRAMS[di], simulate(DIAGRAMS[di]).events, { quality: 'medium' }));
+}

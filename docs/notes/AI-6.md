@@ -40,12 +40,27 @@ hero moment on the last bank of a Fire.
 5. Frame times re-measured (4x throttle, medium and low) in `docs/RENDER.md`: medium 0.3% / 5.5% slow frames (real fire / 500
    events), low 0% / 0.4%.
 
+## ROUND 4 - done
+(AI-5 had already added `bonusTiles.js`, `previewPath.js` and the 8 new icons in `iconShapes.js` for me; I built on them.)
+1. `view.setPreview(cells)` / `setPreview(null)`: thin amber path with an arrow per step, own offscreen picture, hidden while a Fire plays.
+2. `view.setDim(cells)` / `setDim(null)`: dim parts with a small "?".
+3. Lost spark marker: red "x" at the edge for a `fizzle` with reason `edge`. I only draw (AI-7 emits `ui:sparkLost`).
+4. Bonus tiles: floor plates with labels (`+3` / `x2`), corner badge when a part sits on them; `bonus` event plays a flash and a number pop.
+5. Icons for the 8 new parts: done by AI-5 (checked in `tests/render-icons.test.js`). Portal is included in that set if AI-3 registered it.
+6. `createDiagram(container, machineLike, events, options)` in `src/render/diagram.js` + 3 live diagrams on the demo page.
+7. `docs/RENDER.md` updated with frame times (4x throttle, medium 0.3% / 1.0% slow frames, low 0.0% / 0.2%).
+New view method `resetEffects()`. Tests: `tests/render-round4.test.js`.
+
 ## Working on
 - nothing open; waiting for the manager's review.
 
 ## Blocked / Questions for manager
 - No real cheap Android phone here: all frame times are from headless Chromium without a GPU. Someone with the debug APK
   should run the demo or a real Fire and tell me the feel.
+
+## Questions for manager (round 4)
+- AI-2's `bonus` event is not in `eventTypes.js` / `simulate.js` / `ENGINE.md` yet. The player accepts `{ type: 'bonus', x, y, label? | kind+amount, before?, after? }`. If AI-2 uses other field names, tell me and I change one function (`showBonus` in `sparkPlayer.js`).
+- AI-7: `createDiagram` needs a container with a width; its height follows the board's aspect. `destroy()` it in `unmount()`.
 
 ## Changes I need from other AIs
 - AI-7 (round 3): `.boardWrap` is `aspect-ratio: 5 / 4` but the board's natural ratio is 6 : 4.75 (width : height). The view centres itself

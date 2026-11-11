@@ -76,6 +76,13 @@ export function drawFlashes(ctx, L, fx, cols, rows) {
   for (var y = 0; y < rows; y++) {
     for (var x = 0; x < cols; x++) {
       var k = y * cols + x;
+      var ba = fx.bonusFlashOf(k);
+      if (ba > 0.02) {
+        ctx.globalAlpha = ba * 0.55;
+        ctx.fillStyle = THEME.colors.sparkHot;
+        ctx.fillRect(L.gridX + x * L.cell + 2, L.gridY + y * L.cell + 2, L.cell - 4, L.cell - 4);
+        ctx.globalAlpha = 1;
+      }
       var a = fx.flashOf(k);
       if (a > 0.02) {
         ctx.globalAlpha = a * 0.5;
@@ -150,4 +157,29 @@ export function drawVault(ctx, L, fx, formatNumber) {
   ctx.fillStyle = v.shown > 0 ? THEME.colors.sparkHot : THEME.colors.textDim;
   ctx.font = 'bold ' + Math.round(L.cell * 0.3 * swell) + 'px ' + THEME.font.numbers;
   ctx.fillText(formatNumber(Math.round(v.shown)), right, y, L.gridW * 0.75);
+}
+
+// Lost spark marker: a small "x" where a spark left through a side edge. It grows a little,
+// then fades. Pure strokes, no glow, so it stays cheap on every quality level.
+export function drawLostMarks(ctx, L, fx) {
+  var list = fx.lostMarks;
+  for (var k = 0; k < list.length; k++) {
+    var m = list[k];
+    if (!m.on) { continue; }
+    var u = m.age / (THEME.timing.lostMs / 1000);
+    var r = L.cell * (0.1 + 0.05 * easeOutCubic(Math.min(1, u * 3)));
+    var cx = L.gridX + m.x * L.cell + L.cell / 2;
+    var cy = L.gridY + m.y * L.cell + L.cell / 2;
+    ctx.globalAlpha = u < 0.5 ? 1 : 1 - (u - 0.5) / 0.5;
+    ctx.strokeStyle = THEME.colors.bad;
+    ctx.lineWidth = Math.max(2, L.cell * 0.045);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx - r, cy - r);
+    ctx.lineTo(cx + r, cy + r);
+    ctx.moveTo(cx + r, cy - r);
+    ctx.lineTo(cx - r, cy + r);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
 }

@@ -4,6 +4,7 @@
 import { THEME } from './theme.js';
 import { buildTimeline } from './timeline.js';
 import { PCOLOR } from './particles.js';
+import { bonusLabel } from './bonusTiles.js';
 
 // the source and the vault sit in the half-cell margins: centers are a quarter cell off the grid
 var SOURCE_X = -0.75;
@@ -151,10 +152,37 @@ export function createSparkPlayer(env) {
       fx.flickerTile(ev.x, ev.y);
     } else if (ev.type === 'blocked') {
       fx.flashCell(ev.x, ev.y);
+    } else if (ev.type === 'bonus') {
+      showBonus(ev, ppx, ppy, rich);
     } else if (ev.type === 'fizzle') {
+      markLost(ev);
       if (rich) { burstAt(ppxOfSpark(ev.spark, ppx), ppyOfSpark(ev.spark), 6, 50, PCOLOR.spark); }
     }
     env.onEventPlayed(ev);
+  }
+
+  // Bonus floor tile (contract 23). AI-2's exact event shape is not final, so every field is
+  // optional: label (or kind + amount), before/after for the size of the pop.
+  function showBonus(ev, ppx, ppy, rich) {
+    var fx = env.effects;
+    var f = env.getFlags();
+    var text = ev.label || bonusLabel(ev);
+    fx.lightCell(ev.x, ev.y, 1);
+    fx.flashBonus(ev.x, ev.y);
+    var before = typeof ev.before === 'number' ? ev.before : 1;
+    var after = typeof ev.after === 'number' ? ev.after : before * 2;
+    fx.valuePopup(ev.x, ev.y, text, before, after, ppx, ppy - env.getLayout().cell * 0.3,
+      env.formatNumber, f.reduceMotion);
+    if (rich) { env.particles.burst(ppx, ppy, 8, 90, 0.45, 5, PCOLOR.hot, env.rand); }
+  }
+
+  // A spark that left through a side edge (not the right one) gets a small "x" at that edge.
+  // The heading comes from the live spark, so it is skipped while skipping (no live sparks).
+  function markLost(ev) {
+    if (ev.reason !== 'edge') { return; }
+    var s = findSpark(ev.spark, false);
+    if (!s || (s.dx === 0 && s.dy === 0)) { return; }
+    env.effects.addLost(ev.x + s.dx * 0.38, ev.y + s.dy * 0.38);
   }
 
   function ppxOfSpark(id, fallback) {

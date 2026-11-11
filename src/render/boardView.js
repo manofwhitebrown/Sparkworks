@@ -3,7 +3,8 @@
 // Owner: AI-6
 import { THEME } from './theme.js';
 import { computeLayout, cellAtLocal, clampDpr, FOOTER, VPAD } from './layout.js';
-import { drawStaticLayer } from './boardStatic.js';
+import { drawStaticLayer, drawPreviewLayer } from './boardStatic.js';
+import { buildPreview } from './previewPath.js';
 import { createEffects } from './effects.js';
 import { createParticles } from './particles.js';
 import { createSparkPlayer } from './sparkPlayer.js';
@@ -36,9 +37,11 @@ export function createBoardView(container, options) {
   container.appendChild(canvas);
   var ctx = canvas.getContext('2d');
   var staticCanvas = document.createElement('canvas');
+  var previewCanvas = document.createElement('canvas');
 
   var S = {
     L: computeLayout(360, 300, 5, 4), machine: DEFAULT_MACHINE, staticCanvas: staticCanvas, dpr: 1,
+    previewCanvas: previewCanvas, previewSegments: [], dimKeys: null,
     tileSlots: [], selected: null, highlights: [], rawHighlights: [], drag: null, time: 0, dirty: true,
     flags: { quality: 'medium', reduceMotion: false },
     effects: createEffects(), particles: createParticles(),
@@ -62,6 +65,34 @@ export function createBoardView(container, options) {
     var sctx = staticCanvas.getContext('2d');
     sctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
     drawStaticLayer(sctx, L, S.machine);
+    rebuildPreview();
+    S.dirty = true;
+  }
+
+  // The path preview has its own picture: redrawn only when the cell list or the size changes.
+  function rebuildPreview() {
+    if (S.previewSegments.length === 0) { return; }
+    var L = S.L;
+    previewCanvas.width = Math.round(L.width * S.dpr);
+    previewCanvas.height = Math.round(L.height * S.dpr);
+    var pctx = previewCanvas.getContext('2d');
+    pctx.setTransform(S.dpr, 0, 0, S.dpr, 0, 0);
+    drawPreviewLayer(pctx, L, S.previewSegments, S.machine);
+  }
+
+  // cells = [{ x, y }, ...] the sparks will enter (contract 25), or null to clear.
+  function setPreview(cells) {
+    S.previewSegments = cells ? buildPreview(cells).segments : [];
+    rebuildPreview();
+    S.dirty = true;
+  }
+
+  // cells = parts the last Fire never touched: drawn dim with a small "?". null clears.
+  function setDim(cells) {
+    if (!cells || cells.length === 0) { S.dimKeys = null; S.dirty = true; return; }
+    var keys = {};
+    for (var d = 0; d < cells.length; d++) { keys[cells[d].x + ',' + cells[d].y] = true; }
+    S.dimKeys = keys;
     S.dirty = true;
   }
 
@@ -199,6 +230,8 @@ export function createBoardView(container, options) {
     setHighlightCells: function (list) { S.rawHighlights = list || []; applyHighlights(); },
     cellAtPoint: cellAtPoint, play: play, skip: function () { S.player.skip(); },
     setQuality: setQuality, resize: resize,
+    setPreview: setPreview, setDim: setDim,
+    resetEffects: function () { S.effects.reset(S.machine.cols, S.machine.rows); S.dirty = true; },
     frame: frame,
     destroy: function () {
       // stopLoop() would stop every callback of the app, so we only switch our own frame off

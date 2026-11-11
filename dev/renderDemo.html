@@ -13,6 +13,7 @@
         padding: 10px 12px; min-height: 44px; font-size: 14px; }
       button.on { border-color: #4FD1C5; color: #4FD1C5; }
       #stats { font: 13px ui-monospace, monospace; color: #8A97AD; font-variant-numeric: tabular-nums; }
+      #diagrams > div { width: 150px; background: #141A24; border-radius: 12px; }
       #log { font: 12px ui-monospace, monospace; color: #8A97AD; max-height: 90px; overflow: auto; }
     </style>
   </head>
@@ -42,6 +43,13 @@
         <button data-w="150">mini 150</button>
         <button data-w="0" class="on">full width</button>
       </div>
+      <div class="row">
+        <button id="previewBtn">path preview: off</button>
+        <button id="dimBtn">dim untouched: off</button>
+        <button id="bonusBtn">bonus tiles: off</button>
+        <button id="lostFire">play lost-spark fire</button>
+      </div>
+      <div class="row" id="diagrams"></div>
       <div id="stats">frame time: -</div>
       <div id="log"></div>
     </main>

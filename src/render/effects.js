@@ -5,6 +5,7 @@ import { THEME } from './theme.js';
 import { numberScale, popScale, shakePixels, clamp } from './juice.js';
 
 var MAX_POPUPS = 24;
+var MAX_LOST = 8;
 
 export function createEffects() {
   var cols = 5;
@@ -14,16 +15,21 @@ export function createEffects() {
   var popAmp = new Float32Array(64);
   var flicker = new Float32Array(64);
   var flash = new Float32Array(64);
+  var bonusFlash = new Float32Array(64);
   var disabled = new Uint8Array(64);
   var noteAge = new Float32Array(64);
   var noteText = [];
   var popups = [];
+  var lostMarks = [];
   var shake = { amp: 0, age: 99 };
   var vault = { shown: 0, target: 0, pulse: 0 };
   var dim = 0;
   var dimTarget = 0;
   var i;
 
+  for (i = 0; i < MAX_LOST; i++) {
+    lostMarks.push({ on: false, x: 0, y: 0, age: 0 });
+  }
   for (i = 0; i < MAX_POPUPS; i++) {
     popups.push({ on: false, text: '', sub: '', x: 0, y: 0, age: 0, life: 1, scale: 1, color: '' });
   }
@@ -38,6 +44,7 @@ export function createEffects() {
       popAmp = new Float32Array(n);
       flicker = new Float32Array(n);
       flash = new Float32Array(n);
+      bonusFlash = new Float32Array(n);
       disabled = new Uint8Array(n);
       noteAge = new Float32Array(n);
     }
@@ -47,11 +54,13 @@ export function createEffects() {
       popAmp[i] = 0;
       flicker[i] = 0;
       flash[i] = 0;
+      bonusFlash[i] = 0;
       disabled[i] = 0;
       noteAge[i] = 9;
       noteText[i] = '';
     }
     for (i = 0; i < MAX_POPUPS; i++) { popups[i].on = false; }
+    for (i = 0; i < MAX_LOST; i++) { lostMarks[i].on = false; }
     shake.amp = 0;
     shake.age = 99;
     vault.shown = 0;
@@ -89,6 +98,27 @@ export function createEffects() {
   function flashCell(x, y) {
     var k = idx(x, y);
     if (k >= 0) { flash[k] = 1; }
+  }
+
+  // A bonus floor tile lights up when a spark enters it.
+  function flashBonus(x, y) {
+    var k = idx(x, y);
+    if (k >= 0) { bonusFlash[k] = 1; }
+  }
+
+  // A small "x" at the board edge where a spark was lost. (ex, ey) is the point in cell units
+  // (the last cell plus half a cell in the direction the spark left).
+  function addLost(ex, ey) {
+    var best = 0;
+    for (i = 0; i < MAX_LOST; i++) {
+      if (!lostMarks[i].on) { best = i; break; }
+      if (lostMarks[i].age > lostMarks[best].age) { best = i; }
+    }
+    var m = lostMarks[best];
+    m.on = true;
+    m.x = ex;
+    m.y = ey;
+    m.age = 0;
   }
 
   function setNote(x, y, text) {
@@ -150,12 +180,19 @@ export function createEffects() {
       if (popAge[k] < 1) { popAge[k] += dt / (THEME.timing.popMs / 1000); }
       if (flicker[k] > 0) { flicker[k] = Math.max(0, flicker[k] - dt * 2.5); }
       if (flash[k] > 0) { flash[k] = Math.max(0, flash[k] - dt / (THEME.timing.blockedMs / 1000)); }
+      if (bonusFlash[k] > 0) { bonusFlash[k] = Math.max(0, bonusFlash[k] - dt * 3); }
       if (noteAge[k] < 2) { noteAge[k] += dt; }
     }
     for (k = 0; k < MAX_POPUPS; k++) {
       if (popups[k].on) {
         popups[k].age += dt;
         if (popups[k].age >= popups[k].life) { popups[k].on = false; }
+      }
+    }
+    for (k = 0; k < MAX_LOST; k++) {
+      if (lostMarks[k].on) {
+        lostMarks[k].age += dt;
+        if (lostMarks[k].age >= THEME.timing.lostMs / 1000) { lostMarks[k].on = false; }
       }
     }
     shake.age += dt;
@@ -169,10 +206,13 @@ export function createEffects() {
   function busy() {
     var n = cols * rows;
     for (var k = 0; k < n; k++) {
-      if (light[k] > 0 || popAge[k] < 1 || flicker[k] > 0 || flash[k] > 0 || noteAge[k] < 2) { return true; }
+      if (light[k] > 0 || popAge[k] < 1 || flicker[k] > 0 || flash[k] > 0 || bonusFlash[k] > 0 || noteAge[k] < 2) { return true; }
     }
     for (k = 0; k < MAX_POPUPS; k++) {
       if (popups[k].on) { return true; }
+    }
+    for (k = 0; k < MAX_LOST; k++) {
+      if (lostMarks[k].on) { return true; }
     }
     return vault.pulse > 0 || shake.age < 0.3 || vault.shown !== vault.target
       || Math.abs(dim - dimTarget) > 0.01;
@@ -187,7 +227,7 @@ export function createEffects() {
 
   return {
     reset: reset, idx: idx, lightCell: lightCell, popTile: popTile, flickerTile: flickerTile,
-    flashCell: flashCell, setNote: setNote, addPopup: addPopup, valuePopup: valuePopup,
+    flashCell: flashCell, flashBonus: flashBonus, addLost: addLost, lostMarks: lostMarks, setNote: setNote, addPopup: addPopup, valuePopup: valuePopup,
     bank: bank, setVaultTarget: setVaultTarget, setPlaying: setPlaying, update: update,
     clearDisabled: function () { for (var d = 0; d < disabled.length; d++) { disabled[d] = 0; } },
     isDisabled: function (k) { return disabled[k] === 1; },
@@ -197,6 +237,7 @@ export function createEffects() {
     popAmp: function (k) { return popAmp[k]; },
     flickerOf: function (k) { return flicker[k]; },
     flashOf: function (k) { return flash[k]; },
+    bonusFlashOf: function (k) { return bonusFlash[k]; },
     noteOf: function (k) { return noteAge[k] < 2 ? noteText[k] : ''; },
     noteAge: function (k) { return noteAge[k]; },
     popups: popups, vault: vault,

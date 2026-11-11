@@ -5,9 +5,10 @@
 import { THEME } from './theme.js';
 import { drawPartTile, drawTileCached } from './partTile.js';
 import { popCurve } from './juice.js';
+import { drawShimmer } from './shimmer.js';
 import { bonusLabel } from './bonusTiles.js';
 import { bonusColor, roundRect } from './boardStatic.js';
-import { drawCellLight, drawFlashes, drawSparks, drawPopups, drawNotes, drawVault, drawVaultGlow, drawLostMarks } from './sparkDraw.js';
+import { drawCellLight, drawFlashes, drawSparks, drawPopups, drawNotes, drawVault, drawVaultGlow, drawLostMarks, drawWires, drawRings, drawVaultFill } from './sparkDraw.js';
 
 var shakeOut = { x: 0, y: 0 };
 
@@ -141,6 +142,7 @@ export function drawFrame(ctx, S) {
   drawMarks(ctx, S);
   drawParts(ctx, S);
   drawBonusBadges(ctx, S);
+  drawShimmer(ctx, S);
   if (S.previewSegments.length > 0 && !S.player.isPlaying()) {
     ctx.drawImage(S.previewCanvas, 0, 0, L.width, L.height);
   }
@@ -154,12 +156,15 @@ export function drawFrame(ctx, S) {
   drawFlashes(ctx, L, fx, S.machine.cols, S.machine.rows);
   // all glows in one batch: 'lighter' is switched on once, not per stamp
   ctx.globalCompositeOperation = 'lighter';
+  drawWires(ctx, L, fx, S.machine.cols, S.machine.rows, S.time, S.flags);
   drawCellLight(ctx, L, fx, S.machine.cols, S.machine.rows);
   drawSparks(ctx, L, S.player, S.flags);
   S.particles.draw(ctx);
   drawVaultGlow(ctx, L, fx);
+  drawVaultFill(ctx, L, fx, S.flags.quality);
   ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1;
+  drawRings(ctx, L, fx);
   drawPopups(ctx, L, fx);
   drawNotes(ctx, L, fx, S.machine.cols, S.machine.rows);
   drawLostMarks(ctx, L, fx);

@@ -46,17 +46,39 @@ function drawVignette(ctx, L) {
   ctx.fillRect(0, 0, L.width, L.height);
 }
 
-// Idle trace: the straight row from the source to the vault.
+// Idle trace: the straight row from the source to the vault, drawn as a conductor: a dark casing,
+// a lighter metal core, and small solder dots where it crosses the cell borders.
 function drawTrace(ctx, L, sourceRow) {
   var y = L.gridY + sourceRow * L.cell + L.cell / 2;
-  ctx.strokeStyle = THEME.colors.line;
-  ctx.lineWidth = 2;
-  ctx.setLineDash([4, 6]);
+  var x0 = L.gridX - L.cell * 0.25;
+  var x1 = L.gridX + L.gridW + L.cell * 0.25;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = THEME.colors.bg;
+  ctx.lineWidth = Math.max(5, L.cell * 0.1);
   ctx.beginPath();
-  ctx.moveTo(L.gridX - L.cell * 0.25, y);
-  ctx.lineTo(L.gridX + L.gridW + L.cell * 0.25, y);
+  ctx.moveTo(x0, y);
+  ctx.lineTo(x1, y);
   ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.strokeStyle = THEME.colors.line;
+  ctx.lineWidth = Math.max(2, L.cell * 0.04);
+  ctx.beginPath();
+  ctx.moveTo(x0, y);
+  ctx.lineTo(x1, y);
+  ctx.stroke();
+  ctx.globalAlpha = 0.5;
+  ctx.strokeStyle = THEME.colors.textDim;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x0, y - 1);
+  ctx.lineTo(x1, y - 1);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = THEME.colors.textDim;
+  for (var c = 1; c < L.cols; c++) {
+    ctx.beginPath();
+    ctx.arc(L.gridX + c * L.cell, y, Math.max(1.5, L.cell * 0.03), 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
 
 // A soft halo made with a radial gradient (no blur effects), drawn once into the static picture.

@@ -136,3 +136,29 @@ tiles ON and the three diagrams looping at the same time):
 |-----|---------|-----------|----------------|
 | 4x | low | 16.6 avg, 0.0% over 24 ms | 16.7 avg, 0.2% over 24 ms |
 | 4x | medium | 16.7 avg, 0.3% over 24 ms | 16.9 avg, 1.0% over 24 ms |
+
+## Round 5 (the Fire sequence, tile material, icon family, legendary shimmer)
+Rules unchanged: no `shadowBlur`, no `filter`, pools only, `low` quality draws exactly what it drew before (plain 3-dot trail,
+straight wire line, no shimmer, no slow-down, no vault glow stamp).
+- **Spark**: medium/high draw a tapered ribbon (8 trail points, line width and alpha fall off toward the tail), a faint afterglow
+  dot at the tail, an amber body glow and a white-hot core. Low keeps the 3 fading dots.
+- **Parts light up**: entered cells glow and the neighbours brighten (as before); value pops now use the part's tag color
+  (`THEME.tagColors`); pop size still follows `log10(after / before)`.
+- **Wires**: the idle row is a conductor (dark casing, metal core, solder dots at cell borders). Every `enter` lights the wire
+  the spark just crossed (`effects.lightWire`, fades in about 0.8 s); medium/high add three light pulses running along it.
+- **Vault payoff**: each bank raises a fill of light inside the vault slot (+0.18, +0.35 for the hero bank); it drains slowly after
+  the Fire. The total still swells. The **hero bank** (the biggest bank of the Fire, value 1000 or more, medium/high, not
+  reduce motion) slows the clock to 35% for 450 ms and shakes 1.4x stronger (cap `maxShakePx * 1.4`).
+  `src/render/fireScale.js` reads the events for this. AI-2's `fireStats` is not in the repo yet; when it lands, swap the math
+  there (the file is pure and 40 lines).
+- **Merge flourish**: `view.playMerge(x, y, level, { reduceMotion })`: tile pop, two expanding rings, a particle burst (medium/high),
+  a "Lv N" pop. AI-1 calls it from the `ui:merged` handler once the cell is known. With reduce motion: pop text only.
+- **Tile material** (drawn once into the sprite cache): top-lit enamel gradient, light top edge, dark bottom edge, faint tag tint.
+- **Icon family**: all icons keep one stroke (8% of size, round caps). Each tag gets a plate shape behind the icon (add circle,
+  mult diamond, route hexagon, split triangle, state octagon, boost shield, risk warning triangle, economy double ring), so a
+  tag reads without color. AI-3's `docs/ART_BRIEF_PARTS.md` is not in the repo yet; per-part motion cues will follow it.
+- **Legendary shimmer**: a soft diagonal light band sweeps a legendary tile for 40% of a 3.2 s period, then rests (offset per
+  tile). Medium/high only, never with reduce motion. Redraws the board at about 15 fps only while a legendary part is on the
+  board; a board without one stays fully idle. `view.setReduceMotion(flag)` lets the app turn it off.
+- **Frame times** (CDP 4x CPU throttle, headless Chromium, no GPU, three diagrams not running): medium 0.0% / 0.1% slow frames
+  (real fire / 500 events), low 0.0% / 0.1%.

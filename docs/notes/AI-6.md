@@ -51,8 +51,15 @@ hero moment on the last bank of a Fire.
 7. `docs/RENDER.md` updated with frame times (4x throttle, medium 0.3% / 1.0% slow frames, low 0.0% / 0.2%).
 New view method `resetEffects()`. Tests: `tests/render-round4.test.js`.
 
+## ROUND 5 - done (brief: docs/manager/ROUND5_AESTHETICS.md)
+1. Tapered spark trail, white-hot core, afterglow. 2. Tag-colored value pops. 3. Conductor wires, energy pulses along the wire the
+spark crossed. 4. Vault fills with light; hero bank slow-down and stronger shake (off with reduceMotion, off on low).
+5. `view.playMerge(x, y, level, opts)` for `ui:merged`. 6. Tile material, tag plate shapes (icon family), legendary shimmer.
+7. `fireScale.js` is my own small stand-in because `src/engine/fireStats.js` is not pushed yet. Tests: `tests/render-round5.test.js`.
+Details and frame times: `docs/RENDER.md` (Round 5).
+
 ## Working on
-- nothing open; waiting for the manager's review.
+- waiting for AI-2's `fireStats` (swap the math in `fireScale.js`) and AI-3's `docs/ART_BRIEF_PARTS.md` (per-part motion cues).
 
 ## Blocked / Questions for manager
 - No real cheap Android phone here: all frame times are from headless Chromium without a GPU. Someone with the debug APK
@@ -62,7 +69,13 @@ New view method `resetEffects()`. Tests: `tests/render-round4.test.js`.
 - AI-2's `bonus` event is not in `eventTypes.js` / `simulate.js` / `ENGINE.md` yet. The player accepts `{ type: 'bonus', x, y, label? | kind+amount, before?, after? }`. If AI-2 uses other field names, tell me and I change one function (`showBonus` in `sparkPlayer.js`).
 - AI-7: `createDiagram` needs a container with a width; its height follows the board's aspect. `destroy()` it in `unmount()`.
 
-## Changes I need from other AIs
+## Changes I need from other AIs (round 5)
+- AI-1: on `ui:merged`, call `view.playMerge(x, y, newLevel)` (x, y of the merged part on the board). The event today carries only
+  `{ partId }`; please add `x`, `y`, `level` to it, or tell me where the merge cell is known. Also call `view.setReduceMotion(flag)`
+  from the settings so the legendary shimmer respects it.
+- AI-1/AI-4: offer cards can reuse the new tile look through `drawPartTile` (exported from `src/render/partTile.js`).
+
+## Changes I need from other AIs (older)
 - AI-7 (round 3): `.boardWrap` is `aspect-ratio: 5 / 4` but the board's natural ratio is 6 : 4.75 (width : height). The view centres itself
   vertically in a taller box, so it looks fine, but a box of `aspect-ratio: 6 / 4.75` wastes no space. `.miniBoard` has
   `pointer-events: none` (see item 4 above).

@@ -47,6 +47,80 @@ function drawArrow(ctx, cx, cy, w, rot, color) {
   ctx.fill();
 }
 
+// Tag shape language: every tag has its own plate shape behind the icon, so tags read without color.
+// add = circle, mult = diamond, route = hexagon, split = triangle, state = octagon,
+// boost = shield, risk = warning triangle, economy = double ring.
+function ngon(ctx, cx, cy, r, n, rot) {
+  ctx.beginPath();
+  for (var i = 0; i < n; i++) {
+    var a = rot + i * Math.PI * 2 / n;
+    var px = cx + Math.cos(a) * r;
+    var py = cy + Math.sin(a) * r;
+    if (i === 0) { ctx.moveTo(px, py); } else { ctx.lineTo(px, py); }
+  }
+  ctx.closePath();
+}
+
+function plateShape(ctx, tag, cx, cy, r) {
+  if (tag === 'mult') { ngon(ctx, cx, cy, r * 1.05, 4, 0); }
+  else if (tag === 'route') { ngon(ctx, cx, cy, r, 6, 0); }
+  else if (tag === 'split') { ngon(ctx, cx, cy + r * 0.12, r * 1.1, 3, Math.PI / 2); }
+  else if (tag === 'state') { ngon(ctx, cx, cy, r, 8, Math.PI / 8); }
+  else if (tag === 'boost') { ngon(ctx, cx, cy, r, 5, -Math.PI / 2); }
+  else if (tag === 'risk') { ngon(ctx, cx, cy + r * 0.1, r * 1.1, 3, -Math.PI / 2); }
+  else { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); }
+}
+
+function drawTagPlate(ctx, tag, cx, cy, r, color) {
+  plateShape(ctx, tag, cx, cy, r);
+  ctx.globalAlpha = 0.1;
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.globalAlpha = 0.4;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  if (tag === 'economy') {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r * 0.82, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// The tile "material": a soft top-lit enamel. Light edge on top, dark edge below, a faint tag tint at the
+// bottom. All static, drawn once into the sprite cache.
+function drawMaterial(ctx, x, y, w, r, tagColor) {
+  var g = ctx.createLinearGradient(0, y, 0, y + w);
+  g.addColorStop(0, '#26314A');
+  g.addColorStop(0.55, THEME.colors.panel2);
+  g.addColorStop(1, '#161D2A');
+  roundRect(ctx, x, y, w, w, r);
+  ctx.fillStyle = g;
+  ctx.fill();
+  var t = ctx.createLinearGradient(0, y + w * 0.5, 0, y + w);
+  t.addColorStop(0, 'rgba(0,0,0,0)');
+  t.addColorStop(1, tagColor);
+  ctx.globalAlpha = 0.1;
+  ctx.fillStyle = t;
+  roundRect(ctx, x, y, w, w, r);
+  ctx.fill();
+  ctx.globalAlpha = 0.16;
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + r, y + 1.5);
+  ctx.lineTo(x + w - r, y + 1.5);
+  ctx.stroke();
+  ctx.globalAlpha = 0.35;
+  ctx.strokeStyle = '#000000';
+  ctx.beginPath();
+  ctx.moveTo(x + r, y + w - 1.5);
+  ctx.lineTo(x + w - r, y + w - 1.5);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+}
+
 // state: { scale, glow (0..1), dim (0..1), banned, disabled }
 export function drawPartTile(ctx, L, cellData, px, py, state, lookup) {
   var meta = partMeta(cellData.partId, lookup);
@@ -61,9 +135,10 @@ export function drawPartTile(ctx, L, cellData, px, py, state, lookup) {
   var y = -w / 2;
   var alpha = 1 - (state.dim || 0) * 0.6;
   ctx.globalAlpha = alpha;
+  var tagColor = THEME.tagColors[meta.tag] || THEME.colors.text;
+  drawMaterial(ctx, x, y, w, w * 0.16, tagColor);
+  ctx.globalAlpha = alpha; // the material helper resets alpha to 1
   roundRect(ctx, x, y, w, w, w * 0.16);
-  ctx.fillStyle = THEME.colors.panel2;
-  ctx.fill();
   if (state.glow > 0.02) {
     ctx.fillStyle = THEME.colors.spark;
     ctx.globalAlpha = alpha * state.glow * 0.18;
@@ -71,8 +146,9 @@ export function drawPartTile(ctx, L, cellData, px, py, state, lookup) {
     ctx.globalAlpha = alpha;
   }
   rarityBorder(ctx, x, y, w, w * 0.16, meta.rarity);
-  var color = THEME.tagColors[meta.tag] || THEME.colors.text;
+  var color = tagColor;
   if (state.banned) { color = THEME.colors.textDim; }
+  drawTagPlate(ctx, meta.tag, 0, y + w * 0.46, w * 0.37, color);
   drawPartIcon(ctx, cellData.partId, x + w * 0.14, y + w * 0.1, w * 0.72, color);
   drawPips(ctx, x, y, w, cellData.level || 1, THEME.colors.textDim);
   if (meta.directional) {

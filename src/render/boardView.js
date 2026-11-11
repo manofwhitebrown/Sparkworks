@@ -13,6 +13,9 @@ import { attachInput } from './input.js';
 import { startLoop } from '../core/loop.js';
 import { formatNumber } from '../core/format.js';
 import { getPart } from '../engine/parts/index.js';
+import { partMeta } from './partMeta.js';
+import { shimmerOn } from './shimmer.js';
+import { PCOLOR } from './particles.js';
 
 var QUALITY_ORDER = ['low', 'medium', 'high'];
 var DEFAULT_MACHINE = { cols: 5, rows: 4, sourceRow: 1, cells: [], blocked: [], banned: [] };
@@ -41,7 +44,7 @@ export function createBoardView(container, options) {
 
   var S = {
     L: computeLayout(360, 300, 5, 4), machine: DEFAULT_MACHINE, staticCanvas: staticCanvas, dpr: 1,
-    previewCanvas: previewCanvas, previewSegments: [], dimKeys: null,
+    legendCells: [], previewCanvas: previewCanvas, previewSegments: [], dimKeys: null,
     tileSlots: [], selected: null, highlights: [], rawHighlights: [], drag: null, time: 0, dirty: true,
     flags: { quality: 'medium', reduceMotion: false },
     effects: createEffects(), particles: createParticles(),
@@ -49,6 +52,7 @@ export function createBoardView(container, options) {
   };
   var rand = deps.rand || Math.random; // only for visual sparkle, never for game logic
   var frameWindow = { sum: 0, count: 0 };
+  var shimmerClock = 0;
 
   S.particles.setCap(THEME.particleCaps.medium);
   S.player = createSparkPlayer({
@@ -148,6 +152,11 @@ export function createBoardView(container, options) {
     S.effects.update(safeDt);
     S.time += safeDt;
     watchFrameTime(dt);
+    // legendary shimmer redraws the board about 15 times a second; a board without legendaries stays idle
+    if (S.legendCells.length > 0 && shimmerOn(S.flags)) {
+      shimmerClock += safeDt;
+      if (shimmerClock >= 1 / 15) { shimmerClock = 0; S.dirty = true; }
+    }
     var animating = S.player.isPlaying() || S.effects.busy() || S.particles.count() > 0 ||
       S.highlights.length > 0 || S.drag !== null;
     if (S.dirty || animating) {
@@ -173,8 +182,19 @@ export function createBoardView(container, options) {
     S.dirty = true;
   }
 
+  // Cells that hold a legendary part (they get the slow shimmer).
+  function findLegendary() {
+    var out = [];
+    var cells = S.machine.cells || [];
+    for (var i = 0; i < cells.length; i++) {
+      if (partMeta(cells[i].partId, S.getPart).rarity === 'legendary') { out.push(cells[i]); }
+    }
+    S.legendCells = out;
+  }
+
   function setMachine(machine) {
     S.machine = machine || DEFAULT_MACHINE;
+    findLegendary();
     applyHighlights();
     var sizeChanged = S.L.cols !== S.machine.cols || S.L.rows !== S.machine.rows;
     if (sizeChanged) { S.effects.reset(S.machine.cols, S.machine.rows); resize(); } else { rebuildStatic(); }
@@ -188,6 +208,24 @@ export function createBoardView(container, options) {
     S.dirty = true;
     // a new quality can mean a new pixel density, which needs a new canvas size
     if (clampDpr(window.devicePixelRatio, dprCapFor(level)) !== before) { resize(); }
+  }
+
+  // Merge / level-up flourish at one cell (AI-1 calls it on 'ui:merged'). opts: { reduceMotion }.
+  function playMerge(x, y, level, opts) {
+    var reduce = !!(opts && opts.reduceMotion) || S.flags.reduceMotion;
+    var L = S.L;
+    var cx = L.gridX + x * L.cell + L.cell / 2;
+    var cy = L.gridY + y * L.cell + L.cell / 2;
+    S.effects.lightCell(x, y, 1);
+    S.effects.popTile(x, y, 1, 1e4);
+    S.effects.addPopup('Lv ' + (level || 2), '', cx, cy - L.cell * 0.3, 1.15, THEME.colors.sparkHot, reduce ? 0.6 : 0.9);
+    if (!reduce) {
+      S.effects.addRing(x, y, level >= 3 ? 1.3 : 1);
+      if (S.flags.quality !== 'low') {
+        S.particles.burst(cx, cy, level >= 3 ? 22 : 14, 120, 0.55, 6, PCOLOR.hot, rand);
+      }
+    }
+    S.dirty = true;
   }
 
   function play(events, playOptions) {
@@ -230,7 +268,8 @@ export function createBoardView(container, options) {
     setHighlightCells: function (list) { S.rawHighlights = list || []; applyHighlights(); },
     cellAtPoint: cellAtPoint, play: play, skip: function () { S.player.skip(); },
     setQuality: setQuality, resize: resize,
-    setPreview: setPreview, setDim: setDim,
+    setPreview: setPreview, setDim: setDim, playMerge: playMerge,
+    setReduceMotion: function (flag) { S.flags.reduceMotion = !!flag; S.dirty = true; },
     resetEffects: function () { S.effects.reset(S.machine.cols, S.machine.rows); S.dirty = true; },
     frame: frame,
     destroy: function () {

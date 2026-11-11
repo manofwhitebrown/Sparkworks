@@ -5,6 +5,8 @@ import { THEME } from './theme.js';
 import { buildTimeline } from './timeline.js';
 import { PCOLOR } from './particles.js';
 import { bonusLabel } from './bonusTiles.js';
+import { partMeta } from './partMeta.js';
+import { fireScale, isHeroBank } from './fireScale.js';
 
 // the source and the vault sit in the half-cell margins: centers are a quarter cell off the grid
 var SOURCE_X = -0.75;
@@ -16,7 +18,7 @@ export function createSparkPlayer(env) {
   // env: { getLayout, getMachine, effects, particles, getFlags, onEventPlayed, formatNumber, rand }
   var sparks = [];
   var state = { playing: false, clock: 0, startIdx: 0, reportIdx: 0, events: null, tl: null,
-    resolve: null, skipping: false, skipPerSec: 0, opts: null };
+    resolve: null, skipping: false, skipPerSec: 0, opts: null, scale: null, slowLeft: 0 };
   var i;
   for (i = 0; i < MAX_SPARKS; i++) {
     sparks.push({ on: false, id: 0, fx: 0, fy: 0, tx: 0, ty: 0, x: 0, y: 0, t0: 0, dur: 1,
@@ -121,7 +123,9 @@ export function createSparkPlayer(env) {
     if (ev.type === 'bank') {
       fx.setVaultTarget(ev.runningTotal);
       if (!silent) {
-        fx.bank(f.quality === 'low' || f.reduceMotion ? 0 : ev.value);
+        var hero = f.quality !== 'low' && !f.reduceMotion && isHeroBank(state.scale, ev);
+        fx.bank(f.quality === 'low' || f.reduceMotion ? 0 : ev.value, hero);
+        if (hero) { state.slowLeft = THEME.timing.heroSlowMs / 1000; }
         burstAt(px(env.getMachine().cols + VAULT_OFFSET), ppyOfSpark(ev.spark), 18, 160, PCOLOR.hot);
         var s0 = findSpark(ev.spark, false);
         if (s0) { s0.dying = true; }
@@ -130,10 +134,12 @@ export function createSparkPlayer(env) {
       // skipping: no visuals except the vault total above
     } else if (ev.type === 'enter') {
       fx.lightCell(ev.x, ev.y, 1);
+      var ws = findSpark(ev.spark, false);
+      if (ws) { fx.lightWire(ev.x, ev.y, ws.fx, ws.fy); }
     } else if (ev.type === 'value') {
       fx.popTile(ev.x, ev.y, ev.before, ev.after);
       fx.valuePopup(ev.x, ev.y, ev.label, ev.before, ev.after, ppx, ppy - env.getLayout().cell * 0.3,
-        env.formatNumber, f.reduceMotion);
+        env.formatNumber, f.reduceMotion, THEME.tagColors[partMeta(ev.partId).tag]);
       if (rich) { env.particles.burst(ppx, ppy, 5, 70, 0.4, 5, PCOLOR.spark, env.rand); }
     } else if (ev.type === 'split') {
       fx.lightCell(ev.x, ev.y, 1);
@@ -258,7 +264,9 @@ export function createSparkPlayer(env) {
       if (state.reportIdx >= steps.length) { finish(); }
       return;
     }
-    state.clock += dt * 1000;
+    var sdt = dt;
+    if (state.slowLeft > 0) { state.slowLeft -= dt; sdt = dt * THEME.timing.heroSlowScale; }
+    state.clock += sdt * 1000;
     while (state.startIdx < steps.length && steps[state.startIdx].start <= state.clock) {
       onStart(steps[state.startIdx], ev[state.startIdx]);
       state.startIdx++;
@@ -267,7 +275,7 @@ export function createSparkPlayer(env) {
       onReport(steps[state.reportIdx], ev[state.reportIdx], false);
       state.reportIdx++;
     }
-    updateSparks(dt);
+    updateSparks(sdt);
     if (state.clock >= state.tl.totalMs && state.reportIdx >= steps.length) { finish(); }
   }
 
@@ -279,6 +287,8 @@ export function createSparkPlayer(env) {
       state.tl = buildTimeline(state.events, opts);
       state.clock = 0; state.startIdx = 0; state.reportIdx = 0; state.skipping = false;
       state.opts = opts;
+      state.scale = fireScale(state.events);
+      state.slowLeft = 0;
       state.resolve = resolve;
       state.playing = true;
       env.effects.setPlaying(true);

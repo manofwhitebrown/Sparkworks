@@ -12,6 +12,7 @@ function getSprites() {
     sprites = {
       spark: getGlowSprite(THEME.colors.spark, 64),
       hot: getGlowSprite(THEME.colors.sparkHot, 64),
+      white: getGlowSprite('#FFFFFF', 64),
       bad: getGlowSprite(THEME.colors.bad, 64),
       accent: getGlowSprite(THEME.colors.accent, 64)
     };
@@ -45,16 +46,47 @@ export function drawCellLight(ctx, L, fx, cols, rows) {
   }
 }
 
+// Trail: on low, a few fading glow dots (as before). On medium and high, a tapered ribbon:
+// short line segments that get thinner and fainter toward the tail, plus a faint afterglow dot.
 function drawTrail(ctx, s, L, flags, sp) {
   if (flags.reduceMotion || s.trailLen < 2) { return; }
-  var simple = flags.quality === 'low';
-  var n = simple ? Math.min(s.trailLen, 3) : s.trailLen;
-  for (var t = 0; t < n; t++) {
-    var a = (1 - t / n) * 0.55 * s.fade;
-    var x = L.gridX + s.trail[t * 2] * L.cell + L.cell / 2;
-    var y = L.gridY + s.trail[t * 2 + 1] * L.cell + L.cell / 2;
-    drawGlow(ctx, sp.spark, x, y, L.cell * (0.16 - t * 0.012), a);
+  var n;
+  var t;
+  var a;
+  var x;
+  var y;
+  if (flags.quality === 'low') {
+    n = Math.min(s.trailLen, 3);
+    for (t = 0; t < n; t++) {
+      a = (1 - t / n) * 0.55 * s.fade;
+      x = L.gridX + s.trail[t * 2] * L.cell + L.cell / 2;
+      y = L.gridY + s.trail[t * 2 + 1] * L.cell + L.cell / 2;
+      drawGlow(ctx, sp.spark, x, y, L.cell * (0.16 - t * 0.012), a);
+    }
+    return;
   }
+  n = s.trailLen;
+  ctx.strokeStyle = THEME.colors.spark;
+  ctx.lineCap = 'round';
+  var px0 = L.gridX + s.x * L.cell + L.cell / 2;
+  var py0 = L.gridY + s.y * L.cell + L.cell / 2;
+  for (t = 0; t < n; t++) {
+    var k = 1 - t / n;
+    var x1 = L.gridX + s.trail[t * 2] * L.cell + L.cell / 2;
+    var y1 = L.gridY + s.trail[t * 2 + 1] * L.cell + L.cell / 2;
+    ctx.globalAlpha = k * k * 0.7 * s.fade;
+    ctx.lineWidth = Math.max(1, L.cell * 0.17 * k);
+    ctx.beginPath();
+    ctx.moveTo(px0, py0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+    px0 = x1;
+    py0 = y1;
+  }
+  // faint afterglow at the tail end
+  x = L.gridX + s.trail[(n - 1) * 2] * L.cell + L.cell / 2;
+  y = L.gridY + s.trail[(n - 1) * 2 + 1] * L.cell + L.cell / 2;
+  drawGlow(ctx, sp.spark, x, y, L.cell * 0.12, 0.25 * s.fade);
 }
 
 export function drawSparks(ctx, L, player, flags) {
@@ -68,7 +100,8 @@ export function drawSparks(ctx, L, player, flags) {
     var y = L.gridY + s.y * L.cell + L.cell / 2;
     var size = s.waiting ? 0.6 : 1;
     drawGlow(ctx, sp.spark, x, y, L.cell * 0.36 * size, 0.75 * s.fade);
-    drawGlow(ctx, sp.hot, x, y, L.cell * 0.11 * size, 0.9 * s.fade);
+    drawGlow(ctx, sp.hot, x, y, L.cell * 0.12 * size, 0.9 * s.fade);
+    drawGlow(ctx, sp.white, x, y, L.cell * 0.055 * size, 1 * s.fade);
   }
 }
 
@@ -182,4 +215,81 @@ export function drawLostMarks(ctx, L, fx) {
     ctx.stroke();
     ctx.globalAlpha = 1;
   }
+}
+
+// Wires: the wire a spark just crossed keeps a fading amber glow. On medium and high three bright
+// pulses also run along it (they move with the fade), so the energy visibly flows. On low: a plain line.
+export function drawWires(ctx, L, fx, cols, rows, time, flags) {
+  var sp = getSprites();
+  var n = cols * rows;
+  var rich = flags.quality !== 'low' && !flags.reduceMotion;
+  ctx.strokeStyle = THEME.colors.spark;
+  ctx.lineCap = 'round';
+  for (var k = 0; k < n; k++) {
+    var a = fx.wireOf(k);
+    if (a <= 0.02) { continue; }
+    var x0 = L.gridX + fx.wireGeoOf(k, 0) * L.cell + L.cell / 2;
+    var y0 = L.gridY + fx.wireGeoOf(k, 1) * L.cell + L.cell / 2;
+    var x1 = L.gridX + fx.wireGeoOf(k, 2) * L.cell + L.cell / 2;
+    var y1 = L.gridY + fx.wireGeoOf(k, 3) * L.cell + L.cell / 2;
+    ctx.globalAlpha = a * 0.4;
+    ctx.lineWidth = Math.max(2, L.cell * 0.07);
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.stroke();
+    if (rich) {
+      for (var j = 0; j < 3; j++) {
+        var u = (time * 2.2 + j / 3) % 1;
+        drawGlow(ctx, sp.hot, x0 + (x1 - x0) * u, y0 + (y1 - y0) * u, L.cell * 0.09, a * 0.8);
+      }
+    }
+  }
+  ctx.globalAlpha = 1;
+}
+
+// Merge / level-up flourish: expanding rings (two, staggered). Pure strokes.
+export function drawRings(ctx, L, fx) {
+  var list = fx.rings;
+  for (var k = 0; k < list.length; k++) {
+    var r = list[k];
+    if (!r.on) { continue; }
+    var u = r.age / (THEME.timing.ringMs / 1000);
+    var cx = L.gridX + r.x * L.cell + L.cell / 2;
+    var cy = L.gridY + r.y * L.cell + L.cell / 2;
+    for (var w = 0; w < 2; w++) {
+      var v = u - w * 0.18;
+      if (v <= 0 || v >= 1) { continue; }
+      ctx.globalAlpha = (1 - v) * 0.9;
+      ctx.strokeStyle = w === 0 ? THEME.colors.sparkHot : THEME.colors.spark;
+      ctx.lineWidth = Math.max(1.5, L.cell * 0.06 * (1 - v));
+      ctx.beginPath();
+      ctx.arc(cx, cy, L.cell * (0.3 + easeOutCubic(v) * 0.75 * r.power), 0, Math.PI * 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+}
+
+// The vault fills with light from the bottom while sparks bank. Drawn inside the slot, under the 'lighter' halo.
+export function drawVaultFill(ctx, L, fx, quality) {
+  var f = fx.vault.fill;
+  if (f < 0.01) { return; }
+  var w = L.cell * 0.3;
+  var cx = L.gridX + L.gridW + L.cell / 4;
+  var top = L.gridY + 4;
+  var h = L.gridH - 8;
+  var fh = (h - 4) * f;
+  var x = cx - w / 2 + 2;
+  var y = top + h - 2 - fh;
+  var grad = ctx.createLinearGradient(0, y, 0, y + fh);
+  grad.addColorStop(0, THEME.colors.sparkHot);
+  grad.addColorStop(1, THEME.colors.spark);
+  ctx.globalAlpha = 0.85;
+  ctx.fillStyle = grad;
+  ctx.fillRect(x, y, w - 4, fh);
+  if (quality !== 'low') {
+    drawGlow(ctx, getSprites().spark, cx, y, L.cell * 0.5, 0.35 * f);
+  }
+  ctx.globalAlpha = 1;
 }

@@ -41,6 +41,8 @@ export function recordRunEnd(meta, run, deps) {
   if (!run || run.recorded === true) return empty;
   // Contract item 16: a cheated run earns NOTHING (no dust, stats, wins, achievements or daily result).
   if (run.cheated === true) return empty;
+  // Manager round 3: the tutorial run is practice and never counts (no dust, stats, wins, achievements, daily).
+  if (run.tutorial === true) return empty;
   if (run.phase !== 'won' && run.phase !== 'lost') return empty;
   const getSummary = deps && deps.runSummary ? deps.runSummary : runSummary;
   const summary = normalizeForStats(getSummary(run), run);

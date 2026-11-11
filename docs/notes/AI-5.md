@@ -11,6 +11,9 @@
 
 - 2026-11-11 (owner request): all dust payout numbers moved to `DUST_RULES` (data/workshop.js) and all unlock thresholds to `TARGETS` (data/achievements.js). Values unchanged. Dust/unlock tuning is on hold until the bot baseline is fixed (smart bot ~20% at Voltage 1).
 
+- Round 3 (2026-11-11): `.pbHint` in the Patent Book now uses `var(--fs-small)` (13px; 16px in largeText per tokens.css). `recordRunEnd` and `recordDaily` ignore any run/result with `tutorial === true` (nothing changes, run not marked recorded), tests in tests/meta-tutorial.test.js.
+- **Intended:** a fresh save shows "12 of 24 found" in the Patent Book. 12 = the starting parts from the brief, 24 = every part in the library. The other 12 are each unlocked by exactly one achievement.
+
 ## Blocked / Questions for manager
 - None.
 

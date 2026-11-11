@@ -42,6 +42,8 @@ export function hasPlayedDaily(meta, dateString) {
 export function recordDaily(meta, dateString, result) {
   // A cheated run never counts for the daily contract.
   if (result && result.cheated === true) return;
+  // The tutorial run is practice and never counts either.
+  if (result && result.tutorial === true) return;
   const daily = meta.daily;
   if (daily.lastPlayed !== dateString) {
     daily.streak = daily.lastPlayed === yesterdayOf(dateString) ? daily.streak + 1 : 1;

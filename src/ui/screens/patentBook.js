@@ -15,7 +15,7 @@ const CSS = [
   '.pbCell { position: relative; display: flex; flex-direction: column; gap: var(--s1); min-width: 0; }',
   '.pbNew { position: absolute; top: var(--s1); right: var(--s1); padding: 0 var(--s2); border-radius: var(--r1);',
   '  background: var(--spark); color: var(--bg); font-size: var(--fs-tiny); font-weight: 700; z-index: 1; }',
-  '.pbHint { font-size: var(--fs-tiny); color: var(--textDim); text-align: center; }',
+  '.pbHint { font-size: var(--fs-small); color: var(--textDim); text-align: center; }',
   '.pbLevel { margin-top: var(--s2); }',
   '.pbChips { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s2); }',
   '.pbChip { padding: var(--s1) var(--s2); border: 1px solid var(--line); border-radius: var(--r1); font-size: var(--fs-small); }',

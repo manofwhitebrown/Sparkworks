@@ -1,11 +1,13 @@
 // Saving and loading in localStorage. Owner: AI-1
 //
-// Stored as JSON text: { v, data }. Keys: 'sparkworks/meta' and 'sparkworks/run'.
+// Stored as JSON text: { v, data }. Keys: 'sparkworks/meta', 'sparkworks/run' and
+// 'sparkworks/flags' (tiny yes/no memory for UI tips, kept apart from the meta save).
 // A save we cannot read is NEVER deleted: it is copied to '<key>.corrupt' first.
 import { defaultMeta, repairMeta } from '../meta/metaState.js';
 
 const META_KEY = 'sparkworks/meta';
 const RUN_KEY = 'sparkworks/run';
+const FLAGS_KEY = 'sparkworks/flags';
 const SAVE_VERSION = 1;
 
 // localStorage can throw (private mode, storage full), so every access is guarded.
@@ -97,7 +99,26 @@ export function wipeAll() {
   try {
     storage.removeItem(META_KEY);
     storage.removeItem(RUN_KEY);
+    storage.removeItem(FLAGS_KEY);
   } catch (err) {
     // Ignore.
   }
+}
+
+// ---------- tip flags ----------
+// A tiny object like { shopTip: true } that remembers which hints the player has seen.
+// It is separate from the meta save on purpose: the meta repair code only keeps fields it knows.
+function readFlags() {
+  const data = readKey(FLAGS_KEY);
+  return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+}
+
+export function getFlag(name) {
+  return readFlags()[name];
+}
+
+export function setFlag(name, value) {
+  const flags = readFlags();
+  flags[name] = value;
+  return writeKey(FLAGS_KEY, flags);
 }

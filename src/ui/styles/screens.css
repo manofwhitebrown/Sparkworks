@@ -70,6 +70,25 @@ html.reduceMotion .sparkHalo, html.reduceMotion .sparkCore, html.reduceMotion .s
 .lockIcon { width: 16px; height: 16px; flex: 0 0 auto; fill: var(--textDim); stroke: var(--textDim); stroke-width: 1.5; stroke-linecap: round; }
 .lockIcon path { fill: none; }
 
+.goalLine { margin: 0; font-weight: 600; color: var(--sparkHot); font-size: var(--fs-base); }
+.tinyText { font-size: var(--fs-tiny); }
+.gentleRow {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--s3);
+  width: 100%; min-height: var(--tap); text-align: left; color: var(--text);
+  font: inherit; cursor: pointer; border: 1px solid var(--line);
+}
+.gentleRow.isOn { border-color: var(--accent); }
+.gentleName { font-weight: 600; }
+.switchTrack {
+  flex: none; width: 44px; height: 26px; border-radius: 13px; background: var(--line);
+  position: relative; transition: background var(--t-fast) var(--ease);
+}
+.switchKnob {
+  position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--text); transition: transform var(--t-fast) var(--ease);
+}
+.gentleRow.isOn .switchTrack { background: var(--accent); }
+.gentleRow.isOn .switchKnob { transform: translateX(18px); background: var(--bg); }
 .voltageRow { display: flex; align-items: center; justify-content: space-between; }
 .voltageRow .btn { min-width: var(--tap); }
 .voltageMid { text-align: center; min-width: 140px; }
@@ -181,9 +200,11 @@ html.largeText .selectedPanel { min-height: 144px; }
 /* ---------- short phones (360x640, 375x667, 320x568 ...) ---------- */
 @media (max-height: 700px) {
   .screen { padding-top: calc(var(--s3) + var(--safe-top)); gap: var(--s2); }
-  .homeTitle { padding: var(--s2) 0; gap: var(--s1); }
-  .homeSpark { width: 52px; height: 52px; }
+  .homeTitle { padding: 2px 0; gap: var(--s1); }
+  .homeSpark { width: 44px; height: 44px; }
   .homeLogo { font-size: clamp(28px, 9vw, 38px); }
+  .homeTitle > p:not(.goalLine) { display: none; }
+  .voltageRow { padding: var(--s1) var(--s3); }
 
   .hud { padding: var(--s2) var(--s3); gap: var(--s1); }
   .hudTotal { font-size: var(--fs-base); min-width: 0; text-align: left; order: 1; margin-left: var(--s2); }
@@ -203,9 +224,22 @@ html.largeText .selectedPanel { min-height: 144px; }
 
 /* very short phones (320x568): trim the home screen so all four links stay on screen */
 @media (max-height: 600px) {
-  .homeTitle > p { display: none; }
-  .homeSpark { width: 44px; height: 44px; }
-  .voltageRow { padding: var(--s2) var(--s3); }
+  .homeTitle > p:not(.goalLine) { display: none; }
+  .voltageMid .tinyText { display: none; }
+  .homeScreen { gap: var(--s1); }
+  .homeSpark { width: 32px; height: 32px; }
+}
+
+/* short phones that are wide enough: the four links fit in ONE row (saves a whole row) */
+@media (max-height: 700px) and (min-width: 340px), (max-height: 600px) and (min-width: 320px) {
+  html:not(.largeText) .navRow { grid-template-columns: repeat(4, 1fr); gap: var(--s1); }
+  html:not(.largeText) .navRow .btn { padding: 0 var(--s1); font-size: var(--fs-tiny); }
+}
+
+/* 700 to 760px tall (360x740): only the old tagline goes, to keep the links on screen */
+@media (min-height: 701px) and (max-height: 760px) {
+  .homeTitle > p:not(.goalLine) { display: none; }
+  .homeTitle { padding: var(--s1) 0; }
 }
 
 /* tall phones (412x915, 430x932): the board is as wide as the screen allows,

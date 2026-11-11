@@ -13,16 +13,23 @@ function freshSeed() {
   return (Date.now() + Math.floor(Math.random() * 1e9)) % 2147483647;
 }
 
-export function startNormalRun(meta, inventorId, voltage) {
+// Gentle mode (contract item 24) rides inside `bonuses`; AI-4's newRun reads it.
+function bonusesWithGentle(meta, gentle) {
+  const bonuses = Object.assign({}, bonusesFor(meta));
+  if (gentle) bonuses.gentle = true;
+  return bonuses;
+}
+
+export function startNormalRun(meta, inventorId, voltage, gentle) {
   const run = newRun({
     inventorId: inventorId,
     voltage: voltage,
     seed: freshSeed(),
     poolIds: unlockedPartIds(meta),
-    bonuses: bonusesFor(meta),
+    bonuses: bonusesWithGentle(meta, gentle),
     daily: false
   });
   saveRun(run);
-  emit('ui:runStarted', { inventorId: inventorId, voltage: voltage });
+  emit('ui:runStarted', { inventorId: inventorId, voltage: voltage, gentle: !!gentle });
   go('run');
 }

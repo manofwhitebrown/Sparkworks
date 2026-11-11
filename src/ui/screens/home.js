@@ -10,10 +10,12 @@ import { startNormalRun } from '../startRun.js';
 import { continuableRun } from '../flow.js';
 import { maxVoltageFor } from '../../meta/voltage.js';
 import { formatNumber } from '../../core/format.js';
+import { GOAL_LINE, VOLTAGE_LINE, GENTLE_TEXT } from '../teach.js';
 
 // Remembered while the app is open, so New run keeps the same choice.
 let pickedInventor = 'tinkerbot';
 let pickedVoltage = 1;
+let pickedGentle = false;
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -36,6 +38,7 @@ function makeTitle() {
   box.appendChild(makeSparkMark());
   box.appendChild(el('h1', 'homeLogo', 'SPARKWORKS'));
   box.appendChild(el('p', 'dim', 'Build the machine. Fire the sparks.'));
+  box.appendChild(el('p', 'goalLine', GOAL_LINE));
   return box;
 }
 
@@ -108,7 +111,25 @@ function makeVoltageStepper(meta, rebuild) {
   const volt = VOLTAGES[pickedVoltage - 1];
   mid.appendChild(el('div', 'dim', 'Voltage ' + pickedVoltage));
   mid.appendChild(el('div', 'num', volt ? volt.name : ''));
+  mid.appendChild(el('div', 'dim tinyText', VOLTAGE_LINE));
   row.append(less, mid, more);
+  return row;
+}
+
+// The Gentle mode switch: one big tap target with a short plain explanation.
+function makeGentleSwitch(rebuild) {
+  const row = el('button', 'panel gentleRow');
+  row.type = 'button';
+  row.setAttribute('role', 'switch');
+  row.setAttribute('aria-checked', pickedGentle ? 'true' : 'false');
+  if (pickedGentle) row.classList.add('isOn');
+  const words = el('div', 'gentleWords');
+  words.appendChild(el('div', 'gentleName', 'Gentle mode'));
+  words.appendChild(el('div', 'dim tinyText', GENTLE_TEXT));
+  const track = el('div', 'switchTrack');
+  track.appendChild(el('div', 'switchKnob'));
+  row.append(words, track);
+  row.addEventListener('click', function () { pickedGentle = !pickedGentle; rebuild(); });
   return row;
 }
 
@@ -133,6 +154,7 @@ function build(screen) {
   const rebuild = function () { build(screen); };
   screen.appendChild(makePicker(meta, rebuild));
   screen.appendChild(makeVoltageStepper(meta, rebuild));
+  screen.appendChild(makeGentleSwitch(rebuild));
 
   // A saved tutorial run is not a real run: no Continue button for it.
   const saved = continuableRun(loadRun());
@@ -143,7 +165,7 @@ function build(screen) {
     }, { kind: 'secondary' }));
   }
   const playLabel = saved ? 'NEW RUN' : 'PLAY';
-  screen.appendChild(makeButton(playLabel, function () { startNormalRun(meta, pickedInventor, pickedVoltage); },
+  screen.appendChild(makeButton(playLabel, function () { startNormalRun(meta, pickedInventor, pickedVoltage, pickedGentle); },
     { kind: 'primary', big: true }));
   screen.appendChild(makeNav());
 }

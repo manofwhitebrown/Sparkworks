@@ -1,7 +1,7 @@
 // Tests for src/core/save.js. Owner: AI-1
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { loadMeta, saveMeta, loadRun, saveRun, clearRun, wipeAll } from '../src/core/save.js';
+import { loadMeta, saveMeta, loadRun, saveRun, clearRun, wipeAll, getFlag, setFlag } from '../src/core/save.js';
 
 // A tiny in-memory stand-in for localStorage.
 function installFakeStorage() {
@@ -82,4 +82,26 @@ test('save: no localStorage at all (plain node) is fine', () => {
   delete globalThis.localStorage;
   assert.equal(loadRun(), null);
   assert.equal(saveRun({}), false);
+});
+
+test('save: tip flags are remembered, survive clearRun, and wipeAll removes them', () => {
+  installFakeStorage();
+  assert.equal(getFlag('shopTip'), undefined);
+  assert.equal(setFlag('shopTip', true), true);
+  setFlag('showPath', false);
+  assert.equal(getFlag('shopTip'), true);
+  assert.equal(getFlag('showPath'), false);
+  clearRun();
+  assert.equal(getFlag('shopTip'), true);
+  wipeAll();
+  assert.equal(getFlag('shopTip'), undefined);
+});
+
+test('save: unreadable flags are kept as .corrupt and flags start fresh', () => {
+  const store = installFakeStorage();
+  store['sparkworks/flags'] = '{oops';
+  assert.equal(getFlag('shopTip'), undefined);
+  assert.equal(store['sparkworks/flags.corrupt'], '{oops');
+  assert.equal(setFlag('shopTip', true), true);
+  assert.equal(getFlag('shopTip'), true);
 });

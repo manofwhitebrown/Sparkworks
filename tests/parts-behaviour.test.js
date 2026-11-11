@@ -128,7 +128,7 @@ test('gambler uses the rng and the level tables', () => {
 
 test('fuse fires once then disables', () => {
   const ctx = runPart(PARTS.fuse, { value: 2, level: 2 });
-  near(ctx.value, 24);
+  near(ctx.value, 30);
   assert.equal(ctx.calls.disable, 1);
 });
 
@@ -140,9 +140,9 @@ test('rectifier: odd adds, even multiplies', () => {
 
 test('tollgate pays coins and keeps the value', () => {
   const ctx = runPart(PARTS.tollgate, { value: 9, level: 3 });
-  assert.deepEqual(ctx.calls.addCoins, [3]);
+  assert.deepEqual(ctx.calls.addCoins, [4]);
   assert.equal(ctx.value, 9);
-  assert.deepEqual(runPart(PARTS.tollgate, { level: 1, boost: 2 }).calls.addCoins, [2]);
+  assert.deepEqual(runPart(PARTS.tollgate, { level: 1, boost: 2 }).calls.addCoins, [4]);
 });
 
 test('prism copies go both sides', () => {

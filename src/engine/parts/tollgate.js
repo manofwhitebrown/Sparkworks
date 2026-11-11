@@ -2,7 +2,7 @@
 // Owner: AI-3
 import { boostAdd, byLevel } from './partMath.js';
 
-const NUMBERS = { coins: [1, 2, 3] };
+const NUMBERS = { coins: [2, 3, 4] };
 
 export default {
   id: 'tollgate',

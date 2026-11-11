@@ -83,7 +83,7 @@ test('overdrive only multiplies spark 1', () => {
 test('tollgate pays coins per spark pass', () => {
   const machine = makeMachine({ startValue: 1, sparkCount: 3 });
   place(machine, 1, 1, 'tollgate', 0);
-  assert.equal(run(machine).coins, 3);
+  assert.equal(run(machine).coins, 6);
 });
 
 test('sideamp works after a bend turns the spark down, not on the straight row', () => {
@@ -110,7 +110,7 @@ test('workbench pays coins once per Fire even when 3 sparks pass', () => {
   place(machine, 2, 1, 'coil', 0);
   place(machine, 3, 1, 'coil', 0);
   place(machine, 4, 1, 'coil', 0);
-  assert.equal(simulate(machine, { recordEvents: false }).coins, 2);
+  assert.equal(simulate(machine, { recordEvents: false }).coins, 3);
 });
 
 test('bouncer uses the seeded rng: same seed, same result', () => {

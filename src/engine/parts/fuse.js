@@ -2,7 +2,7 @@
 // Owner: AI-3
 import { boostMult, multLabel, byLevel, makeExample } from './partMath.js';
 
-const NUMBERS = { mult: [10, 12, 15] };
+const NUMBERS = { mult: [12, 15, 20] };
 
 export default {
   id: 'fuse',

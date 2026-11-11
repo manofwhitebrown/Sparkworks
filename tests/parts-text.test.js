@@ -59,7 +59,7 @@ test('example numbers: coil, amplifier, fuse, anvil', () => {
   assert.deepEqual(PARTS.coil.example(1), { before: 2, after: 5 });
   assert.deepEqual(PARTS.coil.example(3), { before: 2, after: 10 });
   assert.deepEqual(PARTS.amplifier.example(2), { before: 2, after: 5 });
-  assert.deepEqual(PARTS.fuse.example(3), { before: 2, after: 30 });
+  assert.deepEqual(PARTS.fuse.example(3), { before: 2, after: 40 });
   assert.deepEqual(PARTS.anvil.example(1), { before: 2, after: 4 });
 });
 

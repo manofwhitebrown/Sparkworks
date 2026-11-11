@@ -61,15 +61,15 @@ test('bouncer goes up or down by a seeded coin flip and adds 0/2/5', () => {
   near(runPart(PARTS.bouncer, { value: 3, level: 3 }).value, 8);
 });
 
-test('workbench pays once per Fire: 1 coin per 2 parts, capped', () => {
+test('workbench pays once per Fire: 1 coin per part, capped', () => {
   const state = {};
-  const first = runPart(PARTS.workbench, { level: 1, state: state, fire: fireOf(5) });
+  const first = runPart(PARTS.workbench, { level: 1, state: state, fire: fireOf(2) });
   assert.deepEqual(first.calls.addCoins, [2]);
-  const second = runPart(PARTS.workbench, { level: 1, state: state, fire: fireOf(5) });
+  const second = runPart(PARTS.workbench, { level: 1, state: state, fire: fireOf(2) });
   assert.deepEqual(second.calls.addCoins, []);
   assert.deepEqual(runPart(PARTS.workbench, { level: 1, fire: fireOf(20) }).calls.addCoins, [3]);
   assert.deepEqual(runPart(PARTS.workbench, { level: 3, fire: fireOf(20) }).calls.addCoins, [6]);
-  assert.deepEqual(runPart(PARTS.workbench, { level: 1, fire: fireOf(1) }).calls.addCoins, []);
+  assert.deepEqual(runPart(PARTS.workbench, { level: 1, fire: fireOf(0) }).calls.addCoins, []);
 });
 
 test('jackpot: win multiplier on a low roll, x0.9 otherwise', () => {

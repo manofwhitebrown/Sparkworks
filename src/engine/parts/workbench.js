@@ -2,7 +2,7 @@
 // Owner: AI-3
 import { boostAdd, byLevel } from './partMath.js';
 
-const NUMBERS = { partsPerCoin: 2, maxCoins: [3, 4, 6] };
+const NUMBERS = { partsPerCoin: 1, maxCoins: [3, 4, 6] };
 
 export default {
   id: 'workbench',
@@ -13,7 +13,7 @@ export default {
   maxLevel: 3,
   cost: 4,
   describe(level) {
-    return 'Once per Fire: 1 coin for every ' + NUMBERS.partsPerCoin + ' parts on the board. Up to ' + byLevel(NUMBERS.maxCoins, level) + ' coins.';
+    return 'Once per Fire: 1 coin for every part on the board. Up to ' + byLevel(NUMBERS.maxCoins, level) + ' coins.';
   },
   example() {
     return null;

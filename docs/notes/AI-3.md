@@ -85,3 +85,18 @@ AI-5 added the unlock achievements, so `spring, sideamp, bouncer, workbench, jac
 - Result: 5 boards pass 1e6, **2 pass 1e12, 1 passes 1e100** (max 1.8e111). Before the limit it was 13 passing 1e12 and 1 passing 1e100. The limit helped a lot (13 to 2 for 1e12), but one board still gets huge.
 - The remaining board: `bend`(0,1) > `compounder`(1,1) > `prism`(2,1) rot 0 > `tollgate`(4,1), with an `amplifier` at (4,0) and a `counter`. The `prism` copy that goes backwards (left) re-enters the `compounder` and the `prism` again, and each pass makes more copies. This is the `prism` + `compounder` + loop case. It is a 1 in 20,000 random-board result and a real player would need to build it on purpose, so I changed NO numbers. Manager: if you want it gone, the options are a visit limit of 3, or a cap on `compounder` per Fire. Your call.
 - Manager item 5b: confirmed, `docs/PARTS.md` lists all 4 extra parts (`prism`, `turnstile`, `echo`, `mint`) with combos.
+
+## ROUND 5 (aesthetics brief, `docs/manager/ROUND5_AESTHETICS.md`)
+- **Art brief DONE and pushed early:** `docs/ART_BRIEF_PARTS.md` has one line of look (for AI-6) and one line of sound (for AI-8) for all 31 parts, plus the tag-based shape language, a rarity tile treatment and sound-family rules. It adds no new colors. AI-6 and AI-8: please read it; tell me in your notes if a part needs a different cue.
+- **Twist texts fixed:** `deadCell` and `twoDeadCells` now say "are lost" instead of "fizzle" (`src/engine/twists.js`, `docs/PARTS.md`).
+- **QUESTION FOR AI-8:** the two KNOWN lines in `tests/integration-plain-text.test.js` can now be deleted (the test prints "you can delete these from KNOWN"). That file is yours, so please remove the 2 lines. I did not touch it.
+- **Balance asks (docs/BALANCE.md UPDATE 5), all in `NUMBERS` of each part file:**
+  - `fuse` x10 / 12 / 15 -> **x12 / 15 / 20** (lift looked -20% in the old run, +3.9% in my rerun on a tiny sample; small push).
+  - `compounder`: **NO change.** Rerun (400 smart runs, seed 2) shows +34% but on only 21 owned runs. Too small to act on; its cap still applies per pass and the visit limit handles loops. I will look again with a bigger sample.
+  - `sideamp`: **NO change.** Lift is +11.9% in my rerun (was +18.4%), inside the "OK" band.
+  - `tollgate` coins 1 / 2 / 3 -> **2 / 3 / 4** per touch.
+  - `workbench` now pays **1 coin per part** (was per 2 parts); caps stay 3 / 4 / 6.
+  - `turnstile` now also **adds +2 / +4 / +6** to every spark that touches it (levels now mean something).
+  - These three were "dead" on 60 to 79% of boards because they sit off the spark's path. A part cannot move itself, so I made the touch worth more. Placement is a bot / hint issue (AI-8).
+- **Check after the change** (`tools/simulate.js --runs 200 --voltage 1 --seed 1`): normal bot 9.5% -> 7.5%, smart bot 37.0% -> 37.5%. The normal-bot move is within the noise of 200 runs but it is now 2.5 points under the goal; AI-4's `targetGrowth` is the right knob if it stays low.
+- `npm test`: 534 of 534 pass (after `npm install`). `npm run build`: OK (main bundle 64.4 KB gzipped).

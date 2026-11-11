@@ -80,7 +80,7 @@ export const TWISTS = {
   deadCell: {
     id: 'deadCell',
     name: 'Dead Cell',
-    description: 'One random cell is dead. Sparks that enter it fizzle.',
+    description: 'One random cell is dead. Sparks that enter it are lost.',
     apply(machine, rng) {
       blockRandomCell(machine, rng);
       addTwistName(machine, 'Dead Cell');
@@ -90,7 +90,7 @@ export const TWISTS = {
   twoDeadCells: {
     id: 'twoDeadCells',
     name: 'Two Dead Cells',
-    description: 'Two random cells are dead. Sparks that enter them fizzle.',
+    description: 'Two random cells are dead. Sparks that enter them are lost.',
     apply(machine, rng) {
       blockRandomCell(machine, rng);
       blockRandomCell(machine, rng);

@@ -44,3 +44,6 @@ Progress bar: set `fill.style.transform = 'scaleX(' + ratio + ')'` (ratio 0..1).
 
 ## Don't
 - No `innerHTML` with data. No emoji as art. No `backdrop-filter`. No blurred `box-shadow` or `filter` on anything that moves. Animate only `transform` and `opacity`. No default browser buttons or scrollbars. No second typeface. No raw hex colors in your files.
+
+## Layers (z-index)
+Modal backdrop 50, toast 60, drag ghost 70. Everything from 1000 up is kept free for overlays that sit on top of the whole game: the cheat menu uses about 9000. Do not use a z-index above 100 in a screen.

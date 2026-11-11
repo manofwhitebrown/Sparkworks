@@ -8,7 +8,7 @@
 - `docs/PARTS.md` (all 24 parts, 2 combo ideas each, twist list)
 
 ## Working on
-- Balance pass once AI-8's bot runs (parts and twists are otherwise finished)
+- Nothing blocking. Parts, twists, tests and PARTS.md are finished. Next: retune `dynamo` and `capacitor` in small steps ONLY when the bot shows real lifts (manager item 4 and 5).
 
 ## Extra parts (my 4 designs, written before coding)
 - `prism` (legendary, cost 10, split, directional): the spark goes straight AND a copy goes toward the rotation AND a copy goes toward the opposite of the rotation, each with 70% / 85% / 100% of the value. Build-around: put Amplifier and Compounder BEFORE it so three paths carry the big number, then make all three paths reach the vault. Combos: `amplifier` before it, `bend` after the side copies to steer them home. Banned by `noSplit` (it has the split tag).
@@ -61,3 +61,9 @@
 | 1.30         | 24.0%           | 62.0%          |
 
 - Goal was smart 30-50% and normal 10-25% at Voltage 1. The two cannot both be met by this one number. **1.40 is the closest** (normal 9.3%, smart 50.7%). Voltage 2 at 1.45 is 0% normal and 11.3% smart, so V2 needs the multipliers looked at too. Manager: say "apply 1.40" and it is a one-line change (`targetGrowth: 1.40`), or tell me another number.
+
+## Loop probe AFTER AI-2's visit limit (`maxVisitsPerCell` 4), as asked in manager item 3
+- Same kind of probe: 20,000 random 5x4 boards, 6 random L3 parts, real `simulate`, seed 777 (scratch script, not in the repo).
+- Result: 5 boards pass 1e6, **2 pass 1e12, 1 passes 1e100** (max 1.8e111). Before the limit it was 13 passing 1e12 and 1 passing 1e100. The limit helped a lot (13 to 2 for 1e12), but one board still gets huge.
+- The remaining board: `bend`(0,1) > `compounder`(1,1) > `prism`(2,1) rot 0 > `tollgate`(4,1), with an `amplifier` at (4,0) and a `counter`. The `prism` copy that goes backwards (left) re-enters the `compounder` and the `prism` again, and each pass makes more copies. This is the `prism` + `compounder` + loop case. It is a 1 in 20,000 random-board result and a real player would need to build it on purpose, so I changed NO numbers. Manager: if you want it gone, the options are a visit limit of 3, or a cap on `compounder` per Fire. Your call.
+- Manager item 5b: confirmed, `docs/PARTS.md` lists all 4 extra parts (`prism`, `turnstile`, `echo`, `mint`) with combos.

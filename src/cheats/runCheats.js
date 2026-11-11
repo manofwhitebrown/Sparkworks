@@ -195,6 +195,23 @@ export function giveBenchPart(run, partId, level) {
   return done(run, 'Gave ' + partId + ' level ' + level);
 }
 
+// Gives three of the same part at one level so they merge into the next level at once.
+// Handy to see the merge flourish and hear the merge sound. Adds bench slots when needed.
+export function giveThree(run, partId, level) {
+  if (allPartIds().indexOf(partId) === -1) {
+    return refuse('Unknown part');
+  }
+  if (!Number.isInteger(level) || level < 1 || level > 2) {
+    return refuse('Level must be 1 or 2 (3 is the top)');
+  }
+  for (let i = 0; i < 3; i++) {
+    run.bench.push({ partId: partId, level: level });
+  }
+  makeBenchFit(run);
+  applyMerges(run);
+  return done(run, 'Gave 3 x ' + partId + ' level ' + level + ' (they merge)');
+}
+
 export function addBenchSlot(run) {
   run.bonuses = cleanBonuses(run.bonuses);
   if (benchSizeOf(run) >= MAX_BENCH) {

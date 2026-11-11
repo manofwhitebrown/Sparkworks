@@ -263,7 +263,7 @@ export function installCheats() {
     return;
   }
   installed = true;
-  window.addEventListener('popstate', onPop);
+  window.addEventListener('popstate', onPop, true);
   popInstalled = true;
   const counter = makeTapCounter();
   document.addEventListener('pointerdown', function (e) {

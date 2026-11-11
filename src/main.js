@@ -48,5 +48,5 @@ startLoop(function (dt) {
   emit('core:frame', dt);
 });
 
+installCheats(); // hidden cheat menu (AI-2): only listens for a corner tap run. MUST come before startApp() so its Back-button listener runs first.
 startApp();
-installCheats(); // hidden cheat menu (AI-2): only listens for a corner tap run, nothing else

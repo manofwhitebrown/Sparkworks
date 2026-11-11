@@ -5,6 +5,9 @@ import { simulate } from '../engine/simulate.js';
 import { cloneMachine } from '../engine/board.js';
 import * as dbg from './debugTools.js';
 import { button, row, section, copyText, el } from './menuUi.js';
+import { initAudio } from '../audio/audio.js';
+import { playSfx, playPass } from '../audio/sfx.js';
+import { startMusic, stopMusic } from '../audio/music.js';
 
 function copyButton(label, getText, env) {
   return button(label, function () {
@@ -113,10 +116,33 @@ function switchSection(env) {
   return section('Switches', [row([fps, bar]), el('p', 'ckx-note', 'Render quality'), row(quality)]);
 }
 
+// Every sound, one button each, so the owner can hear them without playing. Not a run
+// change, so it does not mark the run as cheated.
+const SOUND_NAMES = ['tap', 'place', 'rotate', 'buy', 'sell', 'reroll', 'merge', 'fire', 'bank',
+  'lost', 'bonus', 'hint', 'win', 'lose', 'unlock', 'error', 'overload'];
+
+function soundSection(env) {
+  const names = SOUND_NAMES.map(function (name) {
+    return button(name, function () {
+      initAudio();
+      playSfx(name, { size: 0.7 });
+    });
+  });
+  const scale = button('Rising scale (20 passes)', function () {
+    initAudio();
+    for (let step = 0; step < 20; step++) {
+      setTimeout(playPass.bind(null, step), step * 110);
+    }
+  });
+  const musicOn = button('Music on', function () { initAudio(); startMusic(); env.toast('Music on'); });
+  const musicOff = button('Music off', function () { stopMusic(); env.toast('Music off'); });
+  return section('Sounds', [row(names), row([scale]), row([musicOn, musicOff])]);
+}
+
 export function buildDebugTab(env, state) {
   const box = document.createElement('div');
   const parts = [seedSection(env), previewSection(env), logSection(env, state),
-    speedSection(env, state), switchSection(env)];
+    speedSection(env, state), soundSection(env), switchSection(env)];
   for (let i = 0; i < parts.length; i++) {
     box.appendChild(parts[i]);
   }

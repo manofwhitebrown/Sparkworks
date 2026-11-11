@@ -62,7 +62,11 @@ function sparkSection(env) {
   const values = [1, 2, 5, 10].map(function (v) {
     return button(String(v), function () { env.doRun('sparks', function (r) { return rc.setStartValue(r, v); }); });
   });
-  return section('Sparks (lasts until the next shift starts)', [row(counts), row(values)]);
+  // Big start values are for testing the big-number look and the big-bank effects.
+  const big = [[100, '100'], [1000, '1K'], [1e6, '1M'], [1e12, '1T']].map(function (pair) {
+    return button(pair[1], function () { env.doRun('sparks', function (r) { return rc.setStartValue(r, pair[0]); }); });
+  });
+  return section('Sparks (lasts until the next shift starts)', [row(counts), row(values), row(big)]);
 }
 
 function partSection(env) {
@@ -75,6 +79,10 @@ function partSection(env) {
   return section('Parts', [
     row([select]),
     row([give(1), give(2), give(3), button('+1 bench slot', function () { env.doRun('bench', rc.addBenchSlot); })]),
+    row([
+      button('Give 3 x L1 (merge)', function () { env.doRun('give', function (r) { return rc.giveThree(r, select.value, 1); }); }),
+      button('Give 3 x L2 (merge)', function () { env.doRun('give', function (r) { return rc.giveThree(r, select.value, 2); }); })
+    ]),
     row([
       button('All parts to L3', function () { env.doRun('levels', rc.allPartsToLevel3); }),
       button('Board to bench', function () { env.doRun('bench', rc.allPartsToBench); })

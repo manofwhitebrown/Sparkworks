@@ -23,9 +23,9 @@ A refused cheat changes nothing and does not mark the run.
 - **Skip to shift 1 to 8**: goes through the real shift start, so twists, offers and counters are set up properly. Works from any phase (it also revives a won or lost run).
 - **Instant WIN / LOSE**: sets the phase, the game goes to the results screen.
 - **Board size**: columns and rows -/+ (3 to 8). Parts that no longer fit go back to the bench; blocked cells outside the board are removed; the bench grows if it needs to.
-- **Sparks**: spark count 1 to 8 and start value 1, 2, 5, 10. These last until the next shift starts (a new shift sets them again from the inventor).
+- **Sparks**: spark count 1 to 8 and start value 1, 2, 5, 10, and (round 5) 100, 1K, 1M, 1T to test big numbers and the big-bank effects. These last until the next shift starts (a new shift sets them again from the inventor).
 - **Clear twists**: empties `blocked`, `banned` and `flags`.
-- **Parts**: give any part at level 1, 2 or 3 to the bench (merges are applied; refused when the bench is full); +1 bench slot (up to 12); all owned parts to level 3; board to bench.
+- **Parts**: give any part at level 1, 2 or 3 to the bench (merges are applied; refused when the bench is full); +1 bench slot (up to 12); all owned parts to level 3; board to bench; (round 5) **Give 3 x L1 / L2 (merge)**: gives three of the selected part so they merge into the next level at once (adds bench slots when needed), to see the merge flourish and hear the merge sound.
 
 ## SHOP tab
 - **Free reroll** and **All prices 0**.
@@ -46,6 +46,10 @@ These only work in the shop phase.
 - **FPS counter**: a small box at the top right (off by default).
 - **Render quality**: auto, low, medium, high (sets `meta.settings.quality`).
 - **Show the error bar**: throws a test error so the red error bar can be checked.
+- **Sounds** (round 5, AI-8): one button per sound (tap, place, rotate, buy, sell, reroll, merge, fire, bank, lost, bonus, hint, win, lose, unlock, error, overload), a "Rising scale (20 passes)" button that plays the pass melody, and Music on / off. They follow the Sound effects and Music settings. Playing sounds does not mark the run as cheated.
+
+## Back button (fixed in round 5)
+Closing the menu (Close, Esc or the Android Back button) must NOT open the run screen's "Leave this run?" box. It did, because `main.js` started the app before installing the cheat listener, so the app's Back handler ran first. `installCheats()` now runs before `startApp()` (and the listener uses the capture phase). `tests/integration-cheats-extra.test.js` fails if the order is changed back.
 
 ## Files
 `src/cheats/gate.js` (hidden gesture, prompt, lock-out, Esc and Back), `sha256.js`, `menu.js` (the overlay and tabs), `tabRun.js`, `tabShop.js`, `tabMeta.js`, `tabDebug.js`, `runCheats.js`, `shopCheats.js`, `metaCheats.js`, `debugTools.js` (all the logic, no DOM), `cheatEnv.js` (save, event, message), `menuUi.js`, `menuStyles.js`. Only `gate.js` and `sha256.js` are in the main bundle; the menu loads after the right password. `src/main.js` has one added line, `installCheats()`.

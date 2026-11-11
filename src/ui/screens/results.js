@@ -1,6 +1,6 @@
 // The results screen: win/lose, stats, Spark Dust earned, unlocks, next steps.
 // recordRunEnd runs ONCE per finished run, then the saved run is cleared.
-// Owner: AI-7
+// Owner: AI-7 (covered by AI-4 in round 5: celebration for a won run, calm look for a lost run)
 
 import { go, getMeta, saveCurrentMeta } from '../ui.js';
 import { makeButton } from '../components/button.js';
@@ -19,6 +19,9 @@ import { getInventor } from '../../data/inventors.js';
 import { startNormalRun } from '../startRun.js';
 import { CHEATED_TEXT } from '../flow.js';
 import { lossTipText, neededText } from '../teach.js';
+import { currentTier, settingsNow } from './fxBase.js';
+import { makeMedal, makeShiftPips, burstFrom } from './resultsFx.js';
+import { runRating, burstCount, lostLine } from '../../run/celebration.js';
 
 let timers = [];
 
@@ -85,14 +88,31 @@ export function mount(root, params) {
   const won = summary.won;
   const screen = el('div', 'screen resultsScreen');
   screen.dataset.screen = 'results';
+  const cheatedRun = run.cheated === true;
+  const tier = currentTier();
+  const rating = runRating(run.history, won);
   screen.appendChild(el('h1', 'resultsTitle ' + (won ? 'good' : 'bad'), won ? 'RUN COMPLETE' : 'RUN OVER'));
 
+  // A won run: a medal with a burst of light. A lost run: a calm line and one dot per shift.
+  let burstAnchor = null;
+  if (won && !cheatedRun) {
+    const medal = makeMedal(rating);
+    screen.appendChild(medal);
+    burstAnchor = medal;
+  } else if (!won && !cheatedRun) {
+    const calm = el('div', 'calmBox');
+    calm.append(makeShiftPips(run.history || []), el('div', 'dim', lostLine(summary.shiftsCleared)));
+    screen.appendChild(calm);
+  }
+
   const stats = el('div', 'panel');
-  stats.append(
-    statRow('Shifts cleared', summary.shiftsCleared + ' / 8'),
-    statRow('Best Fire', formatNumber(summary.bestFire || 0)),
-    statRow('Parts owned', String(summary.partsOwned.length))
-  );
+  const clearedNum = el('div', 'num', tier === 'none' ? String(summary.shiftsCleared) : '0');
+  const bestNum = el('div', 'num', '0');
+  const clearedRow = el('div', 'row statRow');
+  clearedRow.append(el('div', 'dim', 'Shifts cleared'), el('div', 'spacer'), clearedNum);
+  const bestRow = el('div', 'row statRow');
+  bestRow.append(el('div', 'dim', 'Best Fire'), el('div', 'spacer'), bestNum);
+  stats.append(clearedRow, bestRow, statRow('Parts owned', String(summary.partsOwned.length)));
   screen.appendChild(stats);
 
   // A friendly tip after a loss. Never blames the player.
@@ -141,6 +161,12 @@ export function mount(root, params) {
   playSfx(won ? 'win' : 'lose');
   buzz(won ? 'heavy' : 'medium');
   emit('ui:runEnded', { won: won });
+  // The numbers count up. A win throws light from the medal (medium and high quality, not with reduce motion).
+  timers.push(setTimeout(function () {
+    tickNumber(clearedNum, 0, summary.shiftsCleared, 700);
+    tickNumber(bestNum, 0, summary.bestFire || 0, 900);
+    if (burstAnchor) burstFrom(burstAnchor, tier === 'none' ? 0 : burstCount(settingsNow()), run.seed);
+  }, 250));
   if (!cheated) {
     timers.push(setTimeout(function () {
       tickNumber(dustNum, 0, gains.dustEarned, 900);

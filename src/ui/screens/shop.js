@@ -1,5 +1,5 @@
 // The shop between shifts: offers, reroll, bench (to sell), mini board, Next shift.
-// Owner: AI-7
+// Owner: AI-7 (covered by AI-4 in round 5: buy, sell and reroll animations, shift cleared strip)
 
 import { go, getMeta, saveCurrentMeta, setCurrentRun } from '../ui.js';
 import { makeButton, setButtonLabel } from '../components/button.js';
@@ -20,6 +20,10 @@ import { startNextShift } from '../../run/runState.js';
 import { benchSizeOf } from '../../run/runRules.js';
 import { reasonText, screenForPhase } from '../flow.js';
 import { ownedCount, ownedHintText, SHOP_TIP } from '../teach.js';
+import { currentTier } from './fxBase.js';
+import { makeGhost, flyGhost, dealOffers, dimSold, pulse, floatLabel, tickCoins } from './shopFx.js';
+import { makeClearedStrip } from './resultsFx.js';
+import { starsForShift } from '../../run/celebration.js';
 
 let run = null;
 let view = null;
@@ -28,6 +32,7 @@ let mergedPartId = '';
 let els = null;
 let timers = [];
 let leaving = false; // a go() is already on its way
+let celebrated = ''; // the shift whose cleared strip was already shown in this session
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -99,7 +104,22 @@ function draw() {
 }
 
 // ---------- actions ----------
+// The card that just arrived on the bench (the merged one after a level up).
+function benchArrival(partId, merged) {
+  const cards = els.bench.querySelectorAll('.partCard');
+  let found = null;
+  cards.forEach(function (c) {
+    if (merged && c.classList.contains('merged')) found = c;
+    if (!merged && c.dataset.partId === partId) found = c;
+  });
+  return found || els.bench;
+}
+
 function onBuy(index) {
+  const tier = currentTier();
+  const oldCoins = run.coins;
+  const partId = run.offers[index] ? run.offers[index].partId : '';
+  const ghost = makeGhost(els.offers.children[index]);
   const out = buyOffer(run, index);
   if (!out.ok) { refuse(out.reason); return; }
   buzz('light');
@@ -116,10 +136,21 @@ function onBuy(index) {
   saveRun(run);
   emit('ui:bought', { index: index });
   draw();
+  dimSold(els.offers.children[index], tier);
+  tickCoins(els.coins, oldCoins, run.coins, tier);
+  const target = benchArrival(partId, !!(out.merged && out.merged.length > 0));
+  if (target !== els.bench) target.style.opacity = '0';
+  flyGhost(ghost, target, tier).then(function () {
+    target.style.opacity = '';
+    pulse(els.coins, tier);
+  });
 }
 
 function onSell() {
   if (selectedBench < 0) return;
+  const tier = currentTier();
+  const oldCoins = run.coins;
+  const ghost = makeGhost(els.bench.querySelector('.partCard.isSelected'));
   const out = sellPart(run, { kind: 'bench', index: selectedBench });
   if (!out.ok) { refuse(out.reason); return; }
   playSfx('sell');
@@ -129,9 +160,16 @@ function onSell() {
   saveRun(run);
   emit('ui:sold', { coins: out.coins });
   draw();
+  tickCoins(els.coins, oldCoins, run.coins, tier);
+  flyGhost(ghost, els.coins, tier).then(function () {
+    pulse(els.coins, tier);
+    floatLabel(els.coins, '+' + formatNumber(out.coins), tier);
+  });
 }
 
 function onReroll() {
+  const tier = currentTier();
+  const oldCoins = run.coins;
   const out = rerollOffers(run);
   if (!out.ok) { refuse(out.reason); return; }
   playSfx('reroll');
@@ -139,6 +177,8 @@ function onReroll() {
   saveRun(run);
   emit('ui:rerolled', {});
   draw();
+  dealOffers(els.offers, tier);
+  tickCoins(els.coins, oldCoins, run.coins, tier);
 }
 
 function onNext() {
@@ -160,6 +200,18 @@ function onCheatChanged() {
   if (selectedBench >= run.bench.length) selectedBench = -1;
   mergedPartId = '';
   draw();
+}
+
+// The "Shift N cleared" strip, shown once per shift in a session (not after a cheat or a reload mid-shop).
+function clearedStripFor(current) {
+  const history = current.history || [];
+  const entry = history.length > 0 ? history[history.length - 1] : null;
+  if (!entry || entry.shift !== current.shift || !(entry.total >= entry.target)) return null;
+  const key = current.seed + ':' + current.shift;
+  if (celebrated === key) return null;
+  celebrated = key;
+  const coins = current.lastFire && current.lastFire.coinsEarned ? current.lastFire.coinsEarned : 0;
+  return makeClearedStrip(entry, starsForShift(entry.total, entry.target), coins, currentTier());
 }
 
 // ---------- mount ----------
@@ -200,6 +252,8 @@ export function mount(root, params) {
     setFlag('shopTip', true);
   }
   body.append(offers, reroll, mini, bench, panel);
+  const strip = clearedStripFor(run);
+  if (strip) body.insertBefore(strip, body.firstChild);
   screen.append(top, body, next);
   root.appendChild(screen);
   els = { coins: coins, offers: offers, reroll: reroll, bench: bench, panel: panel };

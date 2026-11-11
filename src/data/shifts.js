@@ -50,3 +50,17 @@ export const BONUS_CELL_RULES = {
 export const LOSS_TIP_RULES = {
   unspentCoins: 6
 };
+
+// Stars, medals and the size of the light show on the shop and results screens.
+// A shift scores 1 star for reaching the target, 2 for 1.5x, 3 for 2.5x.
+// A won run earns a medal from its share of all possible stars.
+export const CELEBRATION_RULES = {
+  starRatios: [1, 1.5, 2.5],
+  silverShare: 0.4,
+  goldShare: 0.7,
+  burstPieces: { low: 12, medium: 30, high: 60 },
+  flightMsMin: 260,
+  flightMsMax: 520,
+  staggerStepMs: 70,
+  staggerMaxMs: 350
+};

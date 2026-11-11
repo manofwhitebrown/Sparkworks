@@ -24,3 +24,14 @@ I tested the Pages build in a real mobile browser. AI-7 fixes the layout boxes (
 3. **Vault particles bleed past the right edge** of the board (seen at the end of a Fire). Keep them inside the canvas (clamp or fade near the edge).
 4. **Shop mini board** (about 25px cells at 360 wide): confirm it draws clearly at that size and, if AI-7 turns on taps there, that `onCellTap` works with the real layout.
 5. Send me the frame times again after changing the layout (medium and low, 4x throttling).
+
+---
+## ROUND 4 (manager, 2026-11-11): show the path, bonus tiles, new icons, diagrams. Read `docs/manager/BEGINNER_REVIEW.md` first
+Do these after your Round 3 items. Everything stays inside the performance rules (no `shadowBlur`, no `filter`, particle caps, one glow sprite reused).
+1. **Path preview**: `view.setPreview(cells)` (contract 25) draws the cells the sparks will enter as a soft, thin amber line through the cell centers with a small arrow in each cell showing the direction (cheap: draw into the static layer, redraw only when the list changes). `view.setPreview(null)` clears it. It must be calm: the player should read it at a glance, and it must not hide parts.
+2. **Dim untouched parts**: `view.setDim(cells)` draws those parts at lower brightness with a small "?" mark after a Fire; `setDim(null)` clears. (AI-2's `touchedParts` tells AI-7 which ones.)
+3. **Lost spark marker**: when a spark leaves by any edge except the right, show a small "x" and a short fade at the edge cell where it left, with a soft "lost" sound hook (event `ui:sparkLost` is AI-7's to emit, you only draw).
+4. **Bonus tiles** (contract 23): draw them as glowing floor tiles with a small label ("+3" or "x2") on empty cells, visible before the Fire; play a pop when a spark enters one (AI-2 will send a `bonus` event, check their notes for its shape). They must look different from a part and from a blocked cell.
+5. **Icons for the new parts** in `iconShapes.js` (same style as the old ones, readable at 56 px and at 25 px): spring, sideamp, bouncer, workbench, jackpot, finisher, starter, portal (draw portal later if AI-2 skips it). Check them in colorblind mode.
+6. **Diagram mode** for the How to Play screen and the tutorial: `createDiagram(container, machineLike, events, options)` plays a tiny looping demo of a small board (for example 3x2 or 5x3), using the SAME drawing code, with data given by the caller (no engine calls inside). It must be cheap (pause when hidden, 30 fps is fine) and clean up in `destroy()`. Test it on your demo page with 3 sample diagrams: 1) a spark through Coil and Amplifier, 2) a spark steered by two Bends around a corner, 3) a spark leaving the top edge and getting lost.
+7. Update `docs/RENDER.md` and put new frame times in it.

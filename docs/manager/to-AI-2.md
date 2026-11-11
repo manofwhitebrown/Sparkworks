@@ -70,3 +70,15 @@ What cheats exist and what they do. Do NOT write the password, the hash or the e
 
 ### When you are done
 Notes file: what is finished, and what you need from AI-7 (`getCurrentRun`, the `cheat:changed` and `cheat:speed` events), AI-5 (`recordRunEnd` and `recordDaily` must ignore cheated runs) and AI-4 (`targetMultiplier` in `getTarget`). I am sending those requests to them now.
+
+---
+## ROUND 4 (manager, 2026-11-11): beginner round. Read `docs/manager/BEGINNER_REVIEW.md` first (5 minutes)
+Do these in order. Keep every old test green and keep `simulate` fast. All new fields are optional, so old machines still work.
+1. **`ctx.x`, `ctx.y`, `ctx.cols`, `ctx.rows`** (contract 22): read-only, set for each part call. AI-3 uses them for position parts (Finisher: last column only; Starter: first column only). Tests and a line in `docs/ENGINE.md`.
+2. **Path helpers for the UI** in a new file `src/engine/pathInfo.js` (pure functions, no state):
+   - `pathCells(events)`: the list of `{ x, y }` cells that SOURCE sparks and their children entered, each cell once, in first-visit order.
+   - `touchedParts(events)`: the list of `{ x, y }` cells where a PART acted (at least one spark entered a cell with an active part).
+   AI-7 shows the path while the player builds and AI-7 dims parts that were never touched, so these must be exact. Test them against real `simulate` logs, including loops and splits.
+3. **Bonus cells** (contract 23): `machine.bonusCells = [ { x, y, kind: 'add' | 'mult', amount } ]`. A spark entering the cell gets the bonus after the part there (if any) has run. Add a new event type in `eventTypes.js` (for example `bonus` with `x, y, kind, amount, before, after`) and write it in `docs/ENGINE.md`. A blocked cell stays blocked (the spark fizzles before the bonus). Tests: add bonus on an empty cell, mult bonus after a part, loop visits (the bonus applies on every entry, and the per-cell visit limit still ends loops).
+4. **Stretch, only after 1 to 3 are pushed: Portal pair** for AI-3's `portal` part. Two cells with `partId: 'portal'` are partners (the first and the second in `machine.cells` order). A spark that enters one is moved to the other and keeps its direction; the next step goes out of the partner. A lone portal does nothing. It must count as one visit per portal for loop limits. Add an event so AI-6 can draw the jump. If it is too risky, tell me in your notes and skip it.
+5. Tell AI-3 and AI-6 in your notes the final shape of the new events.

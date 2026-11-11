@@ -21,5 +21,12 @@ Bugs, worst first (owners in brackets, details in each `to-AI-N.md`):
 8. Tiny 11px text; uneven shop card heights [AI-7, AI-5].
 Rule for the round: every item must look right at 320x568, 360x640, 375x667, 360x740, 390x844, 412x915, 430x932, normal and largeText. AI-8 checks and reports.
 
+## ROUND 4 (2026-11-11): make it beginner-proof, then give it more to play with
+The owner did not know sparks can be steered to side cells. The tutorial never teaches it. Full review: `docs/manager/BEGINNER_REVIEW.md` (12 stuck points). Order of work for everybody: ROUND 3 first, then ROUND 4.
+- **A. Teach it:** path preview, "never touched" feedback, How to Play screen, tutorial v2 with a steering lesson, plain part texts with examples, Overload banner, loss tips, Gentle mode, Hint button. (AI-7 leads, AI-6 draws, AI-8 tutorial and words, AI-3 texts, AI-2 path helpers.)
+- **B. More to play with:** 8 new parts, bonus tiles on side cells, 2 new inventors, 3 new twists, about 8 new achievements. (AI-3, AI-2, AI-4, AI-5, AI-6 icons.)
+- **C. Keep it honest:** bot and balance with the new content, one set of words (`docs/WORDS.md`), a plain-text test. (AI-8.)
+New contract items 21 to 27 are at the end of `docs/CONTRACT.md`.
+
 ## Rules reminder
 Only edit files you own. Small pushes. `npm test` and `npm run build` must be green before every push.

@@ -3,7 +3,7 @@
 The MVP is done (463 tests green). This round is about look and feel. Light is the hero: dark graphite, warm amber spark, big clean numbers. Premium, never cheap.
 
 ## Ownership change for this round
-AI-7 is out of capacity. Until the owner says otherwise, its files are covered like this (this overrides the table in docs/CONTRACT.md section 2 for this round only):
+AI-7 is almost out of capacity (about 90% used) and only does the SMALL TASKS listed under "AI-7" below. Everything else of its is covered like this (this overrides the table in docs/CONTRACT.md section 2 for this round only):
 
 | Files that were AI-7's | Covered by |
 |---|---|
@@ -35,10 +35,15 @@ No `shadowBlur`, no `ctx.filter`, no `backdrop-filter`, no big blurred shadows o
 **AI-1 (covering AI-7): UI chrome, home, run screen, transitions**
 1. Tokens and surfaces: clearer type hierarchy, big numbers as the hero, panels with subtle static gradients and one pre-rendered noise texture, better buttons (pressed state, primary glow with opacity only).
 2. Optional display font (decision 2).
-3. Home: an idle animated board (a spark looping through a tiny demo machine, drawn with AI-6's `createBoardView`, paused when the screen is hidden) and a proper wordmark.
-4. Screen transitions: one consistent, short, transform/opacity motion. Respect `reduceMotion`.
+3. Home: an idle animated board (a spark looping through a tiny demo machine, drawn with AI-6's `createBoardView`, paused when the screen is hidden). The wordmark is AI-7's small task.
+4. (Screen transitions are AI-7's small task, not yours.)
 5. Run screen: polish HUD, FIRE button and bench using the new tokens; wire `ui:merged` to AI-6's flourish.
 6. Update `docs/STYLE_GUIDE.md`. Re-check the 7 phone sizes in `docs/QA.md` section 13 (board must not overlap the HUD).
+
+**AI-7 (small tasks only, it is nearly out of capacity; stop when told you are at your limit)**
+1. Screen transitions in `src/ui/ui.js` (`showScreen`): one consistent, short (about 220 ms) fade plus small slide using only `transform` and `opacity`; instant under `reduceMotion`. Add a test if there is logic.
+2. A proper wordmark for the home screen: "SPARKWORKS" as an inline SVG or CSS text with the spark mark, in `home.js` and `components/` only (a new file `src/ui/components/wordmark.js` is fine). Use tokens, no raw hex. Coordinate with AI-1, who edits the rest of `home.js`: pull before every edit and keep your change to the title area.
+3. Write what you did in `docs/notes/AI-7.md`. If you cannot finish something, say exactly what is left so AI-1 can take it.
 
 **AI-4: shop and results screens (covering AI-7)**
 1. Shop: buy, sell and reroll animations (card flies to bench, coin count ticks, sold card dims). Offer cards use the new part tile look from AI-6.

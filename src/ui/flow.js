@@ -95,3 +95,15 @@ export function fireSpeedFrom(value) {
 
 // The line shown on the results screen for a cheated run.
 export const CHEATED_TEXT = 'Cheated run: no rewards';
+
+// The scripted tutorial run is marked `tutorial: true`. It must never count as a real run.
+export function isTutorialRun(run) {
+  return !!run && run.tutorial === true;
+}
+
+// The saved run that Home may offer as "Continue": a real run that is still going.
+export function continuableRun(run) {
+  if (!run || isTutorialRun(run)) return null;
+  if (run.phase === 'build' || run.phase === 'shop') return run;
+  return null;
+}

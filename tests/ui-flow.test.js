@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   progressRatio, shiftText, firesLeftText, nextScreenAfterFire, fireBannerText, backAction,
-  screenForPhase, fireSpeedFrom
+  screenForPhase, fireSpeedFrom, isTutorialRun, continuableRun
 } from '../src/ui/flow.js';
 
 test('progressRatio clamps and survives bad input', () => {
@@ -67,4 +67,20 @@ test('fireSpeedFrom accepts the cheat speeds and ignores junk', () => {
   assert.deepEqual(fireSpeedFrom(undefined), { speed: 1, instant: false });
   assert.deepEqual(fireSpeedFrom(-2), { speed: 1, instant: false });
   assert.deepEqual(fireSpeedFrom('fast'), { speed: 1, instant: false });
+});
+
+test('isTutorialRun only matches the scripted run', () => {
+  assert.equal(isTutorialRun({ tutorial: true, phase: 'build' }), true);
+  assert.equal(isTutorialRun({ phase: 'build' }), false);
+  assert.equal(isTutorialRun(null), false);
+});
+
+test('continuableRun ignores tutorial runs and finished runs', () => {
+  const real = { phase: 'build', shift: 2 };
+  assert.equal(continuableRun(real), real);
+  assert.equal(continuableRun({ phase: 'shop' }).phase, 'shop');
+  assert.equal(continuableRun({ phase: 'build', tutorial: true }), null);
+  assert.equal(continuableRun({ phase: 'won' }), null);
+  assert.equal(continuableRun({ phase: 'lost' }), null);
+  assert.equal(continuableRun(null), null);
 });

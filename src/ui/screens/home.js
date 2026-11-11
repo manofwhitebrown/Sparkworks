@@ -7,6 +7,7 @@ import { INVENTORS, getInventor } from '../../data/inventors.js';
 import { VOLTAGES } from '../../data/voltage.js';
 import { loadRun } from '../../core/save.js';
 import { startNormalRun } from '../startRun.js';
+import { continuableRun } from '../flow.js';
 import { maxVoltageFor } from '../../meta/voltage.js';
 import { formatNumber } from '../../core/format.js';
 
@@ -92,8 +93,9 @@ function build(screen) {
   screen.appendChild(makePicker(meta, rebuild));
   screen.appendChild(makeVoltageStepper(meta, rebuild));
 
-  const saved = loadRun();
-  if (saved && (saved.phase === 'build' || saved.phase === 'shop')) {
+  // A saved tutorial run is not a real run: no Continue button for it.
+  const saved = continuableRun(loadRun());
+  if (saved) {
     const label = 'Continue run (shift ' + saved.shift + ')';
     screen.appendChild(makeButton(label, function () {
       go(saved.phase === 'shop' ? 'shop' : 'run');

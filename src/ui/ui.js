@@ -20,11 +20,11 @@ import { loadMeta, saveMeta } from '../core/save.js';
 import { initAudio, applySettings as applyAudioSettings } from '../audio/audio.js';
 import { startMusic } from '../audio/music.js';
 import { setHapticsEnabled } from '../platform/haptics.js';
-import { shouldShowTutorial, startTutorial, tutorialRun } from '../tutorial/tutorial.js';
-import { saveRun } from '../core/save.js';
+import { shouldShowTutorial, startTutorial, tutorialRun, markTutorialDone } from '../tutorial/tutorial.js';
+import { saveRun, loadRun, clearRun } from '../core/save.js';
 import { openModal, isModalOpen } from './components/modal.js';
 import { makeButton } from './components/button.js';
-import { backAction, fireSpeedFrom } from './flow.js';
+import { backAction, fireSpeedFrom, isTutorialRun } from './flow.js';
 import { on } from '../core/events.js';
 
 const SCREENS = { home, run, shop, results, workshop, patentBook, daily, settings };
@@ -114,6 +114,17 @@ function onPopState() {
   else history.pushState({ screen: 'home' }, ''); // already home: stay
 }
 
+// ---------- tutorial end ----------
+// The tutorial announces that it is over (last step or Skip). We own the live meta,
+// so we mark it done, drop the scripted run from the save slot and go home.
+function onTutorialFinished() {
+  markTutorialDone(meta);
+  saveCurrentMeta();
+  if (isTutorialRun(loadRun())) clearRun();
+  stopTutorial();
+  go('home');
+}
+
 // ---------- start ----------
 function onFirstTap() {
   if (audioStarted) return;
@@ -131,6 +142,7 @@ export function startApp() {
   window.addEventListener('popstate', onPopState);
   // main.js says the page is being hidden: write the meta now (runs save after every action).
   on('core:flush', saveCurrentMeta);
+  on('tutorial:finished', onTutorialFinished);
   document.addEventListener('pointerdown', onFirstTap, { once: true });
   history.replaceState({ screen: 'home' }, '');
 

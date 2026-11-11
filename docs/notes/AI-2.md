@@ -73,3 +73,40 @@
 7. `ctx` is one reused object per `simulate` call (fast). Parts must not keep a reference to it.
 8. `tests/engine-helpers.test.js` holds the shared fake parts; it ends in `.test.js` so it is also run by `npm test` (it has one tiny test).
 
+
+## ROUND 5 (AI-2 section, written by AI-3 who is covering for AI-2 while it is away)
+Only AI-2 files are touched: `src/engine/fireStats.js`, `tests/engine-fireStats.test.js`, `docs/ENGINE.md` (all pushed earlier by AI-2, commit `2ba1e5f`) and this notes file. No AI-6 file was edited.
+
+### 1. fireStats: done, check repeated
+- `fireStats(events)` returns `{ chainLength, biggestMultiplier, biggestBank, bankedCount, lostCount, splitCount, intensity }`. 13 tests pass.
+- Speed: **0.019 ms** for a 668-event, 120-spark Fire (limit was 1 ms). No NaN, no Infinity.
+- **Not used yet:** `src/render/fireScale.js` (AI-6) still does its own math and says it will switch when `fireStats` lands. It has landed. AI-6: please use `fireStats(events).intensity` (and `biggestBank`, `bankedCount`) instead of `fireScale`. AI-8: same for audio intensity.
+
+### 2. Review of AI-6's render code (per-frame allocations and frame cost)
+**How I measured (be careful with the numbers).** A scratch Node script (outside the repo) runs the real `createBoardView` with a recording fake 2D context, real `simulate` events, and steps `frame(1/60)` by hand. The worst case is a real 676-event Fire with **120 sparks** (a 5x4 board with a Prism and 4 Splitters), 3409 frames of 16.7 ms. I also used V8's sampling heap profiler to see which function allocates.
+- **JS time per frame is tiny:** 0.02 to 0.12 ms average, 0.04 ms p95, on a desktop CPU with a stub context. This matches AI-6's own profile (render JavaScript about 3% of a frame).
+- **I could NOT measure pixel cost** (rasterising, `drawImage`, strokes). That needs a real browser, and none is available here. AI-6's table in `docs/RENDER.md` (dev page, 4x CPU throttle) is still the only real number. AI-8 / the owner: please re-measure on the dev page after the round 5 effects (high tier was already 16% of frames over 20 ms at 4x).
+- **Canvas calls per frame (high quality):** typical small Fire (6 sparks): 44 `drawImage`, 15 `stroke`, 1 gradient. 120-spark Fire, on average over the whole Fire: **88 `drawImage` and 85 `stroke`** (each with its own `beginPath`, `moveTo`, `lineTo`), 1 gradient. On `low`: 88 `drawImage`, 5 `stroke`, 1 gradient.
+- **Allocation (young garbage, about 1 MB semispace test):** roughly 8 KB per frame on high and 5 KB per frame on low in the 120-spark worst case (the figure is rough: V8 boxes doubles passed to canvas calls, and the profiler sees that). No major GC during a Fire; `Float32Array` pools in `effects` and `particles` are doing their job. Ranking by sampled allocation on high (120-spark Fire):
+
+| share | function | why |
+|-------|----------|-----|
+| about 40% | `drawTrail` (`sparkDraw.js`) | medium/high: one `beginPath/moveTo/lineTo/stroke` plus new `globalAlpha` and `lineWidth` for EVERY trail segment of EVERY spark (up to 16 sparks x 8 segments = 128 strokes a frame) |
+| 7% | `effects.update` | many `Math.max` on doubles per cell per frame (small) |
+| 5% | `drawSparks` | 3 `drawGlow` stamps per spark, doubles as arguments |
+| 4% | `drawWires` | 3 flow dots per lit wire (medium/high) |
+| 3% | `drawVault` | builds a `font` string and calls `formatNumber(Math.round(v.shown))` EVERY drawn frame |
+| 3% | `drawTileCached`, `drawVaultFill`, `drawPopups`, `drawCellLight` | small |
+
+### 3. Findings and asks for AI-6 (each is small and keeps the hard rules)
+1. **`drawTrail` strokes (biggest cost).** Batch the segments: draw the trail as 2 or 3 alpha buckets (one path and one `stroke` per bucket), or shorten the trail when many sparks are alive (for example 4 segments when more than 6 sparks are on screen). Same look, about 5x fewer canvas calls in the worst case.
+2. **`drawVaultFill` creates a new gradient every frame** while the vault is filling, **also on `low`**. The brief says `low` must run exactly as smooth as today, so this is new work on `low`. Cache one pre-made fill picture (draw it once, then `drawImage` a slice of it), or skip the gradient on `low` (flat colour).
+3. **`drawVault`:** cache the formatted number string until `Math.round(v.shown)` changes, and the `font` string until the swell step changes. Right now both are rebuilt on every frame that draws.
+4. **`drawNotes` sets `ctx.font` (a new string) every frame even when no note is shown.** Set it only when at least one note exists. Same idea for `drawPopups`: cache the font string per rounded size.
+5. **`drawParts` makes one `state` object per part per frame** (up to 20 objects) and, while the dim "?" badges are on, builds a `x + ',' + y` string per part per frame. Reuse one state object and turn `dimKeys` into a plain array indexed by `y * cols + x` when `setDim` is called.
+6. **`drawGhost` (while dragging a part)** uses the uncached `drawPartTile`, which builds 2 gradients per frame. It could use the cached tile slot. Only during a drag, so low priority.
+7. Not a problem: `particles.draw` loops over all 150 slots but allocates nothing; the idle board does not redraw; legendary shimmer redraws at about 15 fps only when a legendary part is on the board.
+
+### 4. Status
+- `npm test` and `npm run build` green when this was written (see the AI-3 notes for the last count).
+- Nothing blocks AI-2's other work. If AI-2 is back, items 1 to 6 above need NO engine change; they are all in AI-6's files.

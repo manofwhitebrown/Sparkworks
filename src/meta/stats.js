@@ -14,13 +14,16 @@ export function dustFor(meta, summary) {
   const base = r.base + r.perShiftCleared * summary.shiftsCleared + (summary.won ? r.winBonus : 0) +
     r.perVoltage * (summary.voltage - 1);
   const boost = upgradeLevel(meta, 'dustBoost');
-  return Math.floor(base * (100 + r.boostPercentPerLevel * boost) / 100);
+  const percent = summary.gentle === true ? r.gentlePercent : 100;
+  // One rounding step at the end: base x boost% x gentle% (all in whole percent).
+  return Math.floor(base * (100 + r.boostPercentPerLevel * boost) * percent / 10000);
 }
 
 function updateStats(meta, run, summary) {
   const stats = meta.stats;
   stats.runs += 1;
-  if (summary.won) stats.wins += 1;
+  // A Gentle win is not a win: it does not count here, in the voltage matrix or in win achievements.
+  if (summary.won && summary.gentle !== true) stats.wins += 1;
   if (summary.totalBanked > stats.bestTotal) stats.bestTotal = summary.totalBanked;
   stats.fires += typeof run.firesUsed === 'number' ? run.firesUsed : (Array.isArray(run.history) ? run.history.length : 0);
   stats.partsBought += typeof run.partsBought === 'number' ? run.partsBought : 0;
@@ -48,9 +51,10 @@ export function recordRunEnd(meta, run, deps) {
   const summary = normalizeForStats(getSummary(run), run);
   run.recorded = true;
   updateStats(meta, run, summary);
-  if (summary.won) recordWin(meta, summary.inventorId, summary.voltage);
+  if (summary.won && summary.gentle !== true) recordWin(meta, summary.inventorId, summary.voltage);
   // A daily run keeps its date string in summary.daily: record the result of the day here.
-  if (typeof summary.daily === 'string' && summary.daily !== '') {
+  // A Gentle run is never part of the daily contract.
+  if (summary.gentle !== true && typeof summary.daily === 'string' && summary.daily !== '') {
     recordDaily(meta, summary.daily, { won: summary.won, shiftReached: summary.shiftReached, bestFire: summary.bestFire || 0 });
   }
   const dustEarned = dustFor(meta, summary);
@@ -70,7 +74,10 @@ function normalizeForStats(summary, run) {
   if (typeof s.totalBanked !== 'number') s.totalBanked = 0;
   if (typeof s.bestFire !== 'number') s.bestFire = 0;
   if (!Array.isArray(s.partLevels)) s.partLevels = levelsOf(run);
+  // Gentle if the summary says so OR the run itself carries the flag (bonuses.gentle, contract 24).
+  s.gentle = s.gentle === true || (run.bonuses && run.bonuses.gentle === true) || run.gentle === true;
   if (!s.daily) s.daily = run.daily ? run.daily : false;
+  if (s.gentle) s.daily = false;
   return s;
 }
 

@@ -7,12 +7,15 @@
 // Dust paid when a run ends:
 //   (base + perShiftCleared x shiftsCleared + (won ? winBonus : 0) + perVoltage x (voltage - 1))
 //   x (1 + boostPercentPerLevel / 100 x dustBoost level), rounded down.
+// A Gentle run then gets gentlePercent of that.
 export const DUST_RULES = {
   base: 2,
   perShiftCleared: 2,
   winBonus: 10,
   perVoltage: 3,
-  boostPercentPerLevel: 10
+  boostPercentPerLevel: 10,
+  // A Gentle-mode run pays this percent of the normal dust (rounded down).
+  gentlePercent: 50
 };
 
 export const WORKSHOP_UPGRADES = [

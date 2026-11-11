@@ -4,9 +4,17 @@
 //   bestFire, totalBanked, partsOwned: [ids], coinsLeft, partLevels: [numbers] (optional) }
 // Owner: AI-5
 //
+// New parts and inventors: an achievement whose reward names a part or inventor that is not in the
+// game yet is left out of the list (see the end of the file), so the list can be written before
+// AI-3 and AI-4 push, and switches on by itself. tests/meta-achievements.test.js fails loudly if a
+// part or inventor in the real game has no achievement.
+//
 // Every threshold (shift numbers, fire sizes, run counts...) is in TARGETS below, and every
 // dust reward is in the reward of its achievement. The descriptions are built from TARGETS,
 // so the text and the check can never disagree.
+
+import { allPartIds, partsWithTag } from '../engine/parts/index.js';
+import { INVENTORS } from './inventors.js';
 
 const TARGETS = {
   firstShift: 1,
@@ -25,15 +33,46 @@ const TARGETS = {
   mainsVoltage: 2,
   highVoltage: 3,
   overloadVoltage: 4,
-  allVoltages: 4
+  allVoltages: 4,
+  steerShift: 5,
+  bankerShift: 6,
+  gentleShift: 3,
+  routeParts: 3,
+  tenKFire: 10000,
+  giantFire: 10000000,
+  bigHoard: 10
 };
 
 function plain(n) {
   return n >= 1000 ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ',') : String(n);
 }
 
+// A Gentle-mode win never counts as a win (manager contract 24).
+function realWin(summary) {
+  return summary.won === true && summary.gentle !== true;
+}
+
 function wonWith(summary, inventorId) {
-  return summary.won === true && summary.inventorId === inventorId;
+  return realWin(summary) && summary.inventorId === inventorId;
+}
+
+// How many different parts with this tag the run owned.
+function distinctWithTag(summary, tag) {
+  const tagged = partsWithTag(tag).map(function (p) { return p.id; });
+  const owned = distinctParts(summary);
+  let count = 0;
+  for (let i = 0; i < owned.length; i++) {
+    if (tagged.indexOf(owned[i]) !== -1) count++;
+  }
+  return count;
+}
+
+function wonWithEveryInventor(meta) {
+  for (let i = 0; i < INVENTORS.length; i++) {
+    const won = meta.wins[INVENTORS[i].id];
+    if (!won || Object.keys(won).length === 0) return false;
+  }
+  return true;
 }
 
 function wonVoltage(meta, voltage) {
@@ -68,7 +107,8 @@ function distinctParts(summary) {
   return seen;
 }
 
-export const ACHIEVEMENTS = [
+// Every achievement, including ones whose reward is not in the game yet (tests use this).
+export const ALL_ACHIEVEMENTS = [
   // Easy: your first steps
   { id: 'firstLight', name: 'First Light', description: 'Clear shift ' + TARGETS.firstShift + '.',
     check: (meta, s) => s.shiftsCleared >= TARGETS.firstShift, reward: { type: 'dust', amount: 5 } },
@@ -79,7 +119,7 @@ export const ACHIEVEMENTS = [
   { id: 'bigSpark', name: 'Big Spark', description: 'Bank ' + plain(TARGETS.bigFire) + ' in one Fire.',
     check: (meta, s) => s.bestFire >= TARGETS.bigFire, reward: { type: 'part', id: 'compounder' } },
   { id: 'firstWin', name: 'Shift Supervisor', description: 'Win a run.',
-    check: (meta, s) => s.won === true, reward: { type: 'inventor', id: 'drvolt' } },
+    check: (meta, s) => realWin(s), reward: { type: 'inventor', id: 'drvolt' } },
   { id: 'tinkerWin', name: 'Tinkerer', description: 'Win a run with Tinkerbot.',
     check: (meta, s) => wonWith(s, 'tinkerbot'), reward: { type: 'part', id: 'reverser' } },
   { id: 'clockWin', name: 'On the Dot', description: 'Win a run with the Clockmaker.',
@@ -103,7 +143,7 @@ export const ACHIEVEMENTS = [
   { id: 'dailyDone', name: 'Clocked In', description: 'Finish the daily contract.',
     check: (meta, s) => !!s.daily, reward: { type: 'part', id: 'mint' } },
   { id: 'dailyWin', name: 'Daily Grind', description: 'Win the daily contract.',
-    check: (meta, s) => !!s.daily && s.won === true, reward: { type: 'part', id: 'echo' } },
+    check: (meta, s) => !!s.daily && realWin(s), reward: { type: 'part', id: 'echo' } },
   // Long game: runs and wins over time
   { id: 'tenRuns', name: 'Regular', description: 'Finish ' + TARGETS.regularRuns + ' runs.',
     check: (meta) => meta.stats.runs >= TARGETS.regularRuns, reward: { type: 'dust', amount: 10 } },
@@ -117,17 +157,52 @@ export const ACHIEVEMENTS = [
   { id: 'million', name: 'Megawatt', description: 'Bank ' + plain(TARGETS.megaFire) + ' in one Fire.',
     check: (meta, s) => s.bestFire >= TARGETS.megaFire, reward: { type: 'dust', amount: 20 } },
   { id: 'mainsWin', name: 'Mains Master', description: 'Win at Voltage ' + TARGETS.mainsVoltage + '.',
-    check: (meta, s) => s.won === true && s.voltage >= TARGETS.mainsVoltage, reward: { type: 'part', id: 'rectifier' } },
+    check: (meta, s) => realWin(s) && s.voltage >= TARGETS.mainsVoltage, reward: { type: 'part', id: 'rectifier' } },
   { id: 'highWin', name: 'High Voltage Hero', description: 'Win at Voltage ' + TARGETS.highVoltage + '.',
-    check: (meta, s) => s.won === true && s.voltage >= TARGETS.highVoltage, reward: { type: 'part', id: 'overdrive' } },
+    check: (meta, s) => realWin(s) && s.voltage >= TARGETS.highVoltage, reward: { type: 'part', id: 'overdrive' } },
   { id: 'overloadWin', name: 'Overloaded', description: 'Win at Voltage ' + TARGETS.overloadVoltage + '.',
-    check: (meta, s) => s.won === true && s.voltage >= TARGETS.overloadVoltage, reward: { type: 'part', id: 'prism' } },
+    check: (meta, s) => realWin(s) && s.voltage >= TARGETS.overloadVoltage, reward: { type: 'part', id: 'prism' } },
   { id: 'allInventors', name: 'Whole Crew', description: 'Win a run with every inventor.',
-    check: (meta) => !!meta.wins.tinkerbot && !!meta.wins.clockmaker && !!meta.wins.drvolt &&
-      Object.keys(meta.wins.tinkerbot).length > 0 && Object.keys(meta.wins.clockmaker).length > 0 &&
-      Object.keys(meta.wins.drvolt).length > 0,
+    check: (meta) => wonWithEveryInventor(meta),
     reward: { type: 'dust', amount: 25 } },
   { id: 'allVoltages', name: 'Fully Charged', description: 'Win at every voltage.',
     check: (meta) => wonEveryVoltage(meta),
-    reward: { type: 'dust', amount: 30 } }
+    reward: { type: 'dust', amount: 30 } },
+  // New in round 4: the two new inventors, Gentle mode, and rewards for the new parts
+  { id: 'steerer', name: 'Steady Steering', description: 'Clear shift ' + TARGETS.steerShift + '.',
+    check: (meta, s) => s.shiftsCleared >= TARGETS.steerShift, reward: { type: 'inventor', id: 'msbounce' } },
+  { id: 'banker', name: 'Big Saver', description: 'Clear shift ' + TARGETS.bankerShift + '.',
+    check: (meta, s) => s.shiftsCleared >= TARGETS.bankerShift, reward: { type: 'inventor', id: 'banker' } },
+  { id: 'bounceWin', name: 'Bounce Back', description: 'Win a run with Ms. Bounce.',
+    check: (meta, s) => wonWith(s, 'msbounce'), reward: { type: 'part', id: 'spring' } },
+  { id: 'bankerWin', name: 'Paid in Full', description: 'Win a run with The Banker.',
+    check: (meta, s) => wonWith(s, 'banker'), reward: { type: 'part', id: 'workbench' } },
+  { id: 'gentleStart', name: 'Easy Does It', description: 'Clear shift ' + TARGETS.gentleShift + ' in Gentle mode.',
+    check: (meta, s) => s.gentle === true && s.shiftsCleared >= TARGETS.gentleShift, reward: { type: 'part', id: 'starter' } },
+  { id: 'routes', name: 'Road Builder', description: 'Own ' + TARGETS.routeParts + ' different steering parts at once.',
+    check: (meta, s) => distinctWithTag(s, 'route') >= TARGETS.routeParts, reward: { type: 'part', id: 'sideamp' } },
+  { id: 'tenK', name: 'Ten Thousand', description: 'Bank ' + plain(TARGETS.tenKFire) + ' in one Fire.',
+    check: (meta, s) => s.bestFire >= TARGETS.tenKFire, reward: { type: 'part', id: 'bouncer' } },
+  { id: 'spendAll', name: 'Spent It All', description: 'Win a run with 0 coins left.',
+    check: (meta, s) => realWin(s) && s.coinsLeft === 0, reward: { type: 'part', id: 'finisher' } },
+  { id: 'giant', name: 'Giant Spark', description: 'Bank ' + plain(TARGETS.giantFire) + ' in one Fire.',
+    check: (meta, s) => s.bestFire >= TARGETS.giantFire, reward: { type: 'part', id: 'jackpot' } },
+  { id: 'bigHoard', name: 'Packed Bench', description: 'Own ' + TARGETS.bigHoard + ' different parts at once.',
+    check: (meta, s) => distinctParts(s).length >= TARGETS.bigHoard, reward: { type: 'part', id: 'portal' } }
 ];
+
+// Keep an achievement only when its reward exists in the game right now.
+function rewardExists(achievement) {
+  const r = achievement.reward;
+  if (!r) return true;
+  if (r.type === 'part') return allPartIds().indexOf(r.id) !== -1;
+  if (r.type === 'inventor') {
+    for (let i = 0; i < INVENTORS.length; i++) {
+      if (INVENTORS[i].id === r.id) return true;
+    }
+    return false;
+  }
+  return true;
+}
+
+export const ACHIEVEMENTS = ALL_ACHIEVEMENTS.filter(rewardExists);

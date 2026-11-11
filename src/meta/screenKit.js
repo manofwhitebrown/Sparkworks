@@ -19,6 +19,9 @@ const CSS = [
   '.metaTabs .btn { flex: 1; }',
   '.metaCenter { text-align: center; }',
   '.metaBig { font-size: var(--fs-big); font-weight: 700; color: var(--sparkHot); min-height: 1.2em; }',
+  '.metaIntro { display: flex; align-items: center; gap: var(--s3); margin-bottom: var(--s3); padding: var(--s2) var(--s3);',
+  '  border: 1px solid var(--line); border-radius: var(--r1); background: var(--panel); }',
+  '.metaIntro p { flex: 1; margin: 0; font-size: var(--fs-small); }',
   '.metaSwitch { min-width: 64px; }',
   '.metaSwitch.isOn { color: var(--good); }'
 ].join('\n');
@@ -62,4 +65,19 @@ export function makeScreen(root) {
   root.appendChild(screen);
   requestAnimationFrame(function () { screen.classList.add('isShown'); });
   return screen;
+}
+
+// One plain help sentence under the title, shown until the player taps "Got it".
+// key is 'workshop', 'patents' or 'daily' (meta.seenIntro). Returns null when it was already seen.
+export function makeIntro(meta, key, text, onDone) {
+  if (meta.seenIntro && meta.seenIntro[key] === true) return null;
+  const box = el('div', 'metaIntro');
+  box.appendChild(el('p', '', text));
+  box.appendChild(makeButton('Got it', function () {
+    if (!meta.seenIntro) meta.seenIntro = {};
+    meta.seenIntro[key] = true;
+    box.remove();
+    if (onDone) onDone();
+  }, { kind: 'secondary', small: true }));
+  return box;
 }

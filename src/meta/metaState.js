@@ -2,12 +2,31 @@
 // Owner: AI-5
 import { allPartIds } from '../engine/parts/index.js';
 import { WORKSHOP_UPGRADES } from '../data/workshop.js';
+import { INVENTORS } from '../data/inventors.js';
+import { ACHIEVEMENTS } from '../data/achievements.js';
 
 export const STARTING_PARTS = [
   'coil', 'amplifier', 'bend', 'switch', 'splitter', 'battery',
   'anvil', 'counter', 'gambler', 'capacitor', 'dynamo', 'tollgate'
 ];
-export const INVENTOR_IDS = ['tinkerbot', 'clockmaker', 'drvolt'];
+// The three first-visit help lines (Workshop, Patent Book, Daily) stay until the player taps "Got it".
+export const INTRO_KEYS = ['workshop', 'patents', 'daily'];
+
+// Every inventor id the game knows: the data file plus any inventor an achievement can unlock.
+export function knownInventorIds() {
+  const ids = ['tinkerbot'];
+  for (let i = 0; i < INVENTORS.length; i++) {
+    if (ids.indexOf(INVENTORS[i].id) === -1) ids.push(INVENTORS[i].id);
+  }
+  for (let i = 0; i < ACHIEVEMENTS.length; i++) {
+    const r = ACHIEVEMENTS[i].reward;
+    if (r && r.type === 'inventor' && ids.indexOf(r.id) === -1) ids.push(r.id);
+  }
+  return ids;
+}
+
+// Kept for the cheat menu (AI-2): the list of every inventor.
+export const INVENTOR_IDS = knownInventorIds();
 const QUALITIES = ['auto', 'low', 'medium', 'high'];
 const BOOLEAN_SETTINGS = ['sound', 'music', 'reduceMotion', 'largeText', 'colorblind', 'haptics', 'reminders'];
 
@@ -25,6 +44,7 @@ export function defaultMeta() {
     stats: { runs: 0, wins: 0, bestTotal: 0, fires: 0, partsBought: 0 },
     daily: { lastPlayed: '', best: null, streak: 0 },
     tutorialDone: false,
+    seenIntro: { workshop: false, patents: false, daily: false },
     settings: {
       sound: true, music: true, quality: 'auto', reduceMotion: false, largeText: false,
       colorblind: false, haptics: true, reminders: true
@@ -118,6 +138,13 @@ function repairSettings(raw) {
   return out;
 }
 
+function repairIntro(raw) {
+  const out = { workshop: false, patents: false, daily: false };
+  if (!isObject(raw)) return out;
+  for (let i = 0; i < INTRO_KEYS.length; i++) out[INTRO_KEYS[i]] = raw[INTRO_KEYS[i]] === true;
+  return out;
+}
+
 function repairStats(raw) {
   const s = isObject(raw) ? raw : {};
   return {
@@ -143,7 +170,8 @@ export function repairMeta(meta, deps) {
     }
     base.unlockedParts = unlocked;
     base.seenParts = Array.isArray(m.seenParts) ? cleanIdList(m.seenParts, isKnownPart) : STARTING_PARTS.slice();
-    const inventors = cleanIdList(m.unlockedInventors, function (id) { return INVENTOR_IDS.indexOf(id) !== -1; });
+    const knownInventors = knownInventorIds();
+    const inventors = cleanIdList(m.unlockedInventors, function (id) { return knownInventors.indexOf(id) !== -1; });
     if (inventors.indexOf('tinkerbot') === -1) inventors.unshift('tinkerbot');
     base.unlockedInventors = inventors;
     if (isObject(m.achievements)) {
@@ -155,6 +183,7 @@ export function repairMeta(meta, deps) {
     base.stats = repairStats(m.stats);
     base.daily = repairDaily(m.daily);
     base.tutorialDone = m.tutorialDone === true;
+    base.seenIntro = repairIntro(m.seenIntro);
     base.settings = repairSettings(m.settings);
     // Owned by the cheat menu (AI-2): keep it as it is, only when it is a real boolean.
     if (typeof m.cheatsUsed === 'boolean') base.cheatsUsed = m.cheatsUsed;

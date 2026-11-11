@@ -7,7 +7,7 @@ import { playSfx } from '../../audio/sfx.js';
 import { formatNumber } from '../../core/format.js';
 import { WORKSHOP_UPGRADES } from '../../data/workshop.js';
 import { upgradeCost, upgradeLevel, buyUpgrade } from '../../meta/workshop.js';
-import { el, makeHeader, makePips, makeScreen } from '../../meta/screenKit.js';
+import { el, makeHeader, makePips, makeScreen, makeIntro } from '../../meta/screenKit.js';
 
 const REFUSALS = { poor: 'Not enough Spark Dust yet.', maxed: 'Already at the top level.', unknown: 'That upgrade is gone.' };
 
@@ -60,6 +60,8 @@ export function mount(root, params) {
   const screen = makeScreen(root);
   dustPill = el('div', 'pill dust num', '');
   screen.appendChild(makeHeader('Workshop', function () { saveCurrentMeta(); go('home'); }, dustPill));
+  const intro = makeIntro(getMeta(), 'workshop', 'Spend Spark Dust here to get stronger for every run.', saveCurrentMeta);
+  if (intro) screen.appendChild(intro);
   screen.appendChild(el('p', 'dim', 'Earn Spark Dust at the end of every run. Upgrades last forever.'));
   list = el('div', 'metaList');
   screen.appendChild(list);

@@ -1,6 +1,6 @@
 // Daily Contract screen: one shared run per date, the best result of the day, the streak.
 // Owner: AI-5
-import { go, getMeta } from '../ui.js';
+import { go, getMeta, saveCurrentMeta } from '../ui.js';
 import { makeButton } from '../components/button.js';
 import { showToast } from '../components/toast.js';
 import { openModal } from '../components/modal.js';
@@ -13,7 +13,7 @@ import { scheduleDailyReminder } from '../../platform/notifications.js';
 import { bonusesFor } from '../../meta/workshop.js';
 import { unlockedPartIds } from '../../meta/patentBook.js';
 import { todayString, yesterdayOf, dailyConfig, hasPlayedDaily, shareCode } from '../../meta/daily.js';
-import { el, makeHeader, makeScreen } from '../../meta/screenKit.js';
+import { el, makeHeader, makeScreen, makeIntro } from '../../meta/screenKit.js';
 
 function fallbackCopy(text) {
   try {
@@ -105,7 +105,9 @@ export function mount(root, params) {
   const today = todayString();
   const played = hasPlayedDaily(meta, today);
   const screen = makeScreen(root);
-  screen.appendChild(makeHeader('Daily Contract', function () { go('home'); }));
+  screen.appendChild(makeHeader('Daily Contract', function () { saveCurrentMeta(); go('home'); }));
+  const intro = makeIntro(meta, 'daily', 'Everybody gets the same run today. Beat your best.', saveCurrentMeta);
+  if (intro) screen.appendChild(intro);
   const list = el('div', 'metaList');
   list.appendChild(makeContractPanel(today));
   list.appendChild(makeResultPanel(meta, today));

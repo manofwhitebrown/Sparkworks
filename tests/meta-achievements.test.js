@@ -23,7 +23,7 @@ function summaryOf(overrides) {
 }
 
 test('about 25 achievements with unique ids', () => {
-  assert.ok(ACHIEVEMENTS.length >= 22 && ACHIEVEMENTS.length <= 30);
+  assert.ok(ACHIEVEMENTS.length >= 22 && ACHIEVEMENTS.length <= 40);
   const ids = ACHIEVEMENTS.map((a) => a.id);
   assert.equal(new Set(ids).size, ids.length);
 });

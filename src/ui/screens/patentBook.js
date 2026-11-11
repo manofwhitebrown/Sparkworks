@@ -8,7 +8,7 @@ import { allPartIds, getPart } from '../../engine/parts/index.js';
 import { INVENTORS } from '../../data/inventors.js';
 import { VOLTAGES } from '../../data/voltage.js';
 import { partStatus, markSeen, unlockHint, bookPartIds, inventorUnlockHint } from '../../meta/patentBook.js';
-import { el, makeHeader, makeScreen, injectStyles } from '../../meta/screenKit.js';
+import { el, makeHeader, makeScreen, injectStyles, makeIntro } from '../../meta/screenKit.js';
 
 const CSS = [
   '.pbGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--s2); }',
@@ -19,7 +19,8 @@ const CSS = [
   '.pbLevel { margin-top: var(--s2); }',
   '.pbChips { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s2); }',
   '.pbChip { padding: var(--s1) var(--s2); border: 1px solid var(--line); border-radius: var(--r1); font-size: var(--fs-small); }',
-  '.pbChip.won { border-color: var(--good); color: var(--good); }'
+  '.pbChip.won { border-color: var(--good); color: var(--good); }',
+  '.pbExample { font-size: var(--fs-small); color: var(--spark); }'
 ].join('\n');
 
 const PASSIVE_TEXT = {
@@ -47,6 +48,27 @@ function partName(id) {
   return part ? part.name : id;
 }
 
+// The plain text for one level. Directional parts name a direction, so show the DOWN version.
+function describeAt(part, level) {
+  try {
+    return part.describe(level, 1);
+  } catch (e) {
+    return '';
+  }
+}
+
+// "Example: 2 -> 5" from the part's own example(level), or '' when the part has none.
+function exampleAt(part, level) {
+  if (typeof part.example !== 'function') return '';
+  try {
+    const ex = part.example(level);
+    if (!ex || typeof ex.before !== 'number' || typeof ex.after !== 'number') return '';
+    return 'Example: ' + ex.before + ' \u2192 ' + ex.after;
+  } catch (e) {
+    return '';
+  }
+}
+
 function openPartModal(meta, partId) {
   const part = getPart(partId);
   if (!part) return;
@@ -59,9 +81,15 @@ function openPartModal(meta, partId) {
   for (let level = 1; level <= (part.maxLevel || 3); level++) {
     const row = el('div', 'pbLevel');
     row.appendChild(el('div', 'metaName', 'Level ' + level));
-    row.appendChild(el('div', 'dim', part.describe(level)));
+    row.appendChild(el('div', 'dim', describeAt(part, level)));
+    const example = exampleAt(part, level);
+    if (example) row.appendChild(el('div', 'pbExample num', example));
     box.appendChild(row);
   }
+  const how = el('div', 'pbLevel');
+  how.appendChild(el('div', 'metaName', 'How you got it'));
+  how.appendChild(el('div', 'dim', unlockHint(partId)));
+  box.appendChild(how);
   const modal = { close: null };
   box.appendChild(el('div', 'pbLevel')).appendChild(makeButton('Close', function () { modal.close(); }, { kind: 'primary' }));
   modal.close = openModal(box).close;
@@ -162,6 +190,8 @@ export function mount(root, params) {
   }
   const screen = makeScreen(root);
   screen.appendChild(makeHeader('Patent Book', function () { saveCurrentMeta(); go('home'); }));
+  const intro = makeIntro(getMeta(), 'patents', 'Every part you find is saved here.', saveCurrentMeta);
+  if (intro) screen.appendChild(intro);
   tabRow = el('div', 'metaTabs');
   body = el('div', 'metaList');
   screen.appendChild(tabRow);

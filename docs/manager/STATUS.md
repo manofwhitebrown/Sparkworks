@@ -30,3 +30,9 @@ New contract items 21 to 27 are at the end of `docs/CONTRACT.md`.
 
 ## Rules reminder
 Only edit files you own. Small pushes. `npm test` and `npm run build` must be green before every push.
+
+## Round 5 cleanup (2026-11-11, one cover AI for all open items)
+Done and pushed (589 tests expected green, build green). AUDIT_R5 items 2 to 11 are all addressed in code: tip toast low on the run screen, 44 px help button, 12 px label caps, results hero number after a loss, info panel text follows the game, Fire banner at the top of the board, Home locked tiles, red-stroke leak from the dead cell (regression test `tests/render-blockedleak.test.js`), Overload banner after a cheat jump, Reroll in the shop top row.
+Also: music mood on Continue run (`ui:runShown`), shorter trails with many sparks, cached vault text and notes font, KNOWN lines removed, README credits.
+**None of the UI fixes were checked in a browser** (none in the sandbox). AI-8 / the owner: re-run the 7 phone sizes and the shop, Home and results screens.
+Still open: AI-6 perf asks 2, 5, 6 (docs/notes/AI-2.md), `targetGrowth` 1.40 vs 1.42, prism + compounder loop, a transition test, skins questions, real-device sound / frame rate / Android back button. Rotate the GitHub token.

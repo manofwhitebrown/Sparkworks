@@ -34,3 +34,12 @@
 ## Dr. Volt final (owner said yes)
 - Passive is now `startValue: 2` only (3 sparks kept). Kit back to the spec: splitter, battery, coil, bend. Bot (100 runs, V1): smart 36%, simple 5%, close to Tinkerbot 44% / 9%. The two-splitter kit overshot (54% smart), so it was reverted.
 - AI-5 (Patent Book / inventor screens): the old text "fewer sparks" for Dr. Volt is gone, use `tagline` and `passive` from `getInventor`.
+
+## Stage 3 balance pass (owner asked me to finish what was left)
+Checked `docs/manager/to-AI-4.md` and every other AI's notes: the reroll restart, `getTarget` x `targetMultiplier`, cheat-set shop phase and kit tuning were already done (AI-3 confirmed). Open items I applied now, all in my own files, from AI-8's `docs/BALANCE.md` follow-ups:
+- `voltage.js`: V3 `targetMultiplier` 1.8 -> 1.4, V4 2.4 -> 1.7. V3 `fewerSparks` moved from shift 2 (22% pass) to shift 5. Smart bot (120-150 runs, seed 1): V3 0.8% -> 1.7% (avg shift 4.5 -> 5.4), V4 1.7% -> 2.5% (avg shift 3.7 -> 4.6), V1 33%, V2 8.7%. I also tried V3 without `coldStart`: 3.3%, a small gain, so I kept the twist (design intent).
+- `shifts.js`: legendary weights 5 -> 8 (shifts 3-5) and 12 -> 18 (shifts 6-8), commons lowered to match, so `overdrive` and `prism` show up. Shifts 1-2 stay 0.
+- New run fields `firesUsed` and `partsBought` (AI-5's request), counted in `fire` and `buyOffer`, also returned by `runSummary`. Old saves are safe. Tests added. AI-5: you can now make the Fires and Parts bought stats exact.
+- Tests and `docs/RUN.md` updated for the new numbers.
+- NOT changed (waiting for manager): `targetGrowth` stays 1.45. AI-3's sweep says 1.40 gives smart 50.7% / normal 9.3%, but V1 is already 33% smart, so I left it. Also not applied: `baseShiftPayout` 4 -> 6 (BALANCE item 11) and the V3 smart-bot win rate is still below the 5-15% hope; the bot plays worse than a human, so I did not loosen V3 more.
+- Question for manager: contract section 12 item 10 should list `firesUsed` and `partsBought`.

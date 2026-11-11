@@ -20,7 +20,7 @@ function shopRun(options) {
 test('rarity weights per shift band', () => {
   assert.equal(rarityWeightsFor(1).legendary, 0);
   assert.equal(rarityWeightsFor(4).rare, 30);
-  assert.equal(rarityWeightsFor(8).legendary, 12);
+  assert.equal(rarityWeightsFor(8).legendary, 18);
 });
 
 test('offers: 3 slots, level 1, price = cost, no repeated part', () => {
@@ -169,4 +169,16 @@ test('reroll refuses without coins and replaces sold offers', () => {
   run.coins = 5;
   rerollOffers(run, DEPS);
   assert.ok(run.offers.every((o) => o.sold === false));
+});
+
+test('partsBought counts every successful buy and not failed ones', () => {
+  const run = shopRun();
+  assert.equal(run.partsBought, 0);
+  assert.equal(buyOffer(run, 0, DEPS).ok, true);
+  assert.equal(run.partsBought, 1);
+  assert.equal(buyOffer(run, 0, DEPS).ok, false); // already sold
+  assert.equal(run.partsBought, 1);
+  run.coins = 0;
+  assert.equal(buyOffer(run, 1, DEPS).ok, false); // no coins
+  assert.equal(run.partsBought, 1);
 });

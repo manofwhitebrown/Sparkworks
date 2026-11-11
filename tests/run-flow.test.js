@@ -115,11 +115,22 @@ test('startNextShift resets the shift counters and applies twists', () => {
   assert.equal(getTarget(run), Math.round(SHIFT_RULES.targetBase * SHIFT_RULES.targetGrowth));
 });
 
-test('voltage 3 shift 2 twist (fewerSparks) lasts one shift only', () => {
+// Clears shifts until the run is at `shift` (the fake simulate always passes).
+function playUpTo(run, deps, shift) {
+  while (run.shift < shift) {
+    fire(run, deps);
+    startNextShift(run, deps);
+  }
+}
+
+test('voltage 3 shift 5 twist (fewerSparks) lasts one shift only', () => {
   const deps = makeDeps([100000]);
   const run = fresh(deps, { voltage: 3 });
+  playUpTo(run, deps, 4);
+  assert.equal(run.machine.sparkCount, 3); // shift 4 has no sparks twist
   fire(run, deps);
   startNextShift(run, deps);
+  assert.equal(run.shift, 5);
   assert.equal(run.machine.sparkCount, 2);
   fire(run, deps);
   startNextShift(run, deps);
@@ -130,9 +141,8 @@ test('voltage 3 shift 2 twist (fewerSparks) lasts one shift only', () => {
 test('Dr. Volt keeps his start value after a twist shift', () => {
   const deps = makeDeps([100000]);
   const run = fresh(deps, { inventorId: 'drvolt', voltage: 3 });
-  fire(run, deps);
-  startNextShift(run, deps);
-  assert.equal(run.machine.sparkCount, 2); // fewerSparks twist on shift 2
+  playUpTo(run, deps, 5);
+  assert.equal(run.machine.sparkCount, 2); // fewerSparks twist on shift 5
   fire(run, deps);
   startNextShift(run, deps);
   assert.equal(run.machine.sparkCount, 3); // back to normal
@@ -188,4 +198,28 @@ test('the run stays plain JSON (no functions)', () => {
   const run = fresh(deps);
   fire(run, deps);
   assert.deepEqual(JSON.parse(JSON.stringify(run)), run);
+});
+
+test('firesUsed counts Fires, survives save and load, and shows in the summary', () => {
+  const deps = makeDeps([1]);
+  const run = fresh(deps);
+  assert.equal(run.firesUsed, 0);
+  fire(run, deps);
+  assert.equal(run.firesUsed, 1);
+  const loaded = JSON.parse(JSON.stringify(run));
+  fire(loaded, deps);
+  assert.equal(loaded.firesUsed, 2);
+  const summary = runSummary(loaded);
+  assert.equal(summary.firesUsed, 2);
+  assert.equal(summary.partsBought, 0);
+});
+
+test('an old save without firesUsed and partsBought still works', () => {
+  const deps = makeDeps([1]);
+  const run = fresh(deps);
+  delete run.firesUsed;
+  delete run.partsBought;
+  fire(run, deps);
+  assert.equal(run.firesUsed, 1);
+  assert.equal(runSummary(run).partsBought, 0);
 });

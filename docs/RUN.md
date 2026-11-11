@@ -5,7 +5,8 @@ returns a small result object. The UI saves the run after each action. Every fun
 optional last argument `deps` (`{ simulate, getPart, applyTwists }`) so tests can pass fakes.
 
 Extra fields in the run (added by AI-4, all plain data): `pendingCoins` (coins from parts, paid when the
-shift is cleared), `bestFire` (best single Fire), `bonuses` (the meta bonuses, 0 by default).
+shift is cleared), `bestFire` (best single Fire), `bonuses` (the meta bonuses, 0 by default), `firesUsed` (Fires fired this run)
+and `partsBought` (successful shop buys this run). Old saves without the last two are handled (they count from 0).
 
 ## The life of a run
 1. **Shift start** (`newRun` for shift 1, `startNextShift` for the rest): `shiftTotal`, `pendingCoins`,
@@ -45,8 +46,8 @@ Shift rarity weights (common / rare / legendary): shifts 1-2 = 85/15/0, 3-5 = 65
 |---------|----------|-----------------|
 | 1 | 1.0 | 4 deadCell, 8 twoDeadCells |
 | 2 | 1.35 | 4 noSplit, 8 rust |
-| 3 | 1.8 | 2 fewerSparks, 4 noSplit+deadCell, 6 coldStart, 8 rust+twoDeadCells |
-| 4 | 2.4 | 3 fewerSparks, 4 noSplit+deadCell, 5 coldStart, 6 deadCell, 7 rust, 8 rust+twoDeadCells |
+| 3 | 1.4 | 4 noSplit+deadCell, 5 fewerSparks, 6 coldStart, 8 rust+twoDeadCells |
+| 4 | 1.7 | 3 fewerSparks, 4 noSplit+deadCell, 5 coldStart, 6 deadCell, 7 rust, 8 rust+twoDeadCells |
 
 ## Exported functions
 `src/run/runState.js`

@@ -20,7 +20,7 @@ export const SHIFT_RULES = {
   // Shop rarity weights per band of shifts (inclusive on both ends).
   rarityBands: [
     { fromShift: 1, toShift: 2, common: 85, rare: 15, legendary: 0 },
-    { fromShift: 3, toShift: 5, common: 65, rare: 30, legendary: 5 },
-    { fromShift: 6, toShift: 8, common: 50, rare: 38, legendary: 12 }
+    { fromShift: 3, toShift: 5, common: 62, rare: 30, legendary: 8 },
+    { fromShift: 6, toShift: 8, common: 44, rare: 38, legendary: 18 }
   ]
 };

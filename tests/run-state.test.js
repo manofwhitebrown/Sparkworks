@@ -45,7 +45,7 @@ test('targets per shift and voltage', () => {
   assert.equal(getTarget(run), expected(8, 1.35));
   run.voltage = 4;
   run.shift = 1;
-  assert.equal(getTarget(run), expected(1, 2.4));
+  assert.equal(getTarget(run), expected(1, 1.7));
 });
 
 test('place, move (swap), rotate and return to bench', () => {

@@ -18,10 +18,10 @@ export const VOLTAGES = [
   {
     level: 3,
     name: 'High Voltage',
-    targetMultiplier: 1.8,
+    targetMultiplier: 1.4,
     twistsByShift: {
-      2: ['fewerSparks'],
       4: ['noSplit', 'deadCell'],
+      5: ['fewerSparks'],
       6: ['coldStart'],
       8: ['rust', 'twoDeadCells']
     }
@@ -29,7 +29,7 @@ export const VOLTAGES = [
   {
     level: 4,
     name: 'Overload',
-    targetMultiplier: 2.4,
+    targetMultiplier: 1.7,
     // Every shift from 3 on has one twist, the two Overloads (4 and 8) have two.
     twistsByShift: {
       3: ['fewerSparks'],

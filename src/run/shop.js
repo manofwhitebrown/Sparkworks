@@ -167,6 +167,8 @@ export function buyOffer(run, index, deps) {
   offer.sold = true;
   run.coins = run.coins - offer.price;
   run.bench.push({ partId: offer.partId, level: offer.level });
+  // Counted for the stats; older saves may not have the field yet.
+  run.partsBought = (run.partsBought || 0) + 1;
   const merged = applyMerges(run, deps);
   return { ok: true, merged: merged.merges };
 }

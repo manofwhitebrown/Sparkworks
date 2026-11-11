@@ -120,6 +120,8 @@ export function newRun(options, deps) {
     shiftTotal: 0,
     pendingCoins: 0,
     bestFire: 0,
+    firesUsed: 0,
+    partsBought: 0,
     machine: makeMachine(),
     bench: bench,
     offers: [],
@@ -157,6 +159,8 @@ export function fire(run, deps) {
   run.shiftTotal = run.shiftTotal + result.total;
   run.pendingCoins = run.pendingCoins + (result.coins || 0);
   run.firesLeft = run.firesLeft - 1;
+  // Counted for the stats; older saves may not have the field yet.
+  run.firesUsed = (run.firesUsed || 0) + 1;
   if (result.total > run.bestFire) {
     run.bestFire = result.total;
   }
@@ -224,6 +228,8 @@ export function runSummary(run) {
     inventorId: run.inventorId,
     daily: run.daily,
     bestFire: run.bestFire,
+    firesUsed: run.firesUsed || 0,
+    partsBought: run.partsBought || 0,
     totalBanked: banked,
     partsOwned: owned,
     coinsLeft: run.coins

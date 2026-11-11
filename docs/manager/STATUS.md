@@ -1,6 +1,6 @@
 # Project status (manager)
 
-Reviewed: 2026-11-11. Stage 1 is nearly done. 300 of 300 tests pass, `npm run build` passes, about 32 KB gzipped JS, no token in the repo.
+Reviewed: 2026-11-11. Stage 1 is nearly done. 362 of 362 tests pass, `npm run build` passes, about 32 KB gzipped JS, no token in the repo.
 
 ## Priorities, in order
 1. **Balance: the bot wins 0.0% of runs.** Nothing can be tuned until it can win some. AI-8 diagnoses, AI-4 and AI-3 retune. Goal at Voltage 1: smart bot wins about 30 to 50%, normal bot about 10 to 25%.

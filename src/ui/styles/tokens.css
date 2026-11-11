@@ -114,7 +114,7 @@ html.reduceMotion {
   /* type hierarchy: hero number > number > title > body > label > tiny */
   --fs-hero: 56px;      /* the one big number on a screen (Fire total, run result) */
   --fs-number: 28px;    /* counters: target, coins, stats */
-  --fs-label: 11px;     /* small caps labels like TARGET (never for reading text) */
+  --fs-label: 12px;     /* small caps labels like TARGET (never for reading text; 12px minimum, audit R5 item 4) */
   --ls-label: 0.12em;   /* letter spacing for those labels */
   --ls-tight: -0.02em;  /* big numbers sit a little tighter */
   --lh-tight: 1.05;

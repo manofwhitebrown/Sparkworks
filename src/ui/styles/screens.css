@@ -286,7 +286,8 @@ html.largeText .selectedPanel { min-height: 144px; }
   color: var(--accent); font: inherit; font-weight: 700; font-size: var(--fs-base);
   display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
 }
-.hudTop .helpBtn { width: 36px; height: 36px; margin-left: var(--s2); }
+/* 44px tap target; negative vertical margin keeps the HUD the same height as before (audit R5 item 3). */
+.hudTop .helpBtn { width: var(--tap); height: var(--tap); margin: -4px 0 -4px var(--s2); }
 
 /* The recap line under the HUD after a Fire. */
 .recapLine {

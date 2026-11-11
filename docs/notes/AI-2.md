@@ -29,6 +29,24 @@
 - Checked by hand in headless Chromium at 360 x 740 on the dev server: the hidden gesture opens the prompt (a shorter one does not), wrong tries show "No.", the 3rd locks it with a countdown, Esc closes; the real menu opens, RUN / SHOP / META / DEBUG buttons change the live run (coins, target, skip to shift 4 with its Overload cell, board size, give part), `cheat:changed` refreshes the screens, undo works, the FPS box shows, the error bar shows the test error. I do NOT know the real password, so that part was tested with wrong passwords and with the menu opened by import. The password check itself is covered by tests with a fake password.
 - Things I decided (tell me if you disagree): giving parts is refused when the bench is full (use "+1 bench slot"); shrinking the board or "Board to bench" raises the bench bonus so nothing is lost; spark count and start value last until the next shift starts; Preview Fire uses the machine's current seed (real Fires use a new one); the last Fire log is rebuilt from the run's seed counter and matched against `run.lastFire.total` (exact in 30 of 30 test runs); the menu layer uses z-index 100000 (the gate prompt does too), the style guide asked for about 9000 but nothing of AI-7's is above 70.
 
+## ROUND 4 (beginner round): DONE, items 1 to 4 (Portal included)
+- **1. `ctx.x`, `ctx.y`, `ctx.cols`, `ctx.rows`** are in (read only, set on every part call). Tests in `tests/engine-round4.test.js`, a line in `docs/ENGINE.md`.
+- **2. `src/engine/pathInfo.js`**: `pathCells(events)` and `touchedParts(events)`. Tested against real `simulate` logs (loops, splits, blocked, banned, disabled, portals) in `tests/engine-path.test.js`.
+  To make `touchedParts` exact from the log alone, `enter` events now have an OPTIONAL `partId` field. It is set only when an active part acts in that cell (not for empty, blocked, banned or disabled cells). Old consumers can ignore it.
+- **3. Bonus tiles**: `machine.bonusCells = [{ x, y, kind: 'add' | 'mult', amount }]`. The part runs first, then the bonus. New event type `EVT.BONUS`.
+  `validateMachine` checks `bonusCells`, `cloneMachine` copies it (deeply).
+- **4. Portal pair (stretch)**: DONE, it was not too risky. New event type `EVT.PORTAL`. Rules are in `docs/ENGINE.md`.
+- `docs/ENGINE.md` is updated (new sections, a second REAL captured log with a bonus tile and a portal pair, both logs are re-run by `tests/engine-events.test.js`). The random contract checker also runs 300 boards with bonus tiles and portal pairs.
+- Speed is unchanged (10,000 sims of a 5x4 board with `recordEvents: false` in about 0.1 s). `npm test` 509 of 509, build OK.
+- Bug I found and fixed in my own cheat menu (`src/cheats/runCheats.js`): "Board size" shrinking left bonus tiles outside the board; they are removed now, like blocked cells. `validateMachine` caught it.
+
+### Final shape of the new events (for AI-3 and AI-6)
+- `bonus`: `{ n, type: 'bonus', spark, x, y, kind: 'add' | 'mult', amount, before, after }`. Only made when the value really changes. It comes right after the part's own events of that cell and before the `enter` of the next cell.
+- `portal`: `{ n, type: 'portal', spark, x, y, toX, toY, dir, value }`. `x, y` = the portal the spark entered, `toX, toY` = the partner. There is NO `enter` event for the partner cell. After the jump the spark's next `enter` is the cell it moves to out of the partner (same direction).
+- `enter`: now may have `partId` (string) when a part acted there.
+- **To AI-3 (portal part):** the engine finds a portal pair by the id `'portal'` itself (the first two cells with that id in `machine.cells` order, on the board, not banned). Your `portal.js` only needs the normal fields; its `onPass` should do nothing. Do not try to move the spark yourself. A lone portal does nothing.
+- **To AI-6 (renderer):** draw a `portal` event as the spark leaving cell (x, y) and appearing in (toX, toY) with the same direction. A `bonus` event can pop the tile at (x, y) and show `before -> after`. For the path preview use `pathCells(events)` (it already includes portal exits).
+
 ## Working on
 - Nothing open. Available for balance changes.
 

@@ -11,6 +11,8 @@ export const EVT = {
   STATE: 'state',
   COINS: 'coins',
   DISABLE: 'disable',
+  BONUS: 'bonus',
+  PORTAL: 'portal',
   BLOCKED: 'blocked',
   BANK: 'bank',
   FIZZLE: 'fizzle',

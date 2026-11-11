@@ -96,6 +96,13 @@ export function cloneMachine(machine) {
     copy.blocked.push({ x: blocked[i].x, y: blocked[i].y });
   }
   copy.banned = (machine.banned || []).slice();
+  if (Array.isArray(machine.bonusCells)) {
+    copy.bonusCells = [];
+    for (let i = 0; i < machine.bonusCells.length; i++) {
+      const b = machine.bonusCells[i];
+      copy.bonusCells.push({ x: b.x, y: b.y, kind: b.kind, amount: b.amount });
+    }
+  }
   copy.flags = copyFlags(machine.flags);
   return copy;
 }
@@ -199,7 +206,41 @@ export function validateMachine(machine) {
   for (let i = 0; i < cells.length; i++) {
     checkCell(machine, cells[i], i, seen, problems);
   }
+  if (machine.bonusCells !== undefined) {
+    checkBonusCells(machine, problems);
+  }
   return problems;
+}
+
+// bonusCells is optional. Each entry needs a cell inside the board, a kind
+// ('add' or 'mult') and an amount that is a finite number.
+function checkBonusCells(machine, problems) {
+  if (!Array.isArray(machine.bonusCells)) {
+    problems.push('bonusCells must be a list.');
+    return;
+  }
+  const seen = {};
+  for (let i = 0; i < machine.bonusCells.length; i++) {
+    const b = machine.bonusCells[i];
+    const name = 'Bonus tile ' + (i + 1);
+    const inside = b !== null && typeof b === 'object' &&
+      Number.isInteger(b.x) && Number.isInteger(b.y) &&
+      b.x >= 0 && b.x < machine.cols && b.y >= 0 && b.y < machine.rows;
+    if (!inside) {
+      problems.push(name + ' is outside the board.');
+      continue;
+    }
+    if (seen[b.x + ',' + b.y]) {
+      problems.push('Two bonus tiles share the cell ' + b.x + ',' + b.y + '.');
+    }
+    seen[b.x + ',' + b.y] = true;
+    if (b.kind !== 'add' && b.kind !== 'mult') {
+      problems.push(name + ' has a kind that is not add or mult.');
+    }
+    if (typeof b.amount !== 'number' || !Number.isFinite(b.amount)) {
+      problems.push(name + ' has an amount that is not a number.');
+    }
+  }
 }
 
 function checkCell(machine, cell, index, seen, problems) {

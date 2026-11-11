@@ -75,6 +75,58 @@ function buildBoard(run, machine, getPart) {
   for (let i = 0; i < run.instances.length; i++) {
     run.instances[i].boost = computeBoost(run, run.instances[i]);
   }
+  buildBonusTiles(run, machine);
+  buildPortals(run, machine, banned);
+}
+
+// Bonus tiles (machine.bonusCells): run.bonusAt is null when there are none,
+// so a normal Fire pays nothing for this feature. Bad entries are ignored.
+function buildBonusTiles(run, machine) {
+  run.bonusAt = null;
+  const list = machine.bonusCells;
+  if (!Array.isArray(list)) {
+    return;
+  }
+  for (let i = 0; i < list.length; i++) {
+    const b = list[i];
+    if (!b || !inBoard(run, b.x, b.y) || !isGoodNumber(b.amount)) {
+      continue;
+    }
+    if (b.kind !== 'add' && b.kind !== 'mult') {
+      continue;
+    }
+    if (run.bonusAt === null) {
+      run.bonusAt = new Array(run.cols * run.rows).fill(null);
+    }
+    const index = b.y * run.cols + b.x;
+    if (run.bonusAt[index] === null) {
+      run.bonusAt[index] = b;
+    }
+  }
+}
+
+// Portal pair: the first two cells with partId 'portal' (in machine.cells order)
+// that are on the board and not banned. A lone portal, or a third one, does nothing.
+// run.portalTo[index] = the index of the partner cell, or -1.
+function buildPortals(run, machine, banned) {
+  run.portalTo = null;
+  if (banned.portal) {
+    return;
+  }
+  const found = [];
+  const cells = machine.cells || [];
+  for (let i = 0; i < cells.length && found.length < 2; i++) {
+    const cell = cells[i];
+    if (cell.partId === 'portal' && inBoard(run, cell.x, cell.y)) {
+      found.push(cell.y * run.cols + cell.x);
+    }
+  }
+  if (found.length < 2 || found[0] === found[1]) {
+    return;
+  }
+  run.portalTo = new Int32Array(run.cols * run.rows).fill(-1);
+  run.portalTo[found[0]] = found[1];
+  run.portalTo[found[1]] = found[0];
 }
 
 function inBoard(run, x, y) {
@@ -148,6 +200,10 @@ function makeCtx(run, rng) {
     level: 1,
     rot: 0,
     boost: 1,
+    x: 0,
+    y: 0,
+    cols: run.cols,
+    rows: run.rows,
     state: null,
     fire: { sparkNumber: 1, bankedTotal: 0, bankedCount: 0, partsOnBoard: 0 },
     rng: rng
@@ -309,6 +365,8 @@ function callPart(run, inst, spark) {
   ctx.level = typeof inst.cell.level === 'number' ? inst.cell.level : 1;
   ctx.rot = typeof inst.cell.rot === 'number' ? inst.cell.rot : 0;
   ctx.boost = inst.boost;
+  ctx.x = inst.cell.x;
+  ctx.y = inst.cell.y;
   ctx.state = inst.state;
   ctx.fire.sparkNumber = spark.sourceNumber;
   ctx.fire.bankedTotal = run.total;
@@ -374,26 +432,90 @@ function walkSpark(run, spark) {
     run.visits[spark.y * run.cols + spark.x] = 1;
   }
   while (alive) {
+    const index = spark.y * run.cols + spark.x;
+    const blocked = run.blockedAt[index];
+    const inst = run.partAt[index];
+    const acts = !blocked && inst !== null && !inst.disabled;
     if (events !== null) {
-      events.push({
+      const enter = {
         n: events.length, type: EVT.ENTER, spark: spark.id,
         x: spark.x, y: spark.y, dir: spark.dir, value: spark.value
-      });
+      };
+      if (acts) {
+        // Marks the cells where a part really acted (used by pathInfo.touchedParts).
+        enter.partId = inst.cell.partId;
+      }
+      events.push(enter);
     }
-    const index = spark.y * run.cols + spark.x;
-    if (run.blockedAt[index]) {
+    if (blocked) {
       if (events !== null) {
         events.push({ n: events.length, type: EVT.BLOCKED, spark: spark.id, x: spark.x, y: spark.y });
       }
       fizzle(run, spark, spark.x, spark.y, 'blocked');
       return;
     }
-    const inst = run.partAt[index];
-    if (inst !== null && !inst.disabled) {
+    if (acts) {
       callPart(run, inst, spark);
+    }
+    if (run.bonusAt !== null && run.bonusAt[index] !== null) {
+      applyBonus(run, spark, run.bonusAt[index]);
+    }
+    if (run.portalTo !== null && run.portalTo[index] >= 0) {
+      if (!jumpPortal(run, spark, index)) {
+        return;
+      }
     }
     alive = moveSpark(run, spark);
   }
+}
+
+// The bonus tile pays after the part in the same cell has run.
+// Like a part, it makes a 'bonus' event only when the value really changes.
+function applyBonus(run, spark, tile) {
+  const before = spark.value;
+  const raw = tile.kind === 'add' ? before + tile.amount : before * tile.amount;
+  if (!isGoodNumber(raw)) {
+    return;
+  }
+  const after = clampValue(raw);
+  if (after === before) {
+    return;
+  }
+  spark.value = after;
+  const events = run.events;
+  if (events !== null) {
+    events.push({
+      n: events.length, type: EVT.BONUS, spark: spark.id,
+      x: spark.x, y: spark.y, kind: tile.kind, amount: tile.amount,
+      before: before, after: after
+    });
+  }
+}
+
+// A spark that entered a portal appears in the partner cell and keeps its
+// direction. The partner cell counts as one visit. Returns false when the
+// spark ended here (visit limit). A blocked partner cell switches the pair off.
+function jumpPortal(run, spark, index) {
+  const to = run.portalTo[index];
+  if (run.blockedAt[to]) {
+    return true;
+  }
+  const toX = to % run.cols;
+  const toY = (to - toX) / run.cols;
+  const events = run.events;
+  if (events !== null) {
+    events.push({
+      n: events.length, type: EVT.PORTAL, spark: spark.id,
+      x: spark.x, y: spark.y, toX: toX, toY: toY, dir: spark.dir, value: spark.value
+    });
+  }
+  spark.x = toX;
+  spark.y = toY;
+  if (++run.visits[to] > CONFIG.maxVisitsPerCell) {
+    fizzle(run, spark, toX, toY, 'steps');
+    return false;
+  }
+  return true;
 }
 
 export function simulate(machine, options) {
@@ -409,7 +531,8 @@ export function simulate(machine, options) {
     total: 0, coins: 0, banked: 0, fizzled: 0, errors: 0,
     created: 0, sourceNumber: 0,
     family: null, spark: null, inst: null, ctx: null,
-    partAt: null, blockedAt: null, visits: null, instances: null
+    partAt: null, blockedAt: null, visits: null, instances: null,
+    bonusAt: null, portalTo: null
   };
   // One rng per simulate call, so the draw order is always the same.
   run.ctx = makeCtx(run, makeRng(machine.seed));

@@ -87,6 +87,13 @@ function checkLog(result, label) {
       lastRunning = e.runningTotal;
     } else if (e.type === 'fizzle') {
       fizzles++;
+    } else if (e.type === 'bonus') {
+      assert.ok(e.kind === 'add' || e.kind === 'mult', label + ': bonus kind');
+      assert.notStrictEqual(e.before, e.after, label + ': a bonus event means the value changed');
+      assert.ok(Number.isFinite(e.amount) && Number.isInteger(e.x) && Number.isInteger(e.y));
+    } else if (e.type === 'portal') {
+      assert.ok(Number.isInteger(e.toX) && Number.isInteger(e.toY), label + ': portal exit cell');
+      assert.ok(typeof e.dir === 'string' && Number.isFinite(e.value));
     }
   }
   assert.strictEqual(endCount, 1, label + ': exactly one end');
@@ -141,6 +148,53 @@ test('contract: 500 random boards with all real parts keep the event log shape',
   }
 });
 
+test('contract: 300 random boards with bonus tiles and a portal pair keep the log shape', () => {
+  const ids = allPartIds();
+  const next = makeLcg(777);
+  let withBonus = 0;
+  let withPortal = 0;
+  for (let i = 0; i < 300; i++) {
+    const machine = randomMachine(next, i, ids);
+    machine.bonusCells = [];
+    const tiles = 1 + pick(next, 4);
+    for (let t = 0; t < tiles; t++) {
+      const kind = next() < 0.5 ? 'add' : 'mult';
+      const amount = kind === 'add' ? 1 + pick(next, 9) : 2 + pick(next, 2);
+      machine.bonusCells.push({ x: pick(next, machine.cols), y: pick(next, machine.rows), kind: kind, amount: amount });
+    }
+    // remove duplicate tiles on one cell so the machine stays valid
+    const taken = {};
+    machine.bonusCells = machine.bonusCells.filter(function (b) {
+      const key = b.x + ',' + b.y;
+      const fresh = !taken[key];
+      taken[key] = true;
+      return fresh;
+    });
+    if (next() < 0.5) {
+      placePart(machine, pick(next, machine.cols), pick(next, machine.rows), 'portal', 1, 0);
+      placePart(machine, pick(next, machine.cols), pick(next, machine.rows), 'portal', 1, 0);
+    }
+    assert.deepStrictEqual(validateMachine(machine), [], 'board ' + i + ' is valid');
+    const result = simulate(machine);
+    checkLog(result, 'bonus board ' + i);
+    const fast = simulate(machine, { recordEvents: false });
+    assert.strictEqual(fast.total, result.total);
+    assert.strictEqual(fast.coins, result.coins);
+    assert.strictEqual(fast.banked, result.banked);
+    assert.strictEqual(fast.fizzled, result.fizzled);
+    assert.deepStrictEqual(simulate(machine), result);
+    if (result.events.some(function (e) { return e.type === 'bonus'; })) {
+      withBonus++;
+    }
+    if (result.events.some(function (e) { return e.type === 'portal'; })) {
+      withPortal++;
+    }
+  }
+  // the generator must really exercise both features
+  assert.ok(withBonus > 50, 'many boards paid a bonus: ' + withBonus);
+  assert.ok(withPortal > 5, 'some boards used a portal: ' + withPortal);
+});
+
 test('contract: the same random board gives the same log twice', () => {
   const ids = allPartIds();
   const next = makeLcg(99);
@@ -169,4 +223,25 @@ test('docs/ENGINE.md: the captured Splitter + Amplifier log is still real', () =
   assert.deepStrictEqual(result.events, documented);
   assert.strictEqual(result.total, 3);
   assert.strictEqual(result.banked, 2);
+});
+
+test('docs/ENGINE.md: the captured bonus + portal log is still real', () => {
+  const text = fs.readFileSync(new URL('../docs/ENGINE.md', import.meta.url), 'utf8');
+  const machine = JSON.parse(codeBlockAfter(text, '<!-- captured-machine-2 -->'));
+  const lines = codeBlockAfter(text, '<!-- captured-log-2 -->').split('\n');
+  const documented = lines.map(function (line) {
+    return JSON.parse(line);
+  });
+  const result = simulate(machine);
+  // a real 'portal' part file (AI-3) would add partId 'portal' to the enter events of the portal cells
+  const events = result.events.map(function (e) {
+    if (e.type === 'enter' && e.partId === 'portal') {
+      const copy = Object.assign({}, e);
+      delete copy.partId;
+      return copy;
+    }
+    return e;
+  });
+  assert.deepStrictEqual(events, documented);
+  assert.strictEqual(result.total, 5);
 });

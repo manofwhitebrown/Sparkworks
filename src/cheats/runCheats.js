@@ -145,6 +145,12 @@ export function resizeBoard(run, deltaCols, deltaRows) {
   machine.blocked = machine.blocked.filter(function (b) {
     return isInside(machine, b.x, b.y);
   });
+  if (Array.isArray(machine.bonusCells)) {
+    // Bonus tiles (contract 23) that fall outside the smaller board go away too.
+    machine.bonusCells = machine.bonusCells.filter(function (b) {
+      return isInside(machine, b.x, b.y);
+    });
+  }
   makeBenchFit(run);
   return done(run, 'Board is ' + cols + ' x ' + rows);
 }

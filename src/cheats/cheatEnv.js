@@ -3,7 +3,7 @@
 // Everything the app provides comes in through `deps`, so tests can use fakes.
 // Owner: AI-2
 
-// deps: { getRun, getMeta, saveRun, saveMeta, emit, toast, applySettings }
+// deps: { getRun, getMeta, setRun, saveRun, saveMeta, emit, toast, applySettings }
 export function makeEnv(deps) {
   function finish(what, res, save, options) {
     deps.toast(res.msg);
@@ -48,9 +48,26 @@ export function makeEnv(deps) {
       });
     },
 
+    // Put a whole new run in place (used when a pasted save contains a run).
+    replaceRun: function (run) {
+      if (deps.setRun) {
+        deps.setRun(run);
+      }
+      deps.saveRun(run);
+      deps.emit('cheat:changed', { what: 'import' });
+    },
+
+    // Save the meta and apply the settings after a change made outside doMeta.
+    metaChanged: function (what) {
+      deps.saveMeta();
+      if (deps.applySettings) {
+        deps.applySettings();
+      }
+      deps.emit('cheat:changed', { what: what });
+    },
+
     getRun: deps.getRun,
     getMeta: deps.getMeta,
-    saveRun: deps.saveRun,
     toast: deps.toast,
     emit: deps.emit
   };

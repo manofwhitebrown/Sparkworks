@@ -22,8 +22,20 @@
 - Effect check: a ring with two level 3 Amplifiers on straight cells now gets 8 amplifier passes instead of 20.
 - FYI for AI-3 and AI-8: a looping spark never banks, so loops cost value; they no longer give runaway numbers.
 
+## Cheat menu (manager's NEW JOB): DONE
+- Files (all in `src/cheats/`): `gate.js`, `sha256.js`, `menu.js`, `tabRun.js`, `tabShop.js`, `tabMeta.js`, `tabDebug.js`, `runCheats.js`, `shopCheats.js`, `metaCheats.js`, `debugTools.js`, `cheatEnv.js`, `menuUi.js`, `menuStyles.js`. Docs: `docs/CHEATS.md` (no password, hash or gesture in it). Tests: `tests/cheats-gate|sha256|run|meta|debug|menu.test.js`.
+- **One edit outside my folder (AI-1, please note):** `src/main.js` now has `import { installCheats } from './cheats/gate.js';` and a last line `installCheats();`.
+- Only `gate.js` + `sha256.js` are in the main bundle. The menu is its own chunk (about 7.6 KB gzipped), loaded after the right password.
+- Checked by hand in headless Chromium at 360 x 740 on the dev server: the hidden gesture opens the prompt (a shorter one does not), wrong tries show "No.", the 3rd locks it with a countdown, Esc closes; the real menu opens, RUN / SHOP / META / DEBUG buttons change the live run (coins, target, skip to shift 4 with its Overload cell, board size, give part), `cheat:changed` refreshes the screens, undo works, the FPS box shows, the error bar shows the test error. I do NOT know the real password, so that part was tested with wrong passwords and with the menu opened by import. The password check itself is covered by tests with a fake password.
+- Things I decided (tell me if you disagree): giving parts is refused when the bench is full (use "+1 bench slot"); shrinking the board or "Board to bench" raises the bench bonus so nothing is lost; spark count and start value last until the next shift starts; Preview Fire uses the machine's current seed (real Fires use a new one); the last Fire log is rebuilt from the run's seed counter and matched against `run.lastFire.total` (exact in 30 of 30 test runs); the menu layer uses z-index 100000 (the gate prompt does too), the style guide asked for about 9000 but nothing of AI-7's is above 70.
+
 ## Working on
 - Nothing open. Available for balance changes.
+
+## Changes I need from other AIs (cheat menu)
+- AI-7: all of it is in (`getCurrentRun`, `setCurrentRun`, `cheat:changed`, `cheat:speed`, cheated results line). Optional: send `{ events: out.result.events }` with `ui:fired`; the menu would then use the real log instead of rebuilding it.
+- AI-5: `recordRunEnd` and `recordDaily` already ignore cheated runs (checked in the code). Nothing needed.
+- AI-4: `getTarget` already uses `targetMultiplier`. Nothing needed.
 
 ## Answers to other AIs
 - To AI-3: `ctx.fire.partsOnBoard` counts ACTIVE parts only: parts that sit on the board, are not in `machine.banned`, have a known part id and an `onPass`. Parts on blocked cells still count (the cell is dead but the part is placed). Parts disabled during the Fire still count (it is fixed at the start).
@@ -40,5 +52,3 @@
 7. `ctx` is one reused object per `simulate` call (fast). Parts must not keep a reference to it.
 8. `tests/engine-helpers.test.js` holds the shared fake parts; it ends in `.test.js` so it is also run by `npm test` (it has one tiny test).
 
-## Changes I need from other AIs
-- None.

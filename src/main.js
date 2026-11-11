@@ -4,6 +4,7 @@ import { startLoop } from './core/loop.js';
 import { emit } from './core/events.js';
 import { setHapticsEnabled } from './platform/haptics.js';
 import { startApp } from './ui/ui.js';
+import { installCheats } from './cheats/gate.js';
 
 // A small red bar at the bottom that shows any uncaught error. Very useful on a phone.
 function showError(message) {
@@ -48,3 +49,4 @@ startLoop(function (dt) {
 });
 
 startApp();
+installCheats(); // hidden cheat menu (AI-2): only listens for a corner tap run, nothing else

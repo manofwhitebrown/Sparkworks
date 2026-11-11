@@ -14,8 +14,9 @@ import { applyMerges } from './merge.js';
 import { makeOffers } from './shop.js';
 import { returnToBench as returnToBenchAction } from './boardActions.js';
 import {
-  cleanBonuses, benchSizeOf, firesPerShiftOf, baseSparkFields, targetFor, sellValueOf
+  cleanBonuses, benchSizeOf, firesPerShiftOf, baseSparkFields, targetOfRun, sellValueOf, gentleStartCoins
 } from './runRules.js';
+import { makeBonusCells } from './bonusCells.js';
 
 export { placeFromBench, moveOnBoard, rotatePart } from './boardActions.js';
 
@@ -29,13 +30,9 @@ function pickDeps(deps) {
   };
 }
 
-// The target of the current shift. The cheat menu may set run.targetMultiplier (default 1).
+// The target of the current shift (Gentle mode and the cheat multiplier are included).
 export function getTarget(run) {
-  const target = targetFor(run.shift, run.voltage);
-  if (typeof run.targetMultiplier === 'number' && Number.isFinite(run.targetMultiplier)) {
-    return Math.round(target * run.targetMultiplier);
-  }
-  return target;
+  return targetOfRun(run);
 }
 
 export function returnToBench(run, x, y) {
@@ -82,6 +79,7 @@ function startShift(run, d) {
   run.rerollsThisShift = 0;
   run.firesLeft = firesPerShiftOf(run);
   run.lastFire = null;
+  run.shiftBestFire = 0;
   run.offers = [];
   const base = baseSparkFields(run.inventorId);
   run.machine.sparkCount = base.sparkCount;
@@ -93,6 +91,7 @@ function startShift(run, d) {
   if (twistIds.length > 0) {
     d.applyTwists(run.machine, twistIds, nextRng(run));
   }
+  run.machine.bonusCells = makeBonusCells(run);
   run.machine.seed = nextMachineSeed(run);
   return clearBlockedParts(run, d);
 }
@@ -114,7 +113,7 @@ export function newRun(options, deps) {
     daily: o.daily || false,
     shift: 1,
     phase: 'build',
-    coins: inventor.startCoins + bonuses.startCoins,
+    coins: inventor.startCoins + bonuses.startCoins + gentleStartCoins(bonuses),
     rerollsThisShift: 0,
     firesLeft: 0,
     shiftTotal: 0,
@@ -122,6 +121,9 @@ export function newRun(options, deps) {
     bestFire: 0,
     firesUsed: 0,
     partsBought: 0,
+    everOwned: inventor.startParts.slice(),
+    maxLevelSeen: 1,
+    shiftBestFire: 0,
     machine: makeMachine(),
     bench: bench,
     offers: [],
@@ -164,6 +166,9 @@ export function fire(run, deps) {
   if (result.total > run.bestFire) {
     run.bestFire = result.total;
   }
+  if (result.total > (run.shiftBestFire || 0)) {
+    run.shiftBestFire = result.total;
+  }
   const passed = run.shiftTotal >= target;
   let coinsEarned = 0;
   if (passed) {
@@ -201,37 +206,4 @@ export function startNextShift(run, deps) {
   return { ok: true, shift: run.shift, movedToBench: sent.movedToBench, sold: sent.sold };
 }
 
-export function runSummary(run) {
-  let cleared = 0;
-  let banked = 0;
-  for (let i = 0; i < run.history.length; i++) {
-    banked = banked + run.history[i].total;
-    if (run.history[i].total >= run.history[i].target) {
-      cleared = cleared + 1;
-    }
-  }
-  if (run.phase === 'build') {
-    banked = banked + run.shiftTotal;
-  }
-  const owned = [];
-  for (let i = 0; i < run.machine.cells.length; i++) {
-    owned.push(run.machine.cells[i].partId);
-  }
-  for (let i = 0; i < run.bench.length; i++) {
-    owned.push(run.bench[i].partId);
-  }
-  return {
-    won: run.phase === 'won',
-    shiftReached: run.shift,
-    shiftsCleared: cleared,
-    voltage: run.voltage,
-    inventorId: run.inventorId,
-    daily: run.daily,
-    bestFire: run.bestFire,
-    firesUsed: run.firesUsed || 0,
-    partsBought: run.partsBought || 0,
-    totalBanked: banked,
-    partsOwned: owned,
-    coinsLeft: run.coins
-  };
-}
+export { runSummary } from './runSummary.js';

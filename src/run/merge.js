@@ -89,7 +89,9 @@ export function applyMerges(run, deps) {
   const merges = [];
   let groups = findMerges(run, deps);
   while (groups.length > 0) {
-    merges.push(mergeOneGroup(run, groups[0]));
+    const done = mergeOneGroup(run, groups[0]);
+    merges.push(done);
+    run.maxLevelSeen = Math.max(run.maxLevelSeen || 1, done.newLevel);
     groups = findMerges(run, deps);
   }
   return { count: merges.length, merges: merges };

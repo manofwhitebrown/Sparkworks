@@ -169,6 +169,7 @@ export function buyOffer(run, index, deps) {
   run.bench.push({ partId: offer.partId, level: offer.level });
   // Counted for the stats; older saves may not have the field yet.
   run.partsBought = (run.partsBought || 0) + 1;
+  run.everOwned = (run.everOwned || []).concat([offer.partId]);
   const merged = applyMerges(run, deps);
   return { ok: true, merged: merged.merges };
 }

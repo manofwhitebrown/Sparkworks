@@ -24,3 +24,29 @@ export const SHIFT_RULES = {
     { fromShift: 6, toShift: 8, common: 44, rare: 38, legendary: 18 }
   ]
 };
+
+// Gentle mode (beginners and kids): one more Fire, easier targets, a few more start coins.
+export const GENTLE_RULES = {
+  extraFires: 1,
+  targetMultiplier: 0.7,
+  startCoins: 4
+};
+
+// Bonus tiles on the floor of the board. None on shift 1, one from shift 2, two from shift 5.
+// Early tiles add a small number; later tiles are sometimes a multiplier.
+export const BONUS_CELL_RULES = {
+  firstShift: 2,
+  secondTileShift: 5,
+  laterShift: 5,
+  addMin: 3,
+  addMax: 6,
+  laterAddMin: 4,
+  laterAddMax: 8,
+  multChance: 0.5,
+  multAmount: 2
+};
+
+// Simple rules for the tip on the loss screen.
+export const LOSS_TIP_RULES = {
+  unspentCoins: 6
+};

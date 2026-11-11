@@ -48,3 +48,16 @@ Checked `docs/manager/to-AI-4.md` and every other AI's notes: the reroll restart
 - `shifts.js`: `targetGrowth` 1.45 -> 1.40 and `baseShiftPayout` 4 -> 5 (6 made V1 too easy: smart 55%, V2 39%). Tests now read the payout from `SHIFT_RULES`, so a payout change no longer breaks them.
 - Bot (150 runs, seed 1, smart): V1 52.7%, V2 28.7%, V3 12.7%, V4 4.7%. Normal bot V1 14.7%. V3 and V4 are inside AI-8's hoped ranges; V1 smart is a touch above 50% but the bot is weaker than a human, so manager/AI-8 may nudge `targetGrowth` to 1.42 if it feels easy in real play.
 - Manager: please approve or adjust; every number is in `src/data/shifts.js` and `voltage.js`.
+
+## ROUND 4 (manager's list in `to-AI-4.md`)
+Done and pushed (tests in `tests/run-round4.test.js`, 12 new):
+1. **Gentle mode**: `bonuses.gentle` (+1 Fire, targets x0.7, +4 coins), numbers in `GENTLE_RULES`. Bot check by a scratch script (the tools do not take bonuses): smart bot 71% (goal 60-80%), simple bot 59%. AI-8: please add a `--gentle` option to `tools/simulate.js` so this can be re-run.
+2. **Bonus tiles**: `src/run/bonusCells.js` sets `machine.bonusCells` at every shift start (rules in `docs/RUN.md`). Numbers in `BONUS_CELL_RULES`. The later `add` range (+4..+8) and the 50% mult chance are my guesses: tune with the bot once AI-2's engine reads the tiles.
+5. **Loss tips**: `runSummary(run, deps)` returns `neededTotal`, `bestFireLastShift`, `tipId`, plus `gentle`. AI-7 shows the text for `'steer' | 'merge' | 'coins' | 'order'`.
+6. `docs/RUN.md` updated.
+
+NOT done yet, waiting for other AIs (I will not reference part ids that do not exist, it would break `newRun`):
+3. Ms. Bounce and The Banker in `inventors.js`: waiting for AI-3's `spring`, `sideamp`, `workbench` part files. The Banker's passive (+2 coins at the start of every shift) needs a new passive field `shiftStartCoins`; I will add it to `runRules.js` and `startShift` when I add the inventor.
+4. Shop weights for the new parts and the new twists (`closedRow`, `loneSpark`, `noMult`) in the Overload shifts: waiting for AI-3's part and twist ids. Shop weights already come from rarity, so new parts appear on their own as soon as AI-5/AI-1 add them to the pool.
+
+Questions for manager: contract section 12 item 10 should also list `everOwned`, `maxLevelSeen`, `shiftBestFire`, `firesUsed`, `partsBought` and `machine.bonusCells` (rebuilt each shift).

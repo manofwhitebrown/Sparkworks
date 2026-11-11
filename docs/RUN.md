@@ -67,3 +67,13 @@ Shift rarity weights (common / rare / legendary): shifts 1-2 = 85/15/0, 3-5 = 65
 - `rerollOffers(run)` -> `{ ok, price }`; `rerollPrice(run)` -> number.
 
 `src/run/merge.js`: `findMerges(run)` -> groups `{ partId, level, members }`; `applyMerges(run)` -> `{ count, merges: [{ partId, newLevel }] }`.
+
+## Round 4 additions
+
+**Gentle mode** (`bonuses.gentle = true`, numbers in `GENTLE_RULES` in `src/data/shifts.js`): +1 Fire per shift, targets x0.7 (on top of the voltage multiplier), +4 start coins. `runSummary` returns `gentle` so the meta side can halve dust and skip win records. Bot check (150 runs, V1): smart bot wins 71% in Gentle mode (54% normal), simple bot 59% (13% normal).
+
+**Bonus tiles** (`src/run/bonusCells.js`, numbers in `BONUS_CELL_RULES`): at every shift start `machine.bonusCells` is rebuilt as `[ { x, y, kind, amount } ]`. None on shift 1, one tile on shifts 2-4, two from shift 5. Tiles go on EMPTY cells that are not on the source row and not blocked, in a fixed order, using one step of the run rng (only when there are tiles), so the same seed and actions give the same tiles. Shifts 2-4: `add` +3..+6. From shift 5: each tile is `mult` x2 half the time, else `add` +4..+8. The engine (AI-2) reads `machine.bonusCells`; until it does, the tiles are only data.
+
+**Loss facts** (`runSummary(run, deps)` also returns): `neededTotal` (target of the shift where the run ended), `bestFireLastShift` (best single Fire of that shift), `tipId` (`null` unless lost). First match wins: `'steer'` = never owned a part tagged `route` or `split`; `'merge'` = no part ever reached level 2; `'coins'` = 6 or more coins left (`LOSS_TIP_RULES.unspentCoins`); else `'order'`. Tracked in the run as `everOwned` (part ids), `maxLevelSeen` and `shiftBestFire`; old saves fall back to what is owned now.
+
+`runSummary` now lives in `src/run/runSummary.js` and is re-exported by `runState.js`.

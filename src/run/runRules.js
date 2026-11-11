@@ -2,7 +2,7 @@
 // The inventor passive and the meta bonuses are always added on top of SHIFT_RULES.
 // Owner: AI-4
 
-import { SHIFT_RULES } from '../data/shifts.js';
+import { SHIFT_RULES, GENTLE_RULES } from '../data/shifts.js';
 import { CONFIG } from '../data/config.js';
 import { getInventor } from '../data/inventors.js';
 import { getVoltage } from '../data/voltage.js';
@@ -15,7 +15,8 @@ export function cleanBonuses(bonuses) {
     benchSize: b.benchSize || 0,
     shopSlots: b.shopSlots || 0,
     freeRerolls: b.freeRerolls || 0,
-    extraFires: b.extraFires || 0
+    extraFires: b.extraFires || 0,
+    gentle: !!b.gentle
   };
 }
 
@@ -37,7 +38,13 @@ export function shopSlotsOf(run) {
 }
 
 export function firesPerShiftOf(run) {
-  return SHIFT_RULES.firesPerShift + run.bonuses.extraFires + passiveNumber(run, 'firesPerShift');
+  const gentle = run.bonuses.gentle ? GENTLE_RULES.extraFires : 0;
+  return SHIFT_RULES.firesPerShift + run.bonuses.extraFires + gentle + passiveNumber(run, 'firesPerShift');
+}
+
+// Extra start coins that come from Gentle mode (0 when it is off).
+export function gentleStartCoins(bonuses) {
+  return bonuses && bonuses.gentle ? GENTLE_RULES.startCoins : 0;
 }
 
 // The sparkCount and startValue a machine has at the start of every shift
@@ -57,8 +64,11 @@ export function baseSparkFields(inventorId) {
 }
 
 // target(shift) = round(targetBase * targetGrowth^(shift - 1) * voltageMultiplier)
-export function targetFor(shift, voltageLevel) {
-  const multiplier = getVoltage(voltageLevel).targetMultiplier;
+export function targetFor(shift, voltageLevel, gentle) {
+  let multiplier = getVoltage(voltageLevel).targetMultiplier;
+  if (gentle) {
+    multiplier = multiplier * GENTLE_RULES.targetMultiplier;
+  }
   const raw = SHIFT_RULES.targetBase * Math.pow(SHIFT_RULES.targetGrowth, shift - 1) * multiplier;
   return Math.round(raw);
 }
@@ -67,4 +77,14 @@ export function targetFor(shift, voltageLevel) {
 export function sellValueOf(part, level) {
   const raw = Math.floor(part.cost * SHIFT_RULES.sellFraction * level);
   return Math.max(1, raw);
+}
+
+// The target of the current shift of a run. The cheat menu may set run.targetMultiplier (default 1).
+export function targetOfRun(run) {
+  const gentle = !!(run.bonuses && run.bonuses.gentle);
+  const target = targetFor(run.shift, run.voltage, gentle);
+  if (typeof run.targetMultiplier === 'number' && Number.isFinite(run.targetMultiplier)) {
+    return Math.round(target * run.targetMultiplier);
+  }
+  return target;
 }

@@ -15,10 +15,7 @@ const MAX_WORDS = 12;
 const NEVER = /\b(pass|passes|passed|passing|banked|banks|banking|fizzle|fizzles|fizzled|value|values|store|stores|stored|trigger|triggers|triggered|procs?)\b/i;
 
 // label -> reason. Owner of the text is named. Remove the line when the text is fixed.
-const KNOWN = {
-  'twist deadCell': 'says "fizzle" (AI-3, src/engine/twists.js: say "are lost")',
-  'twist twoDeadCells': 'says "fizzle" (AI-3, src/engine/twists.js: say "are lost")'
-};
+const KNOWN = {};
 
 // Returns a list of problem strings for one text (empty when fine).
 export function problemsIn(text) {

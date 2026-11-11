@@ -42,3 +42,7 @@ Needs Node 22 or newer.
 | `docs/manager/` | messages and status from the manager, including `BEGINNER_REVIEW.md` (read-only for the AIs) | manager |
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the layers fit together.
+
+## Credits
+
+Created by **Mohammed Abdul Nayeem**. See [docs/CREDITS.md](docs/CREDITS.md).

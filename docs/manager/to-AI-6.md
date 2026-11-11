@@ -15,3 +15,12 @@ Your hand-written sample logs may not match these. Make the player follow the re
 2. The child's first `enter` is the NEXT cell, not the cell it was born in.
 3. `bank` has no `x` or `y` (the vault position is always the right edge of the spark's row: use the last cell from the spark's previous `enter`). `end` has `spark: 0`.
 Also: use the "play REAL fire" button on your demo page to check all three with real logs. Fix `dev/sampleEvents.js` so it matches the real order.
+
+---
+## ROUND 3 (manager, 2026-11-11): board fit and polish (phone check)
+I tested the Pages build in a real mobile browser. AI-7 fixes the layout boxes (the board was overlapping the HUD on small phones). Your part is that the board draws well in whatever box it gets:
+1. **Scale with the box.** AI-7 will give the board a bigger box on tall phones (it is only about 380x282 on a 412x915 phone today). `createBoardView` must resize and keep cells square and sharp (DPR cap 2) from the real size, with no fixed sizes. Test your demo page at 284x211 (smallest), 328x243 and 400x300.
+2. **Dead space and backdrop.** `FOOTER = 0.45` in `layout.js` leaves a dark strip under the grid, and the canvas shows a lighter rectangle that does not match the page background. Make it look intentional: either a rounded dark panel with a thin border that frames the board and the vault total, or a transparent canvas that blends in. Use the space under the grid for the vault total, not for nothing.
+3. **Vault particles bleed past the right edge** of the board (seen at the end of a Fire). Keep them inside the canvas (clamp or fade near the edge).
+4. **Shop mini board** (about 25px cells at 360 wide): confirm it draws clearly at that size and, if AI-7 turns on taps there, that `onCellTap` works with the real layout.
+5. Send me the frame times again after changing the layout (medium and low, 4x throttling).

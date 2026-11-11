@@ -110,6 +110,21 @@ html.reduceMotion .sparkHalo, html.reduceMotion .sparkCore, html.reduceMotion .s
 .hudFiresShort { display: none; }
 .twistChips { display: flex; gap: var(--s1); flex-wrap: wrap; justify-content: flex-end; }
 .pill.twist { color: var(--bad); border: 1px solid var(--bad); background: transparent; }
+/* the chip is a button: a bigger invisible tap area (44 px) around the small pill */
+.twistChip { position: relative; font: inherit; font-size: var(--fs-tiny); cursor: pointer; }
+.twistChip::after { content: ''; position: absolute; inset: -10px -4px; }
+.gentlePill { color: var(--accent); border: 1px solid var(--accent); background: transparent; margin-left: var(--s2); }
+.gentlePill[hidden] { display: none; }
+/* the Overload banner sits over the top of the board and fades (opacity only) */
+.twistBanner {
+  position: absolute; left: var(--s2); right: var(--s2); top: var(--s2); z-index: 5;
+  padding: var(--s2) var(--s3); border-radius: var(--r2); background: var(--panel2);
+  border: 1px solid var(--bad); opacity: 0; pointer-events: none;
+  transition: opacity var(--t-normal) var(--ease);
+}
+.twistBanner.isShown { opacity: 1; pointer-events: auto; }
+.twistTitle { color: var(--bad); font-weight: 700; }
+.twistBody { color: var(--text); font-size: var(--fs-small); }
 
 /* The slot takes whatever height is left. The board is fitted INSIDE it by run.js
    (absolute, so it can never push the slot or paint over the HUD or the bench). */

@@ -5,6 +5,7 @@
 
 import { formatNumber } from '../core/format.js';
 import { getPart } from '../engine/parts/index.js';
+import { TWISTS } from '../engine/twists.js';
 
 export const GOAL_LINE = 'Clear 8 shifts to win.';
 export const VOLTAGE_LINE = 'Higher Voltage = harder.';
@@ -120,4 +121,30 @@ export function lossTipText(tipId) {
 export function neededText(needed, best) {
   if (!(needed > 0) || !(best >= 0)) return '';
   return 'You needed ' + formatNumber(needed) + '. Your best Fire was ' + formatNumber(best) + '.';
+}
+
+// Name and plain description of each active twist. The run only stores the names
+// (machine.flags.twistNames), so we look the description up by name.
+export function twistInfos(names, deps) {
+  const table = deps && deps.twists ? deps.twists : TWISTS;
+  const list = [];
+  const wanted = names || [];
+  for (let i = 0; i < wanted.length; i++) {
+    let description = '';
+    for (const id in table) {
+      if (table[id].name === wanted[i]) description = table[id].description || '';
+    }
+    list.push({ name: wanted[i], description: description });
+  }
+  return list;
+}
+
+// The Overload banner: a short title and the plain description of every active twist.
+export function overloadText(infos) {
+  if (!infos || infos.length === 0) return { title: '', body: '' };
+  const parts = [];
+  for (let i = 0; i < infos.length; i++) {
+    parts.push(infos[i].description ? infos[i].name + ': ' + infos[i].description : infos[i].name);
+  }
+  return { title: 'Overload!', body: parts.join(' ') };
 }

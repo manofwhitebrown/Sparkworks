@@ -14,15 +14,27 @@ function el(tag, className, text) {
   return node;
 }
 
+// A twist chip is a real button, so it can be tapped to read the twist again.
+function makeChip(name, onTap) {
+  const chip = el('button', 'pill twist twistChip', name);
+  chip.type = 'button';
+  chip.addEventListener('click', function () { if (onTap) onTap(name); });
+  return chip;
+}
+
 // Returns { element, update(run, shownTotal) }.
-export function makeHud() {
+// options.onTwistTap(name) is called when a twist chip is tapped (it shows the twist text again).
+export function makeHud(options) {
+  const opts = options || {};
   const element = el('div', 'panel hud');
   element.dataset.tut = 'hud';
 
   const top = el('div', 'row hudTop');
   const shift = el('div', 'hudShift');
   const coins = el('div', 'pill coin');
-  top.append(shift, el('div', 'spacer'), coins);
+  const gentle = el('div', 'pill gentlePill', 'Gentle');
+  gentle.hidden = true;
+  top.append(shift, gentle, el('div', 'spacer'), coins);
 
   const targetRow = el('div', 'row hudTarget');
   targetRow.appendChild(el('div', 'dim', 'TARGET'));
@@ -54,8 +66,9 @@ export function makeHud() {
     twists.textContent = '';
     const names = run.machine.flags && run.machine.flags.twistNames ? run.machine.flags.twistNames : [];
     for (let i = 0; i < names.length; i++) {
-      twists.appendChild(el('span', 'pill twist', names[i]));
+      twists.appendChild(makeChip(names[i], opts.onTwistTap));
     }
+    gentle.hidden = !(run.bonuses && run.bonuses.gentle);
     element.classList.toggle('noTwists', names.length === 0);
   }
   return { element: element, update: update };

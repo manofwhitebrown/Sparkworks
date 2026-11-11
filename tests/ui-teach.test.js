@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ownedCount, ownedHintText, recapText, untouchedParts, untouchedText, sourcePathCells,
-  showPathDefault, lossTipText, neededText } from '../src/ui/teach.js';
+  showPathDefault, lossTipText, neededText, twistInfos, overloadText } from '../src/ui/teach.js';
 
 test('ownedCount counts the same part and level on the bench and the board', () => {
   const run = {
@@ -77,4 +77,25 @@ test('loss tips and the needed line', () => {
   assert.equal(lossTipText('nope'), '');
   assert.equal(neededText(120, 85), 'You needed 120. Your best Fire was 85.');
   assert.equal(neededText(undefined, 5), '');
+});
+
+test('twistInfos finds the plain description by twist name; overloadText joins them', () => {
+  const twists = { a: { name: 'Dead cell', description: 'One cell is dead.' }, b: { name: 'Rust', description: 'A part rusts.' } };
+  const infos = twistInfos(['Rust', 'Dead cell', 'Unknown'], { twists: twists });
+  assert.equal(infos[0].description, 'A part rusts.');
+  assert.equal(infos[2].description, '');
+  const text = overloadText(infos);
+  assert.equal(text.title, 'Overload!');
+  assert.equal(text.body, 'Rust: A part rusts. Dead cell: One cell is dead. Unknown');
+  assert.deepEqual(overloadText([]), { title: '', body: '' });
+});
+
+test('every real twist has a plain description the banner can show', async () => {
+  const { TWISTS } = await import('../src/engine/twists.js');
+  const names = Object.keys(TWISTS).map((id) => TWISTS[id].name);
+  assert.ok(names.length >= 6);
+  const infos = twistInfos(names);
+  for (let i = 0; i < infos.length; i++) {
+    assert.ok(infos[i].description.length > 0, infos[i].name + ' has no description');
+  }
 });

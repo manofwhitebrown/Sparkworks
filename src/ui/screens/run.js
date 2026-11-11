@@ -19,6 +19,8 @@ import { partStatus, markSeen } from '../../meta/patentBook.js';
 import { placeFromBench, moveOnBoard, rotatePart, returnToBench, fire } from '../../run/runState.js';
 import { sellPart } from '../../run/shop.js';
 import { benchSizeOf } from '../../run/runRules.js';
+import { twistInfos, overloadText } from '../teach.js';
+import { firesPerShiftOf } from '../../run/runRules.js';
 import { reasonText, shownTotalDuring, nextScreenAfterFire, fireBannerText, screenForPhase,
   fitBoardSize, validDropCells } from '../flow.js';
 
@@ -193,6 +195,37 @@ function onSell() {
   refresh();
 }
 
+// ---------- Overload banner ----------
+// Shows the name and plain description of the shift's twists for 3 seconds.
+// It opens by itself when a shift with a twist starts, and again when a twist chip is tapped.
+const BANNER_MS = 3000;
+
+function hideTwistBanner() {
+  if (ui) ui.twistBanner.classList.remove('isShown');
+}
+
+function showTwistBanner() {
+  if (!ui) return;
+  const names = run.machine.flags && run.machine.flags.twistNames ? run.machine.flags.twistNames : [];
+  const text = overloadText(twistInfos(names));
+  if (!text.title) return;
+  ui.twistBanner.replaceChildren();
+  const title = el('div', 'twistTitle');
+  title.textContent = text.title;
+  const body = el('div', 'twistBody');
+  body.textContent = text.body;
+  ui.twistBanner.append(title, body);
+  ui.twistBanner.classList.add('isShown');
+  if (ui.twistTimer) clearTimeout(ui.twistTimer);
+  ui.twistTimer = setTimeout(hideTwistBanner, BANNER_MS);
+  timers.push(ui.twistTimer);
+}
+
+// A shift has just started when no Fire has been used yet.
+function shiftJustStarted() {
+  return run.phase === 'build' && run.firesLeft === firesPerShiftOf(run);
+}
+
 // ---------- firing ----------
 function showBanner(text, kind) {
   ui.banner.textContent = text;
@@ -290,13 +323,16 @@ export function mount(root, params) {
 
   const screen = el('div', 'screen runScreen');
   screen.dataset.screen = 'run';
-  const hud = makeHud();
+  const hud = makeHud({ onTwistTap: showTwistBanner });
   const slot = el('div', 'boardSlot');
   const wrap = el('div', 'boardWrap');
   wrap.dataset.tut = 'board';
   const banner = el('div', 'fireBanner');
   wrap.appendChild(banner);
   slot.appendChild(wrap);
+  const twistBanner = el('div', 'twistBanner');
+  twistBanner.addEventListener('click', hideTwistBanner);
+  slot.appendChild(twistBanner);
   const benchSlot = el('div');
   const panelSlot = el('div');
   const fireRow = el('div', 'fireRow');
@@ -308,7 +344,8 @@ export function mount(root, params) {
   screen.append(hud.element, slot, benchSlot, panelSlot, fireRow);
   root.appendChild(screen);
   ui = { slot: slot, wrap: wrap, hud: hud, benchSlot: benchSlot, panelSlot: panelSlot, fireBtn: fireBtn,
-    fireLabel: fireBtn.querySelector('.btnLabel'), skipBtn: skipBtn, banner: banner };
+    fireLabel: fireBtn.querySelector('.btnLabel'), skipBtn: skipBtn, banner: banner,
+    twistBanner: twistBanner, twistTimer: null };
 
   view = createBoardView(wrap, {
     onCellTap: onCellTap, onCellDrag: onCellDrag, onEventPlayed: function (e) { if (ui) ui.onEvent(e); }
@@ -318,6 +355,7 @@ export function mount(root, params) {
   if (quality && quality !== 'auto') view.setQuality(quality);
   watchSize();
   refresh();
+  if (shiftJustStarted()) showTwistBanner();
   requestAnimationFrame(function () { screen.classList.add('isShown'); });
 }
 

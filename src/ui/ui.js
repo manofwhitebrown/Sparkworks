@@ -15,6 +15,7 @@ import * as workshop from './screens/workshop.js';
 import * as patentBook from './screens/patentBook.js';
 import * as daily from './screens/daily.js';
 import * as settings from './screens/settings.js';
+import * as howto from './screens/howto.js';
 
 import { loadMeta, saveMeta } from '../core/save.js';
 import { initAudio, applySettings as applyAudioSettings } from '../audio/audio.js';
@@ -27,7 +28,7 @@ import { makeButton } from './components/button.js';
 import { backAction, fireSpeedFrom, isTutorialRun } from './flow.js';
 import { on } from '../core/events.js';
 
-const SCREENS = { home, run, shop, results, workshop, patentBook, daily, settings };
+const SCREENS = { home, run, shop, results, workshop, patentBook, daily, settings, howto };
 const FADE_MS = 160;
 
 let meta = null;
@@ -157,6 +158,21 @@ export function startApp() {
     }
   }
   showScreen('home');
+}
+
+// "Replay tutorial" on the How to Play screen: same steps as a first start.
+export function replayTutorial() {
+  stopTutorial();
+  meta.tutorialDone = false;
+  saveCurrentMeta();
+  const root = document.getElementById('app');
+  tutorialHandle = startTutorial(root);
+  const scripted = tutorialRun();
+  if (scripted) {
+    saveRun(scripted);
+    history.pushState({ screen: 'run' }, '');
+    showScreen('run', { run: scripted, tutorial: true });
+  }
 }
 
 export function stopTutorial() {

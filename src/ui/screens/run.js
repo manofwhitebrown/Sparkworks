@@ -10,7 +10,7 @@ import { makeBenchRow } from '../components/benchRow.js';
 import { makeSelectedPanel } from '../components/selectedPanel.js';
 import { createBoardView } from '../../render/boardView.js';
 import { FOOTER } from '../../render/layout.js';
-import { loadRun, saveRun } from '../../core/save.js';
+import { loadRun, saveRun, getFlag, setFlag } from '../../core/save.js';
 import { emit, on, off } from '../../core/events.js';
 import { playSfx, playPass } from '../../audio/sfx.js';
 import { buzz } from '../../platform/haptics.js';
@@ -19,7 +19,11 @@ import { partStatus, markSeen } from '../../meta/patentBook.js';
 import { placeFromBench, moveOnBoard, rotatePart, returnToBench, fire } from '../../run/runState.js';
 import { sellPart } from '../../run/shop.js';
 import { benchSizeOf } from '../../run/runRules.js';
-import { twistInfos, overloadText } from '../teach.js';
+import { twistInfos, overloadText, recapText, untouchedParts, untouchedText, showPathDefault,
+  DRAG_TIP, ROTATE_TIP } from '../teach.js';
+import { suggestPlacement } from '../../tutorial/suggest.js';
+import { getPart } from '../../engine/parts/index.js';
+import { HINTS_PER_SHIFT, hintLabel, pathLabel, machineKey, previewCells, hintText, hintsLeftFor } from '../runHelp.js';
 import { firesPerShiftOf } from '../../run/runRules.js';
 import { reasonText, shownTotalDuring, nextScreenAfterFire, fireBannerText, screenForPhase,
   fitBoardSize, validDropCells } from '../flow.js';
@@ -33,6 +37,12 @@ let ui = null;       // pointers to the elements we update
 let timers = [];
 let leaving = false; // a go() is already on its way
 let sizeWatcher = null; // ResizeObserver (or a window listener) that keeps the board fitted
+let isTutorial = false; // the scripted tutorial run: no hints, no tips (the overlay teaches)
+let showPath = false;   // the path preview toggle
+let pathKey = '';       // layout the preview was last computed for
+let hint = null;        // { index, x, y } while a hint is shown
+let hintKey = '';       // run seed + shift the hints were counted for (kept when you come back from How to Play)
+let hintsUsed = 0;
 
 function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 
@@ -86,13 +96,33 @@ function fitBoard() {
   ui.wrap.style.height = size.height + 'px';
 }
 
+// A hint shows ONE glowing cell. Any other choice by the player drops it.
+function highlightList() {
+  if (hint && selected && selected.where === 'bench' && selected.index === hint.index) {
+    return [{ x: hint.x, y: hint.y }];
+  }
+  hint = null;
+  return selected ? validDropCells(run.machine) : [];
+}
+
+// The path preview: only the way the sparks go, never the numbers. One simulate per change.
+function drawPreview() {
+  if (!view.setPreview) return;
+  if (!showPath || firing) { view.setPreview([]); pathKey = ''; return; }
+  const key = machineKey(run.machine);
+  if (key === pathKey) return;
+  pathKey = key;
+  view.setPreview(previewCells(run.machine));
+}
+
 function drawBoard() {
   fitBoard();
   view.setMachine(run.machine);
   // Only show drop targets while a part is selected (the view skips blocked cells itself).
-  view.setHighlightCells(selected ? validDropCells(run.machine) : []);
+  view.setHighlightCells(highlightList());
   view.setSelectedCell(selected && selected.where === 'board' ? selected.x : null,
     selected && selected.where === 'board' ? selected.y : null);
+  drawPreview();
 }
 
 function drawLower() {
@@ -112,6 +142,7 @@ function refresh() {
   ui.hud.update(run, run.shiftTotal);
   drawBoard();
   drawLower();
+  updateHintButton();
 }
 
 // ---------- building actions ----------
@@ -120,8 +151,22 @@ function afterAction(out, sfx, eventName, data) {
   playSfx(sfx);
   buzz('light');
   save();
+  clearRecap();
   emit(eventName, data || {});
   return true;
+}
+
+// Each tiny tip shows once and is remembered. Never in the tutorial.
+function tipOnce(flag, text) {
+  if (isTutorial || getFlag(flag)) return;
+  setFlag(flag, true);
+  showToast(text);
+}
+
+function rotateTipIfNeeded() {
+  const info = selectedInfo();
+  const part = info ? getPart(info.partId) : null;
+  if (part && part.directional) tipOnce('rotateTip', ROTATE_TIP);
 }
 
 function onBenchSelect(index) {
@@ -130,12 +175,15 @@ function onBenchSelect(index) {
   selected = same ? null : { where: 'bench', index: index };
   playSfx('tap');
   refresh();
+  rotateTipIfNeeded();
 }
 
 function placeBenchAt(index, x, y) {
   const out = placeFromBench(run, index, x, y, 0);
-  if (afterAction(out, 'place', 'ui:placed', { x: x, y: y })) selected = null;
+  const placed = afterAction(out, 'place', 'ui:placed', { x: x, y: y });
+  if (placed) selected = null;
   refresh();
+  if (placed) tipOnce('dragTip', DRAG_TIP);
 }
 
 function onBenchDrop(index, clientX, clientY) {
@@ -163,6 +211,7 @@ function onCellTap(x, y) {
   selected = cell && !same ? { where: 'board', x: x, y: y } : null;
   if (cell) playSfx('tap');
   refresh();
+  rotateTipIfNeeded();
 }
 
 function onCellDrag(fromX, fromY, toX, toY) {
@@ -226,6 +275,63 @@ function shiftJustStarted() {
   return run.phase === 'build' && run.firesLeft === firesPerShiftOf(run);
 }
 
+// ---------- recap line (under the HUD, after a Fire) ----------
+function clearRecap() {
+  if (!ui) return;
+  ui.recap.textContent = '';
+  ui.recap.hidden = true;
+  if (view && view.setDim) view.setDim([]);
+}
+
+function showRecap(out) {
+  const events = out.result.events || [];
+  const missed = untouchedParts(run.machine, events);
+  let text = recapText(out.result);
+  const extra = untouchedText(missed);
+  if (extra) text += ' ' + extra;
+  ui.recap.textContent = text;
+  ui.recap.hidden = text === '';
+  if (view.setDim) view.setDim(missed.map(function (m) { return { x: m.x, y: m.y }; }));
+}
+
+// ---------- Path and Hint buttons ----------
+function togglePath() {
+  showPath = !showPath;
+  setFlag('showPath', showPath ? 'on' : 'off');
+  ui.pathBtn.querySelector('.btnLabel').textContent = pathLabel(showPath);
+  pathKey = '';
+  playSfx('tap');
+  drawPreview();
+}
+
+function updateHintButton() {
+  const key = run.seed + ':' + run.shift;
+  if (hintKey !== key) { hintKey = key; hintsUsed = 0; }
+  const left = hintsLeftFor(hintsUsed);
+  ui.hintBtn.querySelector('.btnLabel').textContent = hintLabel(left);
+  ui.hintBtn.disabled = left <= 0 || firing || run.phase !== 'build';
+}
+
+// The Hint button suggests where one bench part could go. The player still decides.
+function onHint() {
+  if (firing || hintsLeftFor(hintsUsed) <= 0) return;
+  const suggestion = suggestPlacement(run);
+  const text = hintText(run, suggestion);
+  if (!text) { showToast('Hint: no better spot right now.'); return; }
+  hintsUsed += 1;
+  hint = { index: suggestion.partIndex, x: suggestion.x, y: suggestion.y };
+  selected = { where: 'bench', index: suggestion.partIndex };
+  playSfx('hint');
+  showToast(text);
+  emit('ui:hintUsed', { left: hintsLeftFor(hintsUsed) });
+  refresh();
+}
+
+function onHelp() {
+  if (firing) return;
+  go('howto', { from: 'run' });
+}
+
 // ---------- firing ----------
 function showBanner(text, kind) {
   ui.banner.textContent = text;
@@ -241,7 +347,11 @@ function makePlayHandler(totalBefore, counter) {
       playSfx('bank');
       buzz('light');
     }
-    if (event.type === 'fizzle') playSfx('fizzle');
+    if (event.type === 'fizzle') {
+      playSfx('fizzle');
+      // A spark that left by an edge: the renderer draws the marker, the sound is AI-8's.
+      if (event.reason === 'edge') emit('ui:sparkLost', { x: event.x, y: event.y, value: event.value });
+    }
   };
 }
 
@@ -252,6 +362,8 @@ async function onFire() {
   if (!out.ok) { refuse(out.reason); return; }
   firing = true;
   selected = null;
+  clearRecap();
+  drawPreview();
   save(); // fire() already moved the run on; a reload now lands in shop/results
   emit('ui:fired', { events: out.result.events });
   playSfx('fire');
@@ -281,7 +393,7 @@ function finishFire(out) {
   later(function () {
     ui.banner.classList.remove('isShown');
     firing = false;
-    if (next === 'run') { refresh(); } else { go(next); }
+    if (next === 'run') { refresh(); showRecap(out); } else { go(next); }
   }, getMeta().settings.reduceMotion ? 500 : 1300);
 }
 
@@ -318,12 +430,20 @@ export function mount(root, params) {
   firing = false;
   leaving = false;
   selected = null;
+  hint = null;
+  pathKey = '';
+  isTutorial = !!(params && params.tutorial) || run.tutorial === true;
+  const saved = getFlag('showPath');
+  const gentle = !!(run.bonuses && run.bonuses.gentle);
+  showPath = !isTutorial && (gentle || (saved ? saved === 'on' : showPathDefault(getMeta().stats.runs, false)));
   setCurrentRun(run);
   on('cheat:changed', onCheatChanged);
 
   const screen = el('div', 'screen runScreen');
   screen.dataset.screen = 'run';
-  const hud = makeHud({ onTwistTap: showTwistBanner });
+  const hud = makeHud({ onTwistTap: showTwistBanner, onHelp: onHelp });
+  const recap = el('div', 'recapLine');
+  recap.hidden = true;
   const slot = el('div', 'boardSlot');
   const wrap = el('div', 'boardWrap');
   wrap.dataset.tut = 'board';
@@ -340,12 +460,17 @@ export function mount(root, params) {
   fireBtn.dataset.tut = 'fire';
   const skipBtn = makeButton('Skip', function () { view.skip(); }, { kind: 'ghost' });
   skipBtn.hidden = true;
-  fireRow.append(fireBtn, skipBtn);
-  screen.append(hud.element, slot, benchSlot, panelSlot, fireRow);
+  // Path and Hint are small and secondary and sit beside FIRE. Not in the scripted tutorial.
+  const pathBtn = makeButton(pathLabel(showPath), togglePath, { kind: 'ghost', small: true });
+  const hintBtn = makeButton(hintLabel(HINTS_PER_SHIFT), onHint, { kind: 'ghost', small: true });
+  pathBtn.hidden = isTutorial;
+  hintBtn.hidden = isTutorial;
+  fireRow.append(fireBtn, skipBtn, pathBtn, hintBtn);
+  screen.append(hud.element, recap, slot, benchSlot, panelSlot, fireRow);
   root.appendChild(screen);
   ui = { slot: slot, wrap: wrap, hud: hud, benchSlot: benchSlot, panelSlot: panelSlot, fireBtn: fireBtn,
     fireLabel: fireBtn.querySelector('.btnLabel'), skipBtn: skipBtn, banner: banner,
-    twistBanner: twistBanner, twistTimer: null };
+    twistBanner: twistBanner, twistTimer: null, recap: recap, pathBtn: pathBtn, hintBtn: hintBtn };
 
   view = createBoardView(wrap, {
     onCellTap: onCellTap, onCellDrag: onCellDrag, onEventPlayed: function (e) { if (ui) ui.onEvent(e); }

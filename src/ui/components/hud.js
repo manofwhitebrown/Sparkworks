@@ -24,6 +24,7 @@ function makeChip(name, onTap) {
 
 // Returns { element, update(run, shownTotal) }.
 // options.onTwistTap(name) is called when a twist chip is tapped (it shows the twist text again).
+// options.onHelp() adds the "?" button that opens How to Play.
 export function makeHud(options) {
   const opts = options || {};
   const element = el('div', 'panel hud');
@@ -35,6 +36,13 @@ export function makeHud(options) {
   const gentle = el('div', 'pill gentlePill', 'Gentle');
   gentle.hidden = true;
   top.append(shift, gentle, el('div', 'spacer'), coins);
+  if (opts.onHelp) {
+    const help = el('button', 'helpBtn', '?');
+    help.type = 'button';
+    help.setAttribute('aria-label', 'How to play');
+    help.addEventListener('click', opts.onHelp);
+    top.appendChild(help);
+  }
 
   const targetRow = el('div', 'row hudTarget');
   targetRow.appendChild(el('div', 'dim', 'TARGET'));

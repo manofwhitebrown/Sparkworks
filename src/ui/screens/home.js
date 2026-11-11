@@ -148,6 +148,11 @@ function build(screen) {
   const top = el('div', 'row');
   top.appendChild(el('div', 'spacer'));
   top.appendChild(el('div', 'pill dust', 'Spark Dust ' + formatNumber(meta.dust)));
+  const help = el('button', 'helpBtn', '?');
+  help.type = 'button';
+  help.setAttribute('aria-label', 'How to play');
+  help.addEventListener('click', function () { go('howto', { from: 'home' }); });
+  top.appendChild(help);
   screen.appendChild(top);
   screen.appendChild(makeTitle());
 

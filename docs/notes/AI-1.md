@@ -45,6 +45,35 @@
    as soon as it lands. Reminder for AI-8: the file name must end in `.test.js` and sit directly in `tests/` (not in a subfolder).
 4. `installCheats()` is now in `src/main.js` (AI-2's one allowed line). Exit test re-run after it: all green.
 
+## Round 4: covering AI-7 (owner asked), second part (2026-11-11)
+Earlier pushes did AI-7 items 4, 5, 6, 7. This push does the rest of the list in `docs/manager/to-AI-7.md` ROUND 4:
+- **Item 1, Path preview**: a `Path: on/off` button beside FIRE. Default ON for the first 3 runs and always in Gentle mode
+  (choice remembered in the tip flags as `showPath`). One `simulate` per change (cached by `machineKey`). It calls
+  `view.setPreview(cells)` ONLY IF the view has it (see "Needs from AI-6" below).
+- **Item 2, recap line** under the HUD: "3 sparks reached the vault: 42. 1 lost." plus "Not touched: Coil. The spark never went there.
+  Try the Path button." Cleared on the next change. Calls `view.setDim(cells)` only if the view has it.
+- **Item 3, How to Play** (`src/ui/screens/howto.js`, route `howto`, cards in `src/ui/howtoCards.js`): 6 swipe cards, "?" button on Home
+  and in the run HUD, "Replay tutorial" (new `replayTutorial()` in `ui.js`), Back returns to where you came from. The pictures are
+  small token rows made in CSS (AI-6's `createDiagram` does not exist yet).
+- **Item 8, Hint button** ("Hint 3", 3 per shift, per run+shift): uses AI-8's `suggestPlacement`, selects the bench part and glows
+  ONE cell; the player still decides. Emits `ui:hintUsed`; plays the `hint` sound.
+- **Item 9, loss tips** on the results screen ("You needed X. Your best Fire was Y." + the tip). Not shown for cheated runs.
+- **Item 10, first-use tips** (once each): drag tip after the first placement, rotate tip when a directional part is first selected.
+- **Item 11**: emits `ui:sparkLost` `{ x, y, value }` for every spark lost by an edge.
+- The scripted tutorial run hides Path and Hint and shows no tips.
+- Tests: `tests/ui-runhelp.test.js` (8 new). Whole suite 471 of 471, build OK (JS about 61 KB gzipped).
+- Checked in headless Chromium at 360x740 and 320x568: Home "?" -> How to Play (6 cards, counter follows the swipe) -> Back -> PLAY ->
+  Hint (glowing cell, toast, "Hint 2") -> FIRE -> recap line. Replay tutorial works and skipping it leaves no Continue button.
+  No console errors.
+
+### Needs from AI-6 (not mine, not edited)
+- `view.setPreview(cells)`: draw the path line (the screen already calls it when it exists).
+- `view.setDim(cells)`: dim parts the spark never touched (same).
+- `createDiagram` for the How to Play cards (today they use token rows; easy to swap in `howto.js`).
+- A marker for `ui:sparkLost` (the event is emitted; AI-8 owns the sound).
+### Note for AI-2
+- I did not wait for `pathCells` / `touchedParts`: `sourcePathCells` and `untouchedParts` in `src/ui/teach.js` do the same job.
+
 ## Blocked / Questions for manager
 1. **Secret scan shape.** The contract says CI should fail if `git grep -i` finds the token prefix. docs/CONTRACT.md itself
    contains that prefix (it is contract text), so a bare search always fails. CI scans for the real token SHAPE instead

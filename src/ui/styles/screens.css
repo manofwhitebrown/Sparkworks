@@ -268,3 +268,56 @@ html.largeText .selectedPanel { min-height: 144px; }
   .runScreen .selectedPanel { min-height: 136px; }
   html.largeText .runScreen .selectedPanel { min-height: 152px; }
 }
+
+/* ---------- teaching tools (round 4) ---------- */
+/* The "?" button: 44px, top right of Home and of the run HUD. */
+.helpBtn {
+  flex: 0 0 auto; width: var(--tap); height: var(--tap); margin-left: var(--s2);
+  border-radius: 50%; border: 1px solid var(--line); background: var(--panel2);
+  color: var(--accent); font: inherit; font-weight: 700; font-size: var(--fs-base);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.hudTop .helpBtn { width: 36px; height: 36px; margin-left: var(--s2); }
+
+/* The recap line under the HUD after a Fire. */
+.recapLine {
+  flex: 0 0 auto; font-size: var(--fs-small); line-height: 1.3; color: var(--textDim);
+  padding: 0 var(--s1);
+}
+.recapLine[hidden] { display: none; }
+
+/* Path and Hint sit beside FIRE: small, quiet, still a real tap target. */
+.fireRow .btn.ghost { flex: 0 0 auto; min-height: var(--tap); padding-left: var(--s3); padding-right: var(--s3); }
+
+/* Loss tip box on the results screen. */
+.tipBox { display: flex; flex-direction: column; gap: var(--s2); }
+.tipNeeded { font-weight: 700; color: var(--text); }
+.tipText { font-size: var(--fs-small); line-height: 1.35; }
+
+/* ---------- How to Play ---------- */
+.howtoScreen { gap: var(--s3); }
+.howtoStrip {
+  display: flex; gap: var(--s3); overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+}
+.howtoCard {
+  flex: 0 0 100%; scroll-snap-align: center; box-sizing: border-box;
+  display: flex; flex-direction: column; gap: var(--s3);
+}
+.howtoTitle { margin: 0; color: var(--sparkHot); }
+.howtoText { margin: 0; font-size: var(--fs-base); line-height: 1.4; }
+.howtoCounter { text-align: center; font-size: var(--fs-small); }
+.howtoPicture { display: flex; flex-direction: column; gap: var(--s2); }
+.howtoRow { display: flex; gap: var(--s2); align-items: center; justify-content: center; flex-wrap: wrap; }
+.howtoToken {
+  min-width: 44px; min-height: 44px; padding: 0 var(--s3); box-sizing: border-box;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--line); border-radius: var(--r1); background: var(--panel2);
+  font-variant-numeric: tabular-nums; font-weight: 700; color: var(--text);
+}
+.howtoToken.spark { color: var(--spark); border-color: var(--spark); }
+.howtoToken.part { color: var(--accent); border-color: var(--accent); }
+.howtoToken.arrow { border-color: transparent; background: transparent; color: var(--textDim); }
+.howtoToken.vault { color: var(--good); border-color: var(--good); }
+.howtoToken.lost { color: var(--bad); border-color: var(--bad); }
+.howtoToken.empty { border-color: transparent; background: transparent; }

@@ -18,6 +18,7 @@ import { getPart } from '../../engine/parts/index.js';
 import { getInventor } from '../../data/inventors.js';
 import { startNormalRun } from '../startRun.js';
 import { CHEATED_TEXT } from '../flow.js';
+import { lossTipText, neededText } from '../teach.js';
 
 let timers = [];
 
@@ -93,6 +94,18 @@ export function mount(root, params) {
     statRow('Parts owned', String(summary.partsOwned.length))
   );
   screen.appendChild(stats);
+
+  // A friendly tip after a loss. Never blames the player.
+  if (!won && run.cheated !== true) {
+    const needed = neededText(summary.neededTotal, summary.bestFireLastShift);
+    const tip = lossTipText(summary.tipId);
+    if (needed || tip) {
+      const box = el('div', 'panel tipBox');
+      if (needed) box.appendChild(el('div', 'tipNeeded', needed));
+      if (tip) box.appendChild(el('div', 'dim tipText', tip));
+      screen.appendChild(box);
+    }
+  }
 
   // A cheated run earns nothing, so there is no dust panel and no reveal animation.
   const cheated = run.cheated === true;

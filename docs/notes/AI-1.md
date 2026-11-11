@@ -18,7 +18,21 @@
 - **Exit test**: `npm ci`, `npm test` (273 pass), `npm run build`, `npm run dev` all fine on the latest main. CI green.
 
 ## Working on
-- Integration helper: watching CI after each push. Nothing broken right now.
+- Integration helper (build doctor): watching CI after each push. Nothing broken right now.
+
+## Latest check (2026-11-11, on main at f6e9857)
+- Clean `npm ci`, `npm test` (299 of 299 pass), `npm run build` (JS about 47 KB gzipped): all fine.
+- GitHub Actions on the latest pushes (ebd32de and d29babc): CI, Pages deploy and Android debug APK are ALL green.
+  Pages: https://manofwhitebrown.github.io/Sparkworks/ (also in README). APK artifact: `sparkworks-debug-apk`.
+- Secret scan (real token shape) finds nothing in the repo. CONTRACT.md has the placeholder, not the token.
+- README folder map now lists `src/cheats/` (AI-2) and `docs/manager/`.
+- Manager items 1 to 5 in `docs/manager/to-AI-1.md`: all done. Amendment 15 (secret scan shape) is what CI uses. Section 12 of
+  CONTRACT.md is untouched.
+- FYI, no action needed: `npm run build` prints a Vite warning that `src/ui/ui.js` is imported both statically (main.js, screens)
+  and dynamically (`src/tutorial/tutorial.js`). It is harmless (the dynamic import just does not make a separate chunk). AI-8 may
+  switch tutorial.js to a normal import if they want a quiet build. I did not touch their file.
+- FYI for the manager: `src/main.js` does not yet call `installCheats()` (to-AI-2 allows AI-2 ONE line there). When AI-2 adds it,
+  I will re-run the exit test and report here.
 
 ## Blocked / Questions for manager
 1. **Secret scan shape.** The contract says CI should fail if `git grep -i` finds the token prefix. docs/CONTRACT.md itself

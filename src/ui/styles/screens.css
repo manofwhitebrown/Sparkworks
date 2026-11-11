@@ -1,16 +1,43 @@
-/* Screen layouts for home, run, shop, results. Owner: AI-7 */
+/* Screen layouts for home, run, shop, results. Owner: AI-7
+   Phone first. Short screens (max-height 700px) get a tighter layout. */
 
 /* ---------- home ---------- */
-.homeTitle { display: flex; flex-direction: column; align-items: center; gap: var(--s2); padding: var(--s5) 0; text-align: center; }
+.homeTitle { display: flex; flex-direction: column; align-items: center; gap: var(--s2); padding: var(--s4) 0; text-align: center; }
 .homeLogo { font-size: clamp(30px, 10vw, var(--fs-huge)); letter-spacing: 0.08em; color: var(--sparkHot); }
-.homeSpark {
-  width: 14px; height: 14px; border-radius: 50%;
-  background: var(--spark);
-  animation: sparkPulse 1800ms var(--ease) infinite;
-}
-@keyframes sparkPulse { 0%, 100% { transform: scale(0.8); opacity: 0.6; } 50% { transform: scale(1.4); opacity: 1; } }
-html.reduceMotion .homeSpark { animation: none; }
 
+/* The spark mark: static radial gradients, pulsed with transform and opacity only. */
+.homeSpark { position: relative; width: 64px; height: 64px; flex: 0 0 auto; }
+.homeSpark > div { position: absolute; }
+.sparkHalo {
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 200, 87, 0.6) 0%, rgba(255, 200, 87, 0.2) 38%, rgba(255, 200, 87, 0) 70%);
+  animation: sparkHalo 2200ms ease-in-out infinite;
+}
+.sparkCore {
+  left: 50%; top: 50%;
+  width: 22px; height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--sparkHot) 0%, var(--sparkHot) 34%, var(--spark) 66%, rgba(255, 200, 87, 0) 100%);
+  animation: sparkCore 2200ms ease-in-out infinite;
+}
+/* A thin four-point glint: two hairlines crossing in the core. */
+.sparkGlint { inset: 0; animation: sparkGlint 2200ms ease-in-out infinite; }
+.sparkGlint::before, .sparkGlint::after {
+  content: '';
+  position: absolute;
+  left: 50%; top: 50%;
+  background: linear-gradient(to right, rgba(255, 241, 194, 0), var(--sparkHot), rgba(255, 241, 194, 0));
+}
+.sparkGlint::before { width: 100%; height: 2px; margin: -1px 0 0 -50%; }
+.sparkGlint::after { width: 2px; height: 100%; margin: -50% 0 0 -1px; background: linear-gradient(to bottom, rgba(255, 241, 194, 0), var(--sparkHot), rgba(255, 241, 194, 0)); }
+@keyframes sparkHalo { 0%, 100% { transform: scale(0.82); opacity: 0.65; } 50% { transform: scale(1.12); opacity: 1; } }
+@keyframes sparkCore { 0%, 100% { transform: scale(0.92); opacity: 0.9; } 50% { transform: scale(1.1); opacity: 1; } }
+@keyframes sparkGlint { 0%, 100% { transform: scale(0.8); opacity: 0.35; } 50% { transform: scale(1); opacity: 0.95; } }
+html.reduceMotion .sparkHalo, html.reduceMotion .sparkCore, html.reduceMotion .sparkGlint { animation: none; }
+
+.inventorBox { display: flex; flex-direction: column; gap: var(--s2); }
 .inventorRow { display: flex; flex-direction: column; gap: var(--s2); }
 .inventorCard {
   display: flex; flex-direction: column; gap: var(--s1);
@@ -24,32 +51,62 @@ html.reduceMotion .homeSpark { animation: none; }
 }
 .inventorCard:active { transform: scale(0.98); }
 .inventorCard.isSelected { border-color: var(--accent); }
-.inventorCard.locked { opacity: 0.5; }
 .invName { font-weight: 700; }
 .invTag { font-size: var(--fs-small); }
+
+.lockedRow { display: flex; gap: var(--s2); }
+.lockedTile {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: var(--tap);
+  display: flex; align-items: center; gap: var(--s2);
+  padding: var(--s2) var(--s3);
+  background: transparent;
+  border: 1px dashed var(--line);
+  border-radius: var(--r2);
+  font-size: var(--fs-small);
+  line-height: 1.25;
+}
+.lockIcon { width: 16px; height: 16px; flex: 0 0 auto; fill: var(--textDim); stroke: var(--textDim); stroke-width: 1.5; stroke-linecap: round; }
+.lockIcon path { fill: none; }
 
 .voltageRow { display: flex; align-items: center; justify-content: space-between; }
 .voltageRow .btn { min-width: var(--tap); }
 .voltageMid { text-align: center; min-width: 140px; }
 
-.navRow { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s2); }
-.navRow .btn { padding: 0 var(--s1); }
+/* Four labels never fit in one row on a narrow phone, so two by two. */
+.navRow { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s2); }
+.navRow .btn { padding: 0 var(--s3); }
+@media (min-width: 400px) {
+  html:not(.largeText) .navRow { grid-template-columns: repeat(4, 1fr); }
+  html:not(.largeText) .navRow .btn { padding: 0 var(--s2); }
+}
 
 /* ---------- run ---------- */
 .runScreen { gap: var(--s2); }
-.hud { display: flex; flex-direction: column; gap: var(--s2); }
+.hud { display: flex; flex-direction: column; gap: var(--s2); flex: 0 0 auto; }
 .hudShift { font-weight: 600; }
 .hudTotal { font-size: var(--fs-title); color: var(--sparkHot); min-width: 8ch; text-align: right; }
 .hudFires { font-size: var(--fs-small); }
+.hudFiresShort { display: none; }
 .twistChips { display: flex; gap: var(--s1); flex-wrap: wrap; justify-content: flex-end; }
 .pill.twist { color: var(--bad); border: 1px solid var(--bad); background: transparent; }
 
-.boardSlot { position: relative; display: flex; justify-content: center; flex: 1 1 auto; min-height: 0; }
-.boardWrap {
+/* The slot takes whatever height is left. The board is fitted INSIDE it by run.js
+   (absolute, so it can never push the slot or paint over the HUD or the bench). */
+.boardSlot {
   position: relative;
-  width: min(100%, calc(40dvh * 1.25));
-  aspect-ratio: 5 / 4;
-  align-self: center;
+  flex: 1 1 0;
+  min-height: 132px;
+  margin: 0 calc(-1 * var(--s2));
+}
+.boardWrap {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 100%;
+  max-height: 100%;
+  aspect-ratio: 6 / 4.45; /* (cols + 1) by (rows + footer): run.js sets the real size */
 }
 .fireBanner {
   position: absolute; left: 50%; top: 50%;
@@ -64,7 +121,7 @@ html.reduceMotion .homeSpark { animation: none; }
 .fireBanner.bad { border-color: var(--bad); color: var(--bad); }
 .fireBanner.good { border-color: var(--good); color: var(--good); }
 
-.benchWrap { display: flex; flex-direction: column; gap: var(--s1); }
+.benchWrap { display: flex; flex-direction: column; gap: var(--s1); flex: 0 0 auto; }
 .benchLabel { font-size: var(--fs-small); }
 .benchRow { display: flex; gap: var(--s2); overflow-x: auto; scrollbar-width: none; padding: var(--s1) 0; min-height: 64px; }
 .benchRow::-webkit-scrollbar { display: none; }
@@ -72,19 +129,44 @@ html.reduceMotion .homeSpark { animation: none; }
 .benchEmpty { align-self: center; font-size: var(--fs-small); }
 .dragGhost { position: fixed; left: 0; top: 0; z-index: 70; pointer-events: none; opacity: 0.9; }
 
-.selectedPanel { min-height: 96px; display: flex; flex-direction: column; justify-content: center; gap: var(--s2); }
+/* The panel keeps one height, so selecting a part never makes the board jump. */
+.selectedPanel {
+  flex: 0 0 auto;
+  min-height: 118px;
+  display: flex; flex-direction: column; justify-content: center; gap: var(--s1);
+}
 .selName { font-weight: 700; }
-.selDesc { font-size: var(--fs-small); }
+.selDesc {
+  font-size: var(--fs-small);
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+.selHint { font-size: var(--fs-small); }
 .selActions { flex-wrap: wrap; }
-.fireRow { display: flex; gap: var(--s2); }
+html.largeText .selectedPanel { min-height: 144px; }
+
+/* FIRE stays visible even when the screen has to scroll (largeText on a tiny phone). */
+.fireRow { display: flex; gap: var(--s2); flex: 0 0 auto; position: sticky; bottom: 0; background: var(--bg); z-index: 5; }
 .fireRow .fireBtn { flex: 1 1 auto; }
 
 /* ---------- shop ---------- */
-.shopScreen { gap: var(--s3); }
-.offerGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: var(--s2); }
-.offerCard { min-height: 168px; justify-content: flex-start; padding: var(--s3) var(--s2); }
+.shopScreen { gap: var(--s3); overflow: hidden; }
+.shopBody {
+  flex: 1 1 0; min-height: 0;
+  display: flex; flex-direction: column; gap: var(--s3);
+  overflow-y: auto; overflow-x: hidden;
+  scrollbar-width: none;
+  padding-bottom: var(--s2);
+}
+.shopBody::-webkit-scrollbar { display: none; }
+.shopBody > * { flex: 0 0 auto; }
+.shopScreen > .btn.big { flex: 0 0 auto; }
+/* Equal-height offer cards, price pinned to the bottom of each. */
+.offerGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); grid-auto-rows: 1fr; gap: var(--s2); }
+.offerCard { justify-content: flex-start; padding: var(--s3) var(--s2); }
 .offerCard .pcIcon { width: 56px; height: 56px; }
+.offerCard .pcPrice { margin-top: auto; padding-top: var(--s1); }
 .miniBoard { position: relative; width: 60%; aspect-ratio: 5 / 4; align-self: center; pointer-events: none; }
+.shopScreen .selectedPanel { min-height: 88px; }
 
 /* ---------- results ---------- */
 .resultsTitle { text-align: center; font-size: var(--fs-big); letter-spacing: 0.06em; padding: var(--s5) 0; }
@@ -96,7 +178,44 @@ html.reduceMotion .homeSpark { animation: none; }
 .revealItem { opacity: 0; transform: translateY(8px); transition: opacity var(--t-normal) var(--ease), transform var(--t-normal) var(--ease); }
 .revealItem.isShown { opacity: 1; transform: translateY(0); }
 
-/* Keep the main action of the shop always reachable. */
-.shopScreen .miniBoard { width: 46%; }
-.shopScreen .selectedPanel { min-height: 72px; }
-.stickyBottom { position: sticky; bottom: calc(-1 * var(--s4) - var(--safe-bottom)); padding-bottom: var(--s1); background: var(--bg); z-index: 5; }
+/* ---------- short phones (360x640, 375x667, 320x568 ...) ---------- */
+@media (max-height: 700px) {
+  .screen { padding-top: calc(var(--s3) + var(--safe-top)); gap: var(--s2); }
+  .homeTitle { padding: var(--s2) 0; gap: var(--s1); }
+  .homeSpark { width: 52px; height: 52px; }
+  .homeLogo { font-size: clamp(28px, 9vw, 38px); }
+
+  .hud { padding: var(--s2) var(--s3); gap: var(--s1); }
+  .hudTotal { font-size: var(--fs-base); min-width: 0; text-align: left; order: 1; margin-left: var(--s2); }
+  .hudTarget .spacer { order: 2; }
+  .hudFiresShort { display: block; order: 3; }
+  .hudBottom .hudFires { display: none; }
+  .hud.noTwists .hudBottom { display: none; }
+  .hudBottom { justify-content: flex-end; }
+  .pill { min-height: 24px; }
+
+  .selectedPanel { min-height: 104px; padding: var(--s2) var(--s3); }
+  .selDesc { -webkit-line-clamp: 1; }
+  html.largeText .selectedPanel { min-height: 126px; }
+  .btn.big { min-height: 56px; }
+  .shopScreen .selectedPanel { min-height: 76px; }
+}
+
+/* very short phones (320x568): trim the home screen so all four links stay on screen */
+@media (max-height: 600px) {
+  .homeTitle > p { display: none; }
+  .homeSpark { width: 44px; height: 44px; }
+  .voltageRow { padding: var(--s2) var(--s3); }
+}
+
+/* tall phones (412x915, 430x932): the board is as wide as the screen allows,
+   so the spare height goes to a roomier HUD, bench and panel */
+@media (min-height: 800px) {
+  .runScreen { gap: var(--s3); }
+  .runScreen .hud { padding: var(--s4); gap: var(--s3); }
+  .runScreen .hudTotal { font-size: var(--fs-big); }
+  .runScreen .benchRow .partCard.compact { min-width: 64px; padding: var(--s2); }
+  .runScreen .benchRow .partCard.compact .pcIcon { width: 44px; height: 44px; }
+  .runScreen .selectedPanel { min-height: 136px; }
+  html.largeText .runScreen .selectedPanel { min-height: 152px; }
+}

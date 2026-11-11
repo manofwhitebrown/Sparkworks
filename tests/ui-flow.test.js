@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   progressRatio, shiftText, firesLeftText, nextScreenAfterFire, fireBannerText, backAction,
-  screenForPhase, fireSpeedFrom, isTutorialRun, continuableRun
+  screenForPhase, fireSpeedFrom, isTutorialRun, continuableRun, fitBoardSize, validDropCells
 } from '../src/ui/flow.js';
 
 test('progressRatio clamps and survives bad input', () => {
@@ -83,4 +83,22 @@ test('continuableRun ignores tutorial runs and finished runs', () => {
   assert.equal(continuableRun({ phase: 'won' }), null);
   assert.equal(continuableRun({ phase: 'lost' }), null);
   assert.equal(continuableRun(null), null);
+});
+
+test('fitBoardSize fits the board inside the slot without overflow', () => {
+  assert.deepEqual(fitBoardSize(300, 400, 5, 4), { width: 300, height: 240 });
+  assert.deepEqual(fitBoardSize(400, 200, 5, 4), { width: 250, height: 200 });
+  assert.deepEqual(fitBoardSize(0, 200, 5, 4), { width: 0, height: 0 });
+  assert.deepEqual(fitBoardSize(300, -5, 5, 4), { width: 0, height: 0 });
+  assert.deepEqual(fitBoardSize(300, 300, 0, 4), { width: 0, height: 0 });
+  const fit = fitBoardSize(333, 217, 5, 4);
+  assert.ok(fit.width <= 333 && fit.height <= 217);
+});
+
+test('validDropCells skips parts and blocked cells', () => {
+  const machine = { cols: 3, rows: 2, cells: [{ x: 0, y: 0 }], blocked: [{ x: 2, y: 1 }] };
+  const cells = validDropCells(machine);
+  assert.equal(cells.length, 4);
+  assert.ok(!cells.some((c) => c.x === 0 && c.y === 0));
+  assert.ok(!cells.some((c) => c.x === 2 && c.y === 1));
 });

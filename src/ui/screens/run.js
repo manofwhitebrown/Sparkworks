@@ -9,6 +9,7 @@ import { makeHud } from '../components/hud.js';
 import { makeBenchRow } from '../components/benchRow.js';
 import { makeSelectedPanel } from '../components/selectedPanel.js';
 import { createBoardView } from '../../render/boardView.js';
+import { FOOTER } from '../../render/layout.js';
 import { loadRun, saveRun } from '../../core/save.js';
 import { emit, on, off } from '../../core/events.js';
 import { playSfx, playPass } from '../../audio/sfx.js';
@@ -18,7 +19,8 @@ import { partStatus, markSeen } from '../../meta/patentBook.js';
 import { placeFromBench, moveOnBoard, rotatePart, returnToBench, fire } from '../../run/runState.js';
 import { sellPart } from '../../run/shop.js';
 import { benchSizeOf } from '../../run/runRules.js';
-import { reasonText, shownTotalDuring, nextScreenAfterFire, fireBannerText, screenForPhase } from '../flow.js';
+import { reasonText, shownTotalDuring, nextScreenAfterFire, fireBannerText, screenForPhase,
+  fitBoardSize, validDropCells } from '../flow.js';
 
 let run = null;
 let view = null;
@@ -28,6 +30,7 @@ let selected = null; // null | { where: 'bench', index } | { where: 'board', x, 
 let ui = null;       // pointers to the elements we update
 let timers = [];
 let leaving = false; // a go() is already on its way
+let sizeWatcher = null; // ResizeObserver (or a window listener) that keeps the board fitted
 
 function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 
@@ -68,9 +71,24 @@ function selectedInfo() {
 }
 
 // ---------- drawing ----------
+// The board takes the biggest box that fits the room left between HUD and bench.
+// The slot gets its height from the flex layout, never from the board, so the
+// board can never grow over the HUD or the bench.
+function fitBoard() {
+  if (!ui || !ui.slot) return;
+  const m = run.machine;
+  // The view makes square cells with half a cell on each side and a small footer,
+  // so a box of (cols + 1) by (rows + FOOTER) wastes nothing.
+  const size = fitBoardSize(ui.slot.clientWidth, ui.slot.clientHeight, m.cols + 1, m.rows + FOOTER);
+  ui.wrap.style.width = size.width + 'px';
+  ui.wrap.style.height = size.height + 'px';
+}
+
 function drawBoard() {
+  fitBoard();
   view.setMachine(run.machine);
-  view.setHighlightCells(run.machine.blocked);
+  // Only show drop targets while a part is selected (the view skips blocked cells itself).
+  view.setHighlightCells(selected ? validDropCells(run.machine) : []);
   view.setSelectedCell(selected && selected.where === 'board' ? selected.x : null,
     selected && selected.where === 'board' ? selected.y : null);
 }
@@ -202,7 +220,7 @@ async function onFire() {
   firing = true;
   selected = null;
   save(); // fire() already moved the run on; a reload now lands in shop/results
-  emit('ui:fired', {});
+  emit('ui:fired', { events: out.result.events });
   playSfx('fire');
   ui.skipBtn.hidden = false;
   drawLower();
@@ -232,6 +250,17 @@ function finishFire(out) {
     firing = false;
     if (next === 'run') { refresh(); } else { go(next); }
   }, getMeta().settings.reduceMotion ? 500 : 1300);
+}
+
+// Refit the board whenever the slot changes size (rotation, largeText, window resize).
+function watchSize() {
+  if (typeof ResizeObserver !== 'undefined') {
+    sizeWatcher = new ResizeObserver(function () { fitBoard(); });
+    sizeWatcher.observe(ui.slot);
+  } else {
+    sizeWatcher = { disconnect: function () { window.removeEventListener('resize', fitBoard); } };
+    window.addEventListener('resize', fitBoard);
+  }
 }
 
 // ---------- cheat menu ----------
@@ -278,7 +307,7 @@ export function mount(root, params) {
   fireRow.append(fireBtn, skipBtn);
   screen.append(hud.element, slot, benchSlot, panelSlot, fireRow);
   root.appendChild(screen);
-  ui = { hud: hud, benchSlot: benchSlot, panelSlot: panelSlot, fireBtn: fireBtn,
+  ui = { slot: slot, wrap: wrap, hud: hud, benchSlot: benchSlot, panelSlot: panelSlot, fireBtn: fireBtn,
     fireLabel: fireBtn.querySelector('.btnLabel'), skipBtn: skipBtn, banner: banner };
 
   view = createBoardView(wrap, {
@@ -287,6 +316,7 @@ export function mount(root, params) {
   ui.onEvent = function () {};
   const quality = getMeta().settings.quality;
   if (quality && quality !== 'auto') view.setQuality(quality);
+  watchSize();
   refresh();
   requestAnimationFrame(function () { screen.classList.add('isShown'); });
 }
@@ -295,6 +325,8 @@ export function unmount() {
   alive = false;
   off('cheat:changed', onCheatChanged);
   setCurrentRun(null);
+  if (sizeWatcher) sizeWatcher.disconnect();
+  sizeWatcher = null;
   timers.forEach(clearTimeout);
   timers = [];
   if (view) view.destroy();

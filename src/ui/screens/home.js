@@ -22,37 +22,78 @@ function el(tag, className, text) {
   return node;
 }
 
+// The logo mark: a bright core, a soft halo (a static radial gradient) and a thin
+// four-point glint. Only transform and opacity are animated (see screens.css).
+function makeSparkMark() {
+  const mark = el('div', 'homeSpark');
+  mark.setAttribute('aria-hidden', 'true');
+  mark.append(el('div', 'sparkHalo'), el('div', 'sparkGlint'), el('div', 'sparkCore'));
+  return mark;
+}
+
 function makeTitle() {
   const box = el('div', 'homeTitle');
-  const spark = el('div', 'homeSpark');
-  box.appendChild(spark);
+  box.appendChild(makeSparkMark());
   box.appendChild(el('h1', 'homeLogo', 'SPARKWORKS'));
   box.appendChild(el('p', 'dim', 'Build the machine. Fire the sparks.'));
   return box;
 }
 
-function makeInventorCard(inventor, meta, onPick) {
-  const unlocked = meta.unlockedInventors.indexOf(inventor.id) !== -1;
+function makeInventorCard(inventor, onPick) {
   const card = el('button', 'inventorCard');
   card.type = 'button';
   if (inventor.id === pickedInventor) card.classList.add('isSelected');
-  if (!unlocked) card.classList.add('locked');
-  card.appendChild(el('div', 'invName', unlocked ? inventor.name : 'Locked'));
-  card.appendChild(el('div', 'invTag dim', unlocked ? inventor.tagline : 'Win a run to unlock.'));
-  card.addEventListener('click', function () { if (unlocked) onPick(inventor.id); });
+  card.appendChild(el('div', 'invName', inventor.name));
+  card.appendChild(el('div', 'invTag dim', inventor.tagline));
+  card.addEventListener('click', function () { onPick(inventor.id); });
   return card;
 }
 
+// A small padlock drawn as SVG (one icon style, no emoji).
+function makeLockIcon() {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 16 16');
+  svg.setAttribute('class', 'lockIcon');
+  svg.setAttribute('aria-hidden', 'true');
+  const body = document.createElementNS(ns, 'rect');
+  body.setAttribute('x', '3'); body.setAttribute('y', '7'); body.setAttribute('width', '10');
+  body.setAttribute('height', '7'); body.setAttribute('rx', '2');
+  const arc = document.createElementNS(ns, 'path');
+  arc.setAttribute('d', 'M5.5 7V5.5a2.5 2.5 0 0 1 5 0V7');
+  arc.setAttribute('fill', 'none');
+  svg.append(body, arc);
+  return svg;
+}
+
+// Locked inventors are small tiles (still 44 px tall), so a fresh save has no wasted space.
+function makeLockedTile(inventor) {
+  const tile = el('div', 'lockedTile');
+  tile.setAttribute('role', 'note');
+  tile.setAttribute('aria-label', 'Locked inventor. Win a run to unlock.');
+  tile.append(makeLockIcon(), el('div', 'lockedText dim', 'Win a run to unlock'));
+  return tile;
+}
+
 function makePicker(meta, rebuild) {
-  const row = el('div', 'inventorRow');
+  const box = el('div', 'inventorBox');
+  const open = el('div', 'inventorRow');
+  const locked = el('div', 'lockedRow');
   for (let i = 0; i < INVENTORS.length; i++) {
-    row.appendChild(makeInventorCard(INVENTORS[i], meta, function (id) {
-      pickedInventor = id;
-      pickedVoltage = 1;
-      rebuild();
-    }));
+    const inventor = INVENTORS[i];
+    if (meta.unlockedInventors.indexOf(inventor.id) !== -1) {
+      open.appendChild(makeInventorCard(inventor, function (id) {
+        pickedInventor = id;
+        pickedVoltage = 1;
+        rebuild();
+      }));
+    } else {
+      locked.appendChild(makeLockedTile(inventor));
+    }
   }
-  return row;
+  box.appendChild(open);
+  if (locked.children.length > 0) box.appendChild(locked);
+  return box;
 }
 
 function makeVoltageStepper(meta, rebuild) {

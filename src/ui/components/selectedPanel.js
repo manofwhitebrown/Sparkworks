@@ -14,11 +14,13 @@ function el(tag, className, text) {
 
 // selected: null, or { partId, level, where: 'bench' | 'board' }
 // handlers: { onRotate, onToBench, onSell }
-export function makeSelectedPanel(selected, handlers) {
+// options (optional): { emptyText } the hint shown when nothing is selected
+export function makeSelectedPanel(selected, handlers, options) {
   const panel = el('div', 'panel selectedPanel');
   const part = selected ? getPart(selected.partId) : null;
   if (!part) {
-    panel.appendChild(el('div', 'dim', 'Tap a part, then tap a cell to place it.'));
+    const hint = options && options.emptyText ? options.emptyText : 'Tap a part, then tap a cell to place it.';
+    panel.appendChild(el('div', 'dim selHint', hint));
     return panel;
   }
   panel.appendChild(el('div', 'selName', part.name + ' (level ' + selected.level + ')'));

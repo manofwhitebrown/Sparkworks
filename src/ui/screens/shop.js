@@ -83,7 +83,8 @@ function drawBench() {
   els.bench.replaceChildren(bench);
   const item = selectedBench >= 0 ? run.bench[selectedBench] : null;
   const info = item ? { partId: item.partId, level: item.level, where: 'bench' } : null;
-  els.panel.replaceChildren(makeSelectedPanel(info, { onSell: onSell }));
+  els.panel.replaceChildren(makeSelectedPanel(info, { onSell: onSell },
+    { emptyText: 'Parts you buy go to your bench. You place them on the next shift.' }));
 }
 
 function draw() {
@@ -188,8 +189,11 @@ export function mount(root, params) {
   const panel = el('div');
   const next = makeButton('Next shift', onNext, { kind: 'primary', big: true });
   next.dataset.tut = 'continue';
-  next.classList.add('stickyBottom');
-  screen.append(top, offers, reroll, mini, bench, panel, next);
+  // The offers, bench and so on scroll inside the body; Next shift stays below it,
+  // always reachable, with the screen's own padding as the space under it.
+  const body = el('div', 'shopBody');
+  body.append(offers, reroll, mini, bench, panel);
+  screen.append(top, body, next);
   root.appendChild(screen);
   els = { coins: coins, offers: offers, reroll: reroll, bench: bench, panel: panel };
 

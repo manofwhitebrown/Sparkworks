@@ -107,3 +107,29 @@ export function continuableRun(run) {
   if (run.phase === 'build' || run.phase === 'shop') return run;
   return null;
 }
+
+// Biggest board box (cols:rows ratio) that fits inside a slot. Whole pixels, never negative.
+export function fitBoardSize(slotWidth, slotHeight, cols, rows) {
+  const w = slotWidth > 0 ? slotWidth : 0;
+  const h = slotHeight > 0 ? slotHeight : 0;
+  if (!(cols > 0) || !(rows > 0)) return { width: 0, height: 0 };
+  const ratio = cols / rows;
+  let width = w;
+  let height = width / ratio;
+  if (height > h) { height = h; width = height * ratio; }
+  return { width: Math.floor(width), height: Math.floor(height) };
+}
+
+// Empty, not blocked cells of a machine: where a part could be dropped.
+export function validDropCells(machine) {
+  const taken = {};
+  machine.cells.forEach(function (c) { taken[c.x + ',' + c.y] = true; });
+  machine.blocked.forEach(function (c) { taken[c.x + ',' + c.y] = true; });
+  const list = [];
+  for (let y = 0; y < machine.rows; y++) {
+    for (let x = 0; x < machine.cols; x++) {
+      if (!taken[x + ',' + y]) list.push({ x: x, y: y });
+    }
+  }
+  return list;
+}

@@ -54,13 +54,13 @@ html.reduceMotion .sparkHalo, html.reduceMotion .sparkCore, html.reduceMotion .s
 .invName { font-weight: 700; }
 .invTag { font-size: var(--fs-small); }
 
-.lockedRow { display: flex; gap: var(--s2); }
+.lockedRow { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s2); }
 .lockedTile {
   flex: 1 1 0;
   min-width: 0;
   min-height: var(--tap);
   display: flex; align-items: center; gap: var(--s2);
-  padding: var(--s2) var(--s3);
+  padding: var(--s3);
   background: transparent;
   border: 1px dashed var(--line);
   border-radius: var(--r2);
@@ -152,15 +152,15 @@ html.reduceMotion .sparkHalo, html.reduceMotion .sparkCore, html.reduceMotion .s
   aspect-ratio: 6 / 4.45; /* (cols + 1) by (rows + footer): run.js sets the real size */
 }
 .fireBanner {
-  position: absolute; left: 50%; top: 50%;
-  padding: var(--s3) var(--s5);
+  position: absolute; left: 50%; top: var(--s2); /* top of the board, not the middle: it must not hide placed parts (audit R5 item 7) */
+  padding: var(--s2) var(--s4);
   background: var(--panel2); border: 1px solid var(--spark); border-radius: var(--r2);
   font-size: var(--fs-title); font-weight: 700; color: var(--sparkHot);
   white-space: nowrap; pointer-events: none;
-  opacity: 0; transform: translate(-50%, -40%);
+  opacity: 0; transform: translate(-50%, -10px);
   transition: opacity var(--t-normal) var(--ease), transform var(--t-normal) var(--ease);
 }
-.fireBanner.isShown { opacity: 1; transform: translate(-50%, -50%); }
+.fireBanner.isShown { opacity: 0.96; transform: translate(-50%, 0); }
 .fireBanner.bad { border-color: var(--bad); color: var(--bad); }
 .fireBanner.good { border-color: var(--good); color: var(--good); }
 
@@ -244,6 +244,14 @@ html.largeText .selectedPanel { min-height: 144px; }
   html.largeText .selectedPanel { min-height: 126px; }
   .btn.big { min-height: 56px; }
   .shopScreen .selectedPanel { min-height: 76px; }
+}
+
+/* phones up to 780 px high (360x740, 390x844 is taller): locked inventors shrink to a lock icon so Daily and
+   Settings come up the screen. The tile keeps its aria-label (audit R5 item 8). */
+@media (max-height: 780px) {
+  .lockedRow { display: flex; }
+  .lockedTile { min-height: 32px; padding: var(--s1) var(--s2); justify-content: center; }
+  .lockedText { display: none; }
 }
 
 /* very short phones (320x568): trim the home screen so all four links stay on screen */

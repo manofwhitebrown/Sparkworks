@@ -32,6 +32,7 @@ let run = null;
 let view = null;
 let alive = false;
 let firing = false;
+let shownShift = 0; // the shift the screen last showed, so a jump to a new shift (cheat) still opens the Overload banner
 let selected = null; // null | { where: 'bench', index } | { where: 'board', x, y }
 let ui = null;       // pointers to the elements we update
 let timers = [];
@@ -418,6 +419,10 @@ function onCheatChanged() {
   const next = screenForPhase(run.phase);
   if (next !== 'run') { leaving = true; go(next); return; }
   refresh();
+  if (run.shift !== shownShift) {
+    shownShift = run.shift;
+    if (shiftJustStarted()) showTwistBanner();
+  }
 }
 
 // ---------- mount ----------
@@ -482,6 +487,7 @@ export function mount(root, params) {
   view.setReduceMotion(!!getMeta().settings.reduceMotion); // legendary shimmer and effects respect it
   watchSize();
   refresh();
+  shownShift = run.shift;
   if (shiftJustStarted()) showTwistBanner();
   // Tells the music which shift is on screen (also after Continue run, when no other event is sent).
   emit('ui:runShown', { shift: run.shift });

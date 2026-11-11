@@ -171,7 +171,10 @@ function drawCornerMarks(ctx, L, x, y) {
 }
 
 // Blocked cell: dark, hatched, faint red tint, with a crack line.
+// It saves and restores the context: before, its red stroke and 2 px line leaked into the corner marks of
+// every empty cell drawn after it (audit R5 item 9: red brackets everywhere on Overload boards).
 function drawBlockedCell(ctx, L, x, y) {
+  ctx.save();
   var x0 = L.gridX + x * L.cell + 2;
   var y0 = L.gridY + y * L.cell + 2;
   var w = L.cell - 4;
@@ -202,7 +205,7 @@ function drawBlockedCell(ctx, L, x, y) {
   ctx.lineTo(x0 + w * 0.4, y0 + w * 0.6);
   ctx.lineTo(x0 + w * 0.7, y0 + w * 0.85);
   ctx.stroke();
-  ctx.globalAlpha = 1;
+  ctx.restore();
 }
 
 function isIn(list, x, y) {

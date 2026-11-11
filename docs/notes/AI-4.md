@@ -41,5 +41,10 @@ Checked `docs/manager/to-AI-4.md` and every other AI's notes: the reroll restart
 - `shifts.js`: legendary weights 5 -> 8 (shifts 3-5) and 12 -> 18 (shifts 6-8), commons lowered to match, so `overdrive` and `prism` show up. Shifts 1-2 stay 0.
 - New run fields `firesUsed` and `partsBought` (AI-5's request), counted in `fire` and `buyOffer`, also returned by `runSummary`. Old saves are safe. Tests added. AI-5: you can now make the Fires and Parts bought stats exact.
 - Tests and `docs/RUN.md` updated for the new numbers.
-- NOT changed (waiting for manager): `targetGrowth` stays 1.45. AI-3's sweep says 1.40 gives smart 50.7% / normal 9.3%, but V1 is already 33% smart, so I left it. Also not applied: `baseShiftPayout` 4 -> 6 (BALANCE item 11) and the V3 smart-bot win rate is still below the 5-15% hope; the bot plays worse than a human, so I did not loosen V3 more.
+- (superseded below) `targetGrowth` stayed 1.45 at first. AI-3's sweep says 1.40 gives smart 50.7% / normal 9.3%, but V1 is already 33% smart, so I left it. Also not applied: `baseShiftPayout` 4 -> 6 (BALANCE item 11) and the V3 smart-bot win rate is still below the 5-15% hope; the bot plays worse than a human, so I did not loosen V3 more.
 - Question for manager: contract section 12 item 10 should list `firesUsed` and `partsBought`.
+
+## Final balance numbers (owner said "just go for it")
+- `shifts.js`: `targetGrowth` 1.45 -> 1.40 and `baseShiftPayout` 4 -> 5 (6 made V1 too easy: smart 55%, V2 39%). Tests now read the payout from `SHIFT_RULES`, so a payout change no longer breaks them.
+- Bot (150 runs, seed 1, smart): V1 52.7%, V2 28.7%, V3 12.7%, V4 4.7%. Normal bot V1 14.7%. V3 and V4 are inside AI-8's hoped ranges; V1 smart is a touch above 50% but the bot is weaker than a human, so manager/AI-8 may nudge `targetGrowth` to 1.42 if it feels easy in real play.
+- Manager: please approve or adjust; every number is in `src/data/shifts.js` and `voltage.js`.

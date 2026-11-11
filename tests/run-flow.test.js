@@ -38,14 +38,15 @@ test('a Fire that reaches the target clears the shift and opens the shop', () =>
   assert.equal(out.result.total, 30);
 });
 
-test('payout = base 4 + 1 per unused Fire + overkill + coins from parts', () => {
+test('payout = base + 1 per unused Fire + overkill + coins from parts', () => {
   const deps = makeDeps([T1 + 1], 3);
   const run = fresh(deps);
   const before = run.coins;
   fire(run, deps);
-  // 4 base + 1 unused Fire + 0 overkill (just over target) + 3 from parts
-  assert.equal(run.coins - before, 8);
-  assert.equal(run.lastFire.coinsEarned, 8);
+  // base + 1 unused Fire + 0 overkill (just over target) + 3 from parts
+  const expected = SHIFT_RULES.baseShiftPayout + 1 + 3;
+  assert.equal(run.coins - before, expected);
+  assert.equal(run.lastFire.coinsEarned, expected);
 });
 
 test('overkill pays +1 per 50% over target, capped at 4', () => {
@@ -53,12 +54,12 @@ test('overkill pays +1 per 50% over target, capped at 4', () => {
   const a = fresh(big);
   const coinsA = a.coins;
   fire(a, big);
-  assert.equal(a.coins - coinsA, 4 + 1 + 2);
+  assert.equal(a.coins - coinsA, SHIFT_RULES.baseShiftPayout + 1 + 2);
   const huge = makeDeps([T1 * 100]);
   const b = fresh(huge);
   const coinsB = b.coins;
   fire(b, huge);
-  assert.equal(b.coins - coinsB, 4 + 1 + 4);
+  assert.equal(b.coins - coinsB, SHIFT_RULES.baseShiftPayout + 1 + 4);
 });
 
 test('fail then retry: totals add up over the Fires of a shift', () => {
@@ -74,8 +75,8 @@ test('fail then retry: totals add up over the Fires of a shift', () => {
   assert.equal(run.shiftTotal, 5 + T1);
   assert.equal(run.lastFire.shiftTotal, 5 + T1);
   assert.equal(run.phase, 'shop');
-  // no unused Fires left, so: 4 base only
-  assert.equal(run.lastFire.coinsEarned, 4);
+  // no unused Fires left, so: base payout only
+  assert.equal(run.lastFire.coinsEarned, SHIFT_RULES.baseShiftPayout);
 });
 
 test('running out of Fires below target loses the run', () => {

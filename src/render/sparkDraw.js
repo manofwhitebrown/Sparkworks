@@ -308,11 +308,15 @@ export function drawVaultFill(ctx, L, fx, quality) {
   var fh = (h - 4) * f;
   var x = cx - w / 2 + 2;
   var y = top + h - 2 - fh;
-  var grad = ctx.createLinearGradient(0, y, 0, y + fh);
-  grad.addColorStop(0, THEME.colors.sparkHot);
-  grad.addColorStop(1, THEME.colors.spark);
   ctx.globalAlpha = 0.85;
-  ctx.fillStyle = grad;
+  if (quality === 'low') {
+    ctx.fillStyle = THEME.colors.spark; // flat colour: no new gradient every frame on the low tier
+  } else {
+    var grad = ctx.createLinearGradient(0, y, 0, y + fh);
+    grad.addColorStop(0, THEME.colors.sparkHot);
+    grad.addColorStop(1, THEME.colors.spark);
+    ctx.fillStyle = grad;
+  }
   ctx.fillRect(x, y, w - 4, fh);
   if (quality !== 'low') {
     drawGlow(ctx, getSprites().spark, cx, y, L.cell * 0.5, 0.35 * f);

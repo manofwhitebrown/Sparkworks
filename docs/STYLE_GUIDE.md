@@ -54,3 +54,11 @@ Everything is in `src/ui/styles/tokens.css`. Same palette, no new colour familie
 
 ## Layers (z-index)
 Modal backdrop 50, toast 60, drag ghost 70. Everything from 1000 up is kept free for overlays that sit on top of the whole game: the cheat menu uses about 9000. Do not use a z-index above 100 in a screen.
+
+## Round 5 in practice (AI-1, covering AI-7)
+- **The column** has a warm light at the top and one faint noise picture (`--warm-wash`, `--noise`, drawn once as a background, never animated).
+- **Panels and cards** use `--surface-panel` plus a 1px top highlight (`--edge-light`). Raised things (buttons, pills) use `--surface-raised`. Inset things (bars) use `--surface-inset`.
+- **Buttons** press down 1px and shrink a little (`--t-press`). The primary button has a warm fill (`--spark-fill`) and a soft glow behind it; only the glow's opacity changes (it dims while pressed).
+- **Numbers are the hero:** HUD total, stats, prices and screen titles use `--font-display` with tabular figures. Small labels use the `labelCaps` class (`TARGET`).
+- **Home** shows a tiny demo machine with a spark looping through it (`src/ui/homeDemo.js`). It appears on phones 800px high or more, is a still picture with Reduce motion or low quality, and waits while the page is hidden.
+- **Level up:** the shop sends `ui:merged` with `{ partId, x, y, level }` (x and y are null when the new part sits on the bench) and plays AI-6's flourish on the mini board.

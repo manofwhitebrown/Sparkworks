@@ -1,5 +1,5 @@
 // Home screen: title, PLAY, Continue, inventor picker, Voltage stepper, links.
-// Owner: AI-7
+// Owner: AI-7 (covered by AI-1 in round 5: idle demo board)
 
 import { go, getMeta } from '../ui.js';
 import { makeButton } from '../components/button.js';
@@ -12,6 +12,8 @@ import { continuableRun } from '../flow.js';
 import { maxVoltageFor } from '../../meta/voltage.js';
 import { formatNumber } from '../../core/format.js';
 import { GOAL_LINE, VOLTAGE_LINE, GENTLE_TEXT } from '../teach.js';
+import { createBoardView } from '../../render/boardView.js';
+import { makeDemoMachine, demoEvents, shouldLoop, DEMO_PAUSE_MS } from '../homeDemo.js';
 
 // Remembered while the app is open, so New run keeps the same choice.
 let pickedInventor = 'tinkerbot';
@@ -37,6 +39,7 @@ function makeSparkMark() {
 function makeTitle() {
   const box = el('div', 'homeTitle');
   box.appendChild(makeSparkMark());
+  box.appendChild(el('div', 'homeBoard'));
   box.appendChild(makeWordmark());
   box.appendChild(el('p', 'dim', 'Build the machine. Fire the sparks.'));
   box.appendChild(el('p', 'goalLine', GOAL_LINE));
@@ -145,6 +148,7 @@ function makeNav() {
 
 function build(screen) {
   const meta = getMeta();
+  stopIdle();
   screen.innerHTML = '';
   const top = el('div', 'row');
   top.appendChild(el('div', 'spacer'));
@@ -174,9 +178,48 @@ function build(screen) {
   screen.appendChild(makeButton(playLabel, function () { startNormalRun(meta, pickedInventor, pickedVoltage, pickedGentle); },
     { kind: 'primary', big: true }));
   screen.appendChild(makeNav());
+  // The screen may not be in the page yet on the first build; mount starts the demo then.
+  if (screen.isConnected) startIdle(screen.querySelector('.homeBoard'));
 }
 
 let screenEl = null;
+let idleView = null;
+let idleTimer = 0;
+let idleActive = false;
+
+// ---------- idle demo board ----------
+// A spark loops through a tiny machine. It only shows on tall phones (CSS), is a still picture
+// with reduce motion or low quality, and waits while the page is hidden.
+function stopIdle() {
+  idleActive = false;
+  clearTimeout(idleTimer);
+  idleTimer = 0;
+  if (idleView) idleView.destroy();
+  idleView = null;
+}
+
+function playIdle(events) {
+  if (!idleActive || !idleView) return;
+  if (document.hidden) { idleTimer = setTimeout(function () { playIdle(events); }, 600); return; }
+  idleView.setMachine(makeDemoMachine());
+  idleView.play(events, { speed: 1 }).then(function () {
+    if (idleActive) idleTimer = setTimeout(function () { playIdle(events); }, DEMO_PAUSE_MS);
+  });
+}
+
+function startIdle(box) {
+  stopIdle();
+  if (!box || window.getComputedStyle(box).display === 'none') return;
+  const settings = getMeta().settings || {};
+  idleView = createBoardView(box, { onCellTap: function () {}, onCellDrag: function () {}, onEventPlayed: function () {} });
+  if (settings.quality && settings.quality !== 'auto') idleView.setQuality(settings.quality);
+  idleView.setReduceMotion(!!settings.reduceMotion);
+  idleView.setMachine(makeDemoMachine());
+  if (!shouldLoop(settings)) return;
+  idleActive = true;
+  const events = demoEvents();
+  idleTimer = setTimeout(function () { playIdle(events); }, 700);
+}
 
 export function mount(root, params) {
   if (!getInventor(pickedInventor)) pickedInventor = 'tinkerbot';
@@ -184,9 +227,11 @@ export function mount(root, params) {
   screenEl.dataset.screen = 'home';
   build(screenEl);
   root.appendChild(screenEl);
+  startIdle(screenEl.querySelector('.homeBoard'));
   requestAnimationFrame(function () { screenEl.classList.add('isShown'); });
 }
 
 export function unmount() {
+  stopIdle();
   screenEl = null;
 }

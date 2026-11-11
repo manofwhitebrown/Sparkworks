@@ -45,7 +45,7 @@ export function makeHud(options) {
   }
 
   const targetRow = el('div', 'row hudTarget');
-  targetRow.appendChild(el('div', 'dim', 'TARGET'));
+  targetRow.appendChild(el('div', 'labelCaps', 'TARGET'));
   const total = el('div', 'num hudTotal');
   // On short screens "Fires left" sits on this row (CSS shows one of the two copies).
   const firesShort = el('div', 'dim hudFires hudFiresShort');

@@ -479,6 +479,7 @@ export function mount(root, params) {
   ui.onEvent = function () {};
   const quality = getMeta().settings.quality;
   if (quality && quality !== 'auto') view.setQuality(quality);
+  view.setReduceMotion(!!getMeta().settings.reduceMotion); // legendary shimmer and effects respect it
   watchSize();
   refresh();
   if (shiftJustStarted()) showTwistBanner();

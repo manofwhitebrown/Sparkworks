@@ -23,7 +23,7 @@
 .btn.ghost { background: transparent; border-color: transparent; color: var(--accent); }
 .btn.danger { background: transparent; border-color: var(--bad); color: var(--bad); }
 .btn.small { min-height: var(--tap); padding: 0 var(--s3); font-size: var(--fs-small); }
-.btn.big { min-height: 64px; font-size: var(--fs-title); letter-spacing: 0.04em; width: 100%; }
+.btn.big { min-height: 64px; font-size: var(--fs-title); font-family: var(--font-display); letter-spacing: 0.04em; width: 100%; }
 .btn[hidden] { display: none; }
 .btn[disabled], .btn.isDisabled { opacity: 0.4; pointer-events: none; }
 .btn .icon { width: 20px; height: 20px; }
@@ -194,3 +194,45 @@ html.reduceMotion .partCard.legendary::after { animation: none; opacity: 0.6; }
 .selArrow { margin-left: var(--s2); color: var(--accent); }
 .selExample { color: var(--spark); white-space: nowrap; }
 .tipLine { font-size: var(--fs-small); color: var(--accent); padding: var(--s1) 0; }
+
+/* ---------- round 5: surfaces, buttons, type (AI-1, covering AI-7) ----------
+   Static gradients and 1px edges only. The only motion is transform and opacity. */
+.btn {
+  position: relative;
+  background: var(--surface-raised);
+  box-shadow: var(--edge-light), var(--edge-dark), var(--shadow-1);
+  transition: transform var(--t-press) var(--ease), opacity var(--t-fast) var(--ease);
+}
+.btn:active { transform: translateY(1px) scale(0.97); box-shadow: var(--edge-dark); }
+.btn.primary {
+  isolation: isolate;
+  background: var(--spark-fill);
+  border-color: var(--spark);
+  box-shadow: var(--edge-light), var(--shadow-1);
+}
+.btn.primary:active { background: var(--spark-fill-pressed); }
+/* The primary glow is a soft radial picture behind the button; only its opacity changes. */
+.btn.primary::before {
+  content: '';
+  position: absolute;
+  inset: -16px;
+  z-index: -1;
+  background: var(--glow-spark);
+  opacity: 0.32;
+  pointer-events: none;
+  transition: opacity var(--t-fast) var(--ease);
+}
+.btn.primary:active::before { opacity: 0.12; }
+.btn.secondary, .btn.ghost, .btn.danger { isolation: auto; }
+.btn.ghost { background: transparent; box-shadow: none; }
+.btn.danger { background: transparent; box-shadow: none; }
+.panel { background: var(--surface-panel); box-shadow: var(--edge-light), var(--edge-dark), var(--shadow-1); }
+.pill { background: var(--surface-raised); box-shadow: var(--edge-light); }
+.pill.twist, .gentlePill { background: transparent; box-shadow: none; }
+.bar { background: var(--surface-inset); box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.5); }
+.bar > .fill { background: var(--spark-fill); }
+.bar.done > .fill { background: var(--good); }
+.partCard { background: var(--surface-panel); box-shadow: var(--edge-light), var(--shadow-1); }
+.partCard .pcIcon { background: var(--surface-inset); }
+.partCard .pcRarity { font-size: var(--fs-label); letter-spacing: var(--ls-label); }
+.partCard .pcPrice { font-family: var(--font-display); }

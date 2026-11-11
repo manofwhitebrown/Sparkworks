@@ -9,23 +9,23 @@ import { formatNumber } from '../../core/format.js';
 import { playPass } from '../../audio/sfx.js';
 
 const STYLE = '.starRow{display:flex;justify-content:center;gap:var(--s2,8px);font-size:28px;line-height:1;}' +
-  '.starRow .star{color:var(--spark,#FFC857);}.starRow .star.off{color:var(--textDim,#8A97AD);}' +
+  '.starRow .star{color:var(--spark);}.starRow .star.off{color:var(--textDim);}' +
   '.clearStrip{display:flex;flex-direction:column;align-items:center;gap:var(--s2,8px);text-align:center;}' +
-  '.clearStrip .clearLabel{font-size:var(--fs-label,12px);letter-spacing:var(--ls-label,0.1em);text-transform:uppercase;color:var(--textDim,#8A97AD);}' +
+  '.clearStrip .clearLabel{font-size:var(--fs-label,12px);letter-spacing:var(--ls-label,0.1em);text-transform:uppercase;color:var(--textDim);}' +
   '.clearStrip .clearScore{font-family:var(--font-display,inherit);font-size:var(--fs-hero,56px);line-height:var(--lh-tight,1.05);' +
-  'letter-spacing:var(--ls-tight,-0.02em);font-weight:700;color:var(--sparkHot,#FFF1C2);}' +
+  'letter-spacing:var(--ls-tight,-0.02em);font-weight:700;color:var(--sparkHot);}' +
   '.medalBox{display:flex;flex-direction:column;align-items:center;gap:var(--s2,8px);position:relative;}' +
-  '.medal{width:96px;height:96px;border-radius:50%;border:4px solid var(--spark,#FFC857);display:flex;position:relative;' +
-  'flex-direction:column;align-items:center;justify-content:center;background:var(--surface-raised,var(--panel2,#1C2432));' +
+  '.medal{width:96px;height:96px;border-radius:50%;border:4px solid var(--spark);display:flex;position:relative;' +
+  'flex-direction:column;align-items:center;justify-content:center;background:var(--surface-raised);' +
   'box-shadow:var(--edge-light,none);}' +
   '.medalGlow{position:absolute;left:50%;top:48px;width:220px;height:220px;margin:-110px 0 0 -110px;border-radius:50%;' +
   'background:var(--glow-spark,none);pointer-events:none;opacity:0.7;}' +
-  '.medal.silver{border-color:var(--common,#9FB3C8);}.medal.bronze{border-color:var(--spark,#FFC857);border-style:dashed;}' +
+  '.medal.silver{border-color:var(--common);}.medal.bronze{border-color:var(--spark);border-style:dashed;}' +
   '.medal .medalNum{font-family:var(--font-display,inherit);font-size:var(--fs-number,24px);font-weight:700;}' +
   '.calmBox{display:flex;flex-direction:column;align-items:center;gap:var(--s2,8px);text-align:center;}' +
   '.shiftPips{display:flex;gap:var(--s1,4px);}.shiftPips .pipDot{width:12px;height:12px;border-radius:50%;' +
-  'border:2px solid var(--textDim,#8A97AD);}.shiftPips .pipDot.on{background:var(--spark,#FFC857);border-color:var(--spark,#FFC857);}' +
-  '.burstPiece{position:absolute;left:50%;top:50%;border-radius:50%;background:var(--sparkHot,#FFF1C2);pointer-events:none;}';
+  'border:2px solid var(--textDim);}.shiftPips .pipDot.on{background:var(--spark);border-color:var(--spark);}' +
+  '.burstPiece{position:absolute;left:50%;top:50%;border-radius:50%;background:var(--sparkHot);pointer-events:none;}';
 
 // Three stars: a filled star is lit, an outline star is not (shape, not only color).
 export function makeStarRow(stars) {

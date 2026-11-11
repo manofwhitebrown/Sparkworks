@@ -111,3 +111,17 @@ Earlier pushes did AI-7 items 4, 5, 6, 7. This push does the rest of the list in
 - Pages: Settings > Pages > Source = "GitHub Actions" (already done, deploys work).
 - Release signing (only when you want a signed APK): add the 4 `ANDROID_*` secrets, see docs/ANDROID.md, then `git tag v0.1.0 && git push origin v0.1.0`.
 - Rotate the GitHub token when the build phase is over (it was shared in a hand-off file).
+
+## ROUND 5 (AI-1 section, done by AI-4 covering for AI-1, who was out; I also cover AI-7's files)
+Pushed in small steps. `npm test` 571 pass, `npm run build` green. JS 71.3 KB gzip (limit for the round: 120 KB total).
+- **Tokens (item 1, 2):** were already pushed by AI-1 before it went out (commit fbabb0a: Space Grotesk Bold as display font, 5.9 KB, in `docs/ASSETS.md`; type, surface, warm-light and motion tokens). I did not change them.
+- **Surfaces and buttons (item 1):** `base.css` (warm wash + noise on the column, display font for titles and `.num`), `components.css` (round 5 block: raised buttons with a pressed state, primary warm fill with a glow behind it that only changes opacity, panels, pills, bars, part cards on the new surfaces, no raw hex), `screens.css` (HUD total in the display font at `--fs-number`), `hud.js` (the TARGET label uses `labelCaps`).
+- **Home idle board (item 3):** `src/ui/homeDemo.js` (a Coil, Amplifier, Coil row played with the real engine) and `home.js` (a small `createBoardView` replays the Fire with a 1.4 s rest; stops on unmount, on every rebuild and waits while the page is hidden). Shows only on phones 800 px high or more (it replaces the spark mark there); still picture with Reduce motion or low quality. Tests: `tests/ui-homeDemo.test.js` (4).
+- **Transitions (item 4):** AI-7 already did them in `ui.js` (leave 120 ms, arrive 220 ms, transform and opacity, instant with Reduce motion). No change.
+- **Run screen (item 5):** FIRE, bench and HUD now use the new tokens through the shared components. `ui:merged` is wired: `shop.js` (AI-4's file, which I also own this round) sends `{ partId, x, y, level }` and calls `view.playMerge(x, y, level)` on the mini board when the new part is on the board (x and y are null on the bench). Both `run.js` and `shop.js` now call `view.setReduceMotion(...)` from the settings (AI-6's request).
+- **STYLE_GUIDE (item 6):** "Round 5 in practice" section added.
+- **Not done / honest limits:**
+  - No browser can be installed in this sandbox (the Playwright download is blocked), so I could NOT re-check the 7 phone sizes of `docs/QA.md` section 13, nor look at the buttons, panels, noise or the Home board. Everything here is verified by tests and the build only. AI-8: please run the phone-size screenshots, especially 360x740 (HUD total is now 28 px, was 22) and 390x844 / 412x915 (Home demo board shows). If the Home screen is too tall at 800 px, raise the `min-height` in the `.homeBoard` media query in `screens.css`.
+  - No test for the screen transition (AI-7 left that for AI-1): it is timing and styles only, no pure logic.
+  - The `.btn.primary` glow extends 16 px beyond the button; if a screen clips it (overflow hidden) it just looks flat, nothing breaks.
+- Questions for manager: none new. `ui:merged` now carries `x`, `y`, `level` (please add to contract section 9 / 12).

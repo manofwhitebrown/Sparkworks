@@ -7,7 +7,7 @@ import { flightMs, staggerDelays, tickValue } from '../../run/celebration.js';
 import { formatNumber } from '../../core/format.js';
 
 const STYLE = '.fxFly{position:fixed;left:0;top:0;margin:0;z-index:60;pointer-events:none;transform-origin:0 0;}' +
-  '.fxFloat{position:fixed;z-index:60;pointer-events:none;font-weight:700;color:var(--coin,#FFD166);}';
+  '.fxFloat{position:fixed;z-index:60;pointer-events:none;font-weight:700;color:var(--coin);}';
 
 // A copy of a card, kept before the screen redraws, so it can fly after the redraw.
 export function makeGhost(node) {

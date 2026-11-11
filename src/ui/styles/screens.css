@@ -101,11 +101,20 @@ html.reduceMotion .sparkHalo, html.reduceMotion .sparkCore, html.reduceMotion .s
   html:not(.largeText) .navRow .btn { padding: 0 var(--s2); }
 }
 
+/* The idle demo board replaces the spark mark on tall phones (from 800 px high). */
+.homeBoard { display: none; position: relative; width: 150px; aspect-ratio: 5 / 4; pointer-events: none; }
+@media (min-height: 800px) {
+  .homeBoard { display: block; }
+  .homeSpark { display: none; }
+}
+
 /* ---------- run ---------- */
 .runScreen { gap: var(--s2); }
 .hud { display: flex; flex-direction: column; gap: var(--s2); flex: 0 0 auto; }
 .hudShift { font-weight: 600; }
-.hudTotal { font-size: var(--fs-title); color: var(--sparkHot); min-width: 8ch; text-align: right; }
+.hudTotal { font-family: var(--font-display); font-size: var(--fs-number); line-height: var(--lh-tight); letter-spacing: var(--ls-tight); color: var(--sparkHot); min-width: 8ch; text-align: right; }
+.hudTarget .labelCaps { align-self: center; }
+.hudShift { font-family: var(--font-display); letter-spacing: var(--ls-tight); }
 .hudFires { font-size: var(--fs-small); }
 .hudFiresShort { display: none; }
 .twistChips { display: flex; gap: var(--s1); flex-wrap: wrap; justify-content: flex-end; }

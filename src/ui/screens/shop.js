@@ -115,6 +115,20 @@ function benchArrival(partId, merged) {
   return found || els.bench;
 }
 
+// A level up: tell the others (with the cell when the part sits on the board) and play the
+// flourish on the mini board. A merged part on the bench has no cell: x and y are null.
+function announceMerge(merged) {
+  let cell = null;
+  const cells = run.machine.cells;
+  for (let i = 0; i < cells.length; i++) {
+    if (cells[i].partId === merged.partId && cells[i].level === merged.newLevel) cell = cells[i];
+  }
+  const x = cell ? cell.x : null;
+  const y = cell ? cell.y : null;
+  if (cell && view) view.playMerge(x, y, merged.newLevel, { reduceMotion: !!getMeta().settings.reduceMotion });
+  emit('ui:merged', { partId: merged.partId, x: x, y: y, level: merged.newLevel });
+}
+
 function onBuy(index) {
   const tier = currentTier();
   const oldCoins = run.coins;
@@ -129,13 +143,13 @@ function onBuy(index) {
     playSfx('merge');
     buzz('medium');
     showToast(getPart(mergedPartId).name + ' reached level ' + out.merged[0].newLevel + '!');
-    emit('ui:merged', { partId: mergedPartId });
   } else {
     playSfx('buy');
   }
   saveRun(run);
   emit('ui:bought', { index: index });
   draw();
+  if (out.merged && out.merged.length > 0) announceMerge(out.merged[0]);
   dimSold(els.offers.children[index], tier);
   tickCoins(els.coins, oldCoins, run.coins, tier);
   const target = benchArrival(partId, !!(out.merged && out.merged.length > 0));
@@ -259,6 +273,7 @@ export function mount(root, params) {
   els = { coins: coins, offers: offers, reroll: reroll, bench: bench, panel: panel };
 
   view = createBoardView(mini, { onCellTap: function () {}, onCellDrag: function () {}, onEventPlayed: function () {} });
+  view.setReduceMotion(!!getMeta().settings.reduceMotion);
   markOffersSeen();
   draw();
   emit('ui:shopOpened', { shift: run.shift });

@@ -112,7 +112,9 @@ export function mount(root, params) {
   clearedRow.append(el('div', 'dim', 'Shifts cleared'), el('div', 'spacer'), clearedNum);
   const bestRow = el('div', 'row statRow');
   bestRow.append(el('div', 'dim', 'Best Fire'), el('div', 'spacer'), bestNum);
-  stats.append(clearedRow, bestRow, statRow('Parts owned', String(summary.partsOwned.length)));
+  // After an honest loss the best Fire is the one big number on the screen (audit R5 item 5).
+  if (!won && !cheatedRun) { bestRow.className = 'heroStat'; bestRow.replaceChildren(el('div', 'dim', 'Best Fire'), bestNum); }
+  stats.append(bestRow.className === 'heroStat' ? bestRow : clearedRow, bestRow.className === 'heroStat' ? clearedRow : bestRow, statRow('Parts owned', String(summary.partsOwned.length)));
   screen.appendChild(stats);
 
   // A friendly tip after a loss. Never blames the player.

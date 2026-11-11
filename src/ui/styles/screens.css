@@ -212,6 +212,8 @@ html.largeText .selectedPanel { min-height: 144px; }
 .shopScreen .selectedPanel { min-height: 88px; }
 
 /* ---------- results ---------- */
+.heroStat { display: flex; flex-direction: column; align-items: center; gap: var(--s1); padding: var(--s3) 0; }
+.heroStat .num { font-family: var(--font-display); font-size: var(--fs-hero); line-height: var(--lh-tight); letter-spacing: var(--ls-tight); color: var(--sparkHot); }
 .resultsTitle { text-align: center; font-size: var(--fs-big); letter-spacing: 0.06em; padding: var(--s5) 0; }
 .resultsTitle.good { color: var(--good); }
 .resultsTitle.bad { color: var(--bad); }

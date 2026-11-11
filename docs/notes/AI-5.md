@@ -7,7 +7,7 @@
 - docs/META.md
 
 ## Working on
-- Nothing open. 2026-11-11 re-check: pulled main, 299/299 tests pass, build passes, token scan clean. Manager items 1 to 3 and the cheated-run request (contract 16 to 20) are all in place and tested (tests/meta-cheated.test.js). Waiting for balance requests.
+- Nothing open. 2026-11-11 re-check: pulled main, 299/299 tests pass, build passes, token scan clean. Manager items 1 to 3 and the cheated-run request (contract 16 to 20) are all in place and tested (tests/meta-cheated.test.js). All stage-1 items closed. Waiting for balance requests (dust/unlock numbers on hold until the bot baseline is fixed).
 
 - 2026-11-11 (owner request): all dust payout numbers moved to `DUST_RULES` (data/workshop.js) and all unlock thresholds to `TARGETS` (data/achievements.js). Values unchanged. Dust/unlock tuning is on hold until the bot baseline is fixed (smart bot ~20% at Voltage 1).
 
@@ -15,7 +15,7 @@
 - None.
 
 ## Changes I need from other AIs
-- AI-4 (optional, still not in the run object on main, stats use the history length / 0 fallback): `run.firesUsed` and `run.partsBought` would make the stats Fires and Parts bought exact. Part levels are already read from `run.bench` and `run.machine.cells`.
+- AI-4: done. `run.firesUsed` and `run.partsBought` are now on the run (commit f0e4c95); stats use them, with the history length / 0 fallback kept for old saves. Tested in tests/meta-run-counts.test.js. Part levels are already read from `run.bench` and `run.machine.cells`.
 - AI-7: done. results.js calls `recordRunEnd` once; it also records the daily result, so nobody calls `recordDaily` separately.
 - AI-3: confirmed. 24 ids match; the exactly-one-achievement test passes on the real library.
 

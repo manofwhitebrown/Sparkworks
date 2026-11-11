@@ -7,7 +7,8 @@ import { drawPartIcon, getPartIconUrl } from '../src/render/partIcons.js';
 
 var REQUIRED = ['coil', 'dynamo', 'ember', 'amplifier', 'compounder', 'overdrive', 'bend', 'switch',
   'reverser', 'splitter', 'triplet', 'capacitor', 'counter', 'anvil', 'flywheel', 'battery',
-  'gambler', 'fuse', 'rectifier', 'tollgate'];
+  'gambler', 'fuse', 'rectifier', 'tollgate', 'spring', 'sideamp', 'bouncer', 'workbench', 'jackpot',
+  'finisher', 'starter', 'portal'];
 
 // A plain fake context: every drawing method is a do-nothing function.
 function fakeCtx() {

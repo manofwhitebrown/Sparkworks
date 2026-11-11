@@ -188,5 +188,84 @@ export var SHAPES = {
     line(ctx, cx + s * 0.32, cy + s * 0.36, cx + s * 0.32, cy - s * 0.36);
     line(ctx, cx - s * 0.32, cy - s * 0.2, cx + s * 0.32, cy - s * 0.2);
     circle(ctx, cx, cy + s * 0.08, s * 0.14, false);
+  },
+  // ---- round 4: the new parts. Only simple strokes (readable at 25 px). ----
+  spring: function (ctx, cx, cy, s) {
+    // a zig-zag spring that ends in a turn DOWN: adds and turns
+    ctx.beginPath();
+    ctx.moveTo(cx - s * 0.42, cy - s * 0.18);
+    ctx.lineTo(cx - s * 0.3, cy - s * 0.32);
+    ctx.lineTo(cx - s * 0.16, cy - s * 0.04);
+    ctx.lineTo(cx - s * 0.02, cy - s * 0.32);
+    ctx.lineTo(cx + s * 0.12, cy - s * 0.04);
+    ctx.lineTo(cx + s * 0.26, cy - s * 0.18);
+    ctx.lineTo(cx + s * 0.26, cy + s * 0.34);
+    ctx.stroke();
+    arrowHead(ctx, cx + s * 0.26, cy + s * 0.4, 1, s * 0.18);
+  },
+  sideamp: function (ctx, cx, cy, s) {
+    // a two-way vertical arrow and a times sign: multiplies when moving UP or DOWN
+    line(ctx, cx - s * 0.2, cy - s * 0.36, cx - s * 0.2, cy + s * 0.36);
+    arrowHead(ctx, cx - s * 0.2, cy - s * 0.4, 3, s * 0.18);
+    arrowHead(ctx, cx - s * 0.2, cy + s * 0.4, 1, s * 0.18);
+    line(ctx, cx + s * 0.12, cy - s * 0.14, cx + s * 0.38, cy + s * 0.12);
+    line(ctx, cx + s * 0.38, cy - s * 0.14, cx + s * 0.12, cy + s * 0.12);
+  },
+  bouncer: function (ctx, cx, cy, s) {
+    // a ball and a bouncing path that goes up and down
+    circle(ctx, cx - s * 0.32, cy + s * 0.28, s * 0.1, true);
+    ctx.beginPath();
+    ctx.moveTo(cx - s * 0.32, cy + s * 0.28);
+    ctx.lineTo(cx - s * 0.1, cy - s * 0.3);
+    ctx.lineTo(cx + s * 0.12, cy + s * 0.3);
+    ctx.lineTo(cx + s * 0.32, cy - s * 0.2);
+    ctx.stroke();
+    arrowHead(ctx, cx + s * 0.36, cy - s * 0.28, 3, s * 0.16);
+  },
+  workbench: function (ctx, cx, cy, s) {
+    // a bench with a coin on it
+    line(ctx, cx - s * 0.42, cy + s * 0.04, cx + s * 0.42, cy + s * 0.04);
+    line(ctx, cx - s * 0.32, cy + s * 0.04, cx - s * 0.32, cy + s * 0.38);
+    line(ctx, cx + s * 0.32, cy + s * 0.04, cx + s * 0.32, cy + s * 0.38);
+    circle(ctx, cx, cy - s * 0.2, s * 0.14, false);
+    line(ctx, cx, cy - s * 0.28, cx, cy - s * 0.12);
+  },
+  jackpot: function (ctx, cx, cy, s) {
+    // a four-point burst with a dot in the middle
+    poly(ctx, [cx, cy - s * 0.44, cx + s * 0.1, cy - s * 0.1, cx + s * 0.44, cy, cx + s * 0.1, cy + s * 0.1,
+      cx, cy + s * 0.44, cx - s * 0.1, cy + s * 0.1, cx - s * 0.44, cy, cx - s * 0.1, cy - s * 0.1], false);
+    circle(ctx, cx, cy, s * 0.06, true);
+  },
+  finisher: function (ctx, cx, cy, s) {
+    // a flag on the RIGHT side with a bar at the edge: only works in the last column
+    line(ctx, cx + s * 0.38, cy - s * 0.4, cx + s * 0.38, cy + s * 0.4);
+    ctx.strokeRect(cx - s * 0.12, cy - s * 0.4, s * 0.5, s * 0.34);
+    ctx.fillRect(cx - s * 0.12, cy - s * 0.4, s * 0.25, s * 0.17);
+    ctx.fillRect(cx + s * 0.13, cy - s * 0.23, s * 0.25, s * 0.17);
+    line(ctx, cx - s * 0.4, cy + s * 0.3, cx + s * 0.2, cy + s * 0.3);
+  },
+  starter: function (ctx, cx, cy, s) {
+    // the same flag on the LEFT side: only works in the first column
+    line(ctx, cx - s * 0.38, cy - s * 0.4, cx - s * 0.38, cy + s * 0.4);
+    ctx.strokeRect(cx - s * 0.38, cy - s * 0.4, s * 0.5, s * 0.34);
+    ctx.fillRect(cx - s * 0.38, cy - s * 0.4, s * 0.25, s * 0.17);
+    ctx.fillRect(cx - s * 0.13, cy - s * 0.23, s * 0.25, s * 0.17);
+    line(ctx, cx - s * 0.2, cy + s * 0.3, cx + s * 0.4, cy + s * 0.3);
+  },
+  portal: function (ctx, cx, cy, s) {
+    // two nested ovals (a doorway) and a dot: a pair of these links two cells
+    var a = s * 0.2;
+    var b = s * 0.42;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - b);
+    ctx.quadraticCurveTo(cx + a * 2, cy, cx, cy + b);
+    ctx.quadraticCurveTo(cx - a * 2, cy, cx, cy - b);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - b * 0.55);
+    ctx.quadraticCurveTo(cx + a * 1.1, cy, cx, cy + b * 0.55);
+    ctx.quadraticCurveTo(cx - a * 1.1, cy, cx, cy - b * 0.55);
+    ctx.stroke();
+    circle(ctx, cx, cy, s * 0.05, true);
   }
 };

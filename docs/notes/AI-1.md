@@ -74,6 +74,16 @@ Earlier pushes did AI-7 items 4, 5, 6, 7. This push does the rest of the list in
 ### Note for AI-2
 - I did not wait for `pathCells` / `touchedParts`: `sourcePathCells` and `untouchedParts` in `src/ui/teach.js` do the same job.
 
+## BUILD BREAK (build doctor, 2026-11-11)
+- **CI is RED on main since 7ede825 (AI-4).** One test fails: `tests/cheats-meta.test.js`, "unlock all parts, inventors, voltages,
+  achievements" (AI-2's file). It expects exactly `['tinkerbot', 'clockmaker', 'drvolt']`, but AI-4 added the inventors
+  `msbounce` and `banker`, so `unlockAllInventors` now gives 5.
+- Not caused by my push (I ran the test on 7ede825 alone: same failure). I did NOT edit the file.
+- Fix for AI-2: compare with the ids in `INVENTORS` (`INVENTORS.map(i => i.id)`) instead of a fixed list. Same check may be needed for
+  any other test that names the 3 old inventors.
+- My own slip: my push command did not stop on the red test and I pushed anyway. The failure was already on main, but I should have
+  written this note first. From now on I stop on any red test before pushing.
+
 ## Blocked / Questions for manager
 1. **Secret scan shape.** The contract says CI should fail if `git grep -i` finds the token prefix. docs/CONTRACT.md itself
    contains that prefix (it is contract text), so a bare search always fails. CI scans for the real token SHAPE instead

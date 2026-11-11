@@ -27,6 +27,8 @@ import { openModal, isModalOpen } from './components/modal.js';
 import { makeButton } from './components/button.js';
 import { backAction, fireSpeedFrom, isTutorialRun } from './flow.js';
 import { on } from '../core/events.js';
+import { installBackButton, exitApp } from '../platform/backButton.js';
+import { showToast } from './components/toast.js';
 
 const SCREENS = { home, run, shop, results, workshop, patentBook, daily, settings, howto };
 const FADE_MS = 120; // leaving is quicker than arriving
@@ -114,18 +116,31 @@ export function go(screenName, params) {
 export function currentScreenName() { return currentName; }
 
 // ---------- Back button ----------
-function askLeaveRun() {
-  history.pushState({ screen: currentName }, ''); // undo the pop, stay here
+// Leaving a run never loses it: the run is written to the save slot first and Home offers Continue.
+function saveLiveRun() {
+  try {
+    if (liveRun && !isTutorialRun(liveRun)) saveRun(liveRun);
+  } catch (err) {
+    // The run screens save after every action anyway.
+  }
+}
+
+// undoPop: true when this was called from the browser's Back (popstate already removed one history entry).
+function askLeaveRun(undoPop) {
+  if (isModalOpen()) return;
+  if (undoPop) history.pushState({ screen: currentName }, ''); // undo the pop, stay here
+  saveLiveRun();
   const box = document.createElement('div');
   box.className = 'dialogBody';
   const title = document.createElement('h1');
-  title.textContent = 'Leave this run?';
+  title.textContent = 'Go Home?';
   const text = document.createElement('p');
   text.className = 'dim';
-  text.textContent = 'It is saved.';
+  text.textContent = 'Your run is saved. Tap Continue run on Home to carry on.';
   const modal = { close: null };
   const stay = makeButton('Keep playing', function () { modal.close(); }, { kind: 'primary' });
-  const leave = makeButton('Leave', function () {
+  const leave = makeButton('Save and go Home', function () {
+    saveLiveRun();
     modal.close();
     setTimeout(function () { go('home'); }, 260);
   }, { kind: 'secondary' });
@@ -133,12 +148,31 @@ function askLeaveRun() {
   modal.close = openModal(box).close;
 }
 
+// The Home button on the run and shop screens.
+export function requestHome() {
+  askLeaveRun(false);
+}
+
 function onPopState() {
   if (isModalOpen()) return; // the modal handles its own Back
   const action = backAction(currentName);
-  if (action === 'confirm') askLeaveRun();
+  if (action === 'confirm') askLeaveRun(true);
   else if (action === 'home') showScreen('home');
   else history.pushState({ screen: 'home' }, ''); // already home: stay
+}
+
+// Android Back (App plugin). We decide everything, so Back can never close the game by accident.
+let lastHomeBack = 0;
+function onNativeBack() {
+  if (isModalOpen()) { history.back(); return; } // closes the dialog
+  const action = backAction(currentName);
+  if (action === 'confirm') { askLeaveRun(false); return; }
+  if (action === 'home') { showScreen('home'); return; }
+  // On Home: a second Back within 2 seconds closes the game.
+  const now = Date.now();
+  if (now - lastHomeBack < 2000) { exitApp(); return; }
+  lastHomeBack = now;
+  showToast('Press Back again to close the game.');
 }
 
 // ---------- tutorial end ----------
@@ -167,6 +201,7 @@ export function startApp() {
   applySettingsFromMeta();
   on('cheat:speed', function (data) { fireSpeed = data ? data.speed : 1; });
   window.addEventListener('popstate', onPopState);
+  installBackButton(onNativeBack);
   // main.js says the page is being hidden: write the meta now (runs save after every action).
   on('core:flush', saveCurrentMeta);
   on('tutorial:finished', onTutorialFinished);

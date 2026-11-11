@@ -36,6 +36,13 @@ export function makeHud(options) {
   const gentle = el('div', 'pill gentlePill', 'Gentle');
   gentle.hidden = true;
   top.append(shift, gentle, el('div', 'spacer'), coins);
+  if (opts.onHome) {
+    const home = el('button', 'helpBtn homeBtn', '\u2302');
+    home.type = 'button';
+    home.setAttribute('aria-label', 'Go Home (your run is saved)');
+    home.addEventListener('click', opts.onHome);
+    top.appendChild(home);
+  }
   if (opts.onHelp) {
     const help = el('button', 'helpBtn', '?');
     help.type = 'button';

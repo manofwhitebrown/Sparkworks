@@ -2,7 +2,7 @@
 // The run lives in the save (loadRun/saveRun), so a reload resumes it.
 // Owner: AI-7
 
-import { go, getMeta, saveCurrentMeta, setCurrentRun, getFireSpeed } from '../ui.js';
+import { go, getMeta, saveCurrentMeta, setCurrentRun, getFireSpeed, requestHome } from '../ui.js';
 import { makeButton } from '../components/button.js';
 import { showToast } from '../components/toast.js';
 import { makeHud } from '../components/hud.js';
@@ -447,7 +447,7 @@ export function mount(root, params) {
 
   const screen = el('div', 'screen runScreen');
   screen.dataset.screen = 'run';
-  const hud = makeHud({ onTwistTap: showTwistBanner, onHelp: onHelp });
+  const hud = makeHud({ onTwistTap: showTwistBanner, onHelp: onHelp, onHome: function () { if (!firing) requestHome(); } });
   const recap = el('div', 'recapLine');
   recap.hidden = true;
   const slot = el('div', 'boardSlot');

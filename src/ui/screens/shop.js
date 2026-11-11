@@ -1,7 +1,7 @@
 // The shop between shifts: offers, reroll, bench (to sell), mini board, Next shift.
 // Owner: AI-7 (covered by AI-4 in round 5: buy, sell and reroll animations, shift cleared strip)
 
-import { go, getMeta, saveCurrentMeta, setCurrentRun } from '../ui.js';
+import { go, getMeta, saveCurrentMeta, setCurrentRun, requestHome } from '../ui.js';
 import { makeButton, setButtonLabel } from '../components/button.js';
 import { makePartCard } from '../components/partCard.js';
 import { makeBenchRow } from '../components/benchRow.js';
@@ -250,7 +250,11 @@ export function mount(root, params) {
   offers.dataset.tut = 'offers';
   const reroll = makeButton('Reroll', onReroll, { small: true });
   reroll.dataset.tut = 'reroll';
-  top.append(reroll, coins);
+  const homeBtn = el('button', 'helpBtn homeBtn', '\u2302');
+  homeBtn.type = 'button';
+  homeBtn.setAttribute('aria-label', 'Go Home (your run is saved)');
+  homeBtn.addEventListener('click', requestHome);
+  top.append(reroll, coins, homeBtn);
   const mini = el('div', 'miniBoard');
   const bench = el('div');
   const panel = el('div');

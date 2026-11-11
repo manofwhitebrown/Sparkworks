@@ -53,8 +53,19 @@ function applyMasterVolume() {
   masterGain.gain.value = muted ? 0 : 0.9;
 }
 
+// The reactions module imports sfx and music (which import this file), so it is loaded lazily.
+let reactionsRequested = false;
+function installReactions() {
+  if (reactionsRequested) {
+    return;
+  }
+  reactionsRequested = true;
+  import('./reactions.js').then(function (m) { m.installAudioReactions(); }).catch(function () {});
+}
+
 // Call this on the FIRST tap: phones and browsers block sound before a tap.
 export function initAudio() {
+  installReactions();
   const ctx = ensureContext();
   if (!ctx) {
     return false;

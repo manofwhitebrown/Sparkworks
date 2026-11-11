@@ -119,3 +119,11 @@ Left to do (not started):
 - docs/QA.md: add round 5 screens, effects and the cheat menu checks.
 - Frame-time check on the low tier.
 - Fixes from AUDIT_R5.md go to AI-1 (items 2, 3, 4, 6, 7, 8, 10), AI-4 (5, 11), AI-6 (9).
+
+## Round 5 leftovers (done by AI-5, covering AI-8, 2026-11-11, owner asked)
+- **Audio sync, done.** New `src/audio/mood.js` (pure: `moodForShift`, `isOverloadShift`, `wantsSwell`), new `src/audio/reactions.js` (listens to `ui:fired`, `ui:fireDone`, `ui:merged`, `ui:runStarted`, `ui:shopOpened`, `ui:runEnded`; installed lazily from `initAudio()`, so NO screen file was touched and `run.js` needs no extra call). `sfx.js`: `setSoundContext` / `getSoundContext`; `bank` now uses the Fire's `fireStats` intensity when no size is given; new `swell` sound (end of a big, passed Fire); `merge` adds a sparkle at level 3; `win` and `lose` are richer (staggered notes by timer so the 12-node budget is not exceeded). `music.js`: `setMusicMood` / `getMusicMood` (brighter filter later in the run; Overload shifts 4 and 8 are tenser: clashing third drone, faster wobble, bells closer together).
+- **Tests:** `tests/integration-audio-reactions.test.js` (9 tests: moods, intensity from real simulate events, merge level, bad data, fake WebAudio). `swell` added to the sound names in `tests/integration-audio.test.js`.
+- **QA.md section 16** added (round 5 screens, effects, audio, cheat menu, real-device frame check).
+- **Frame time, low tier (headless Chrome, 4x CPU slowdown, 360x740, empty board Fire):** low, medium and high all show 16.7 ms average and p95 16.8 ms, 0 to 0.5% slow frames. Headless Chrome is vsync-capped, so this only proves nothing is badly broken; a real 2 GB Android phone is still unchecked.
+- **Still open for a person or an AI-1 follow-up:** AUDIT_R5.md items 2, 3, 4, 6, 7, 8, 10 (AI-1), 5 and 11 (AI-4), 9 (AI-6). Continuing a saved run mid-way keeps the default music mood until the next shop opens (no event is sent on resume; `ui:runStarted` would fix it).
+- **Not checked:** how the new sounds feel on a real phone speaker.

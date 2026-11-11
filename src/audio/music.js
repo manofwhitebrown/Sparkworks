@@ -13,6 +13,8 @@ let volume = 1;
 let bed = null;
 let bellTimer = null;
 let stopTimer = null;
+let mood = { tense: false, bright: 0 };
+const BASE_C2 = noteFreq(0, -2);
 
 function makeBed(ctx, out) {
   const level = ctx.createGain();
@@ -77,7 +79,32 @@ function ringBell() {
   };
   osc.start(now);
   osc.stop(now + 2.6);
-  bellTimer = setTimeout(ringBell, 5000 + Math.random() * 7000);
+  bellTimer = setTimeout(ringBell, mood.tense ? 2500 + Math.random() * 3000 : 5000 + Math.random() * 7000);
+}
+
+// Push the current mood onto the live bed: a brighter filter as the run goes on, and on a tense
+// (Overload) shift a clashing detune on the third drone and a faster LFO. Smooth, never a jump.
+function applyMood() {
+  const ctx = getContext();
+  if (!ctx || !bed) {
+    return;
+  }
+  const now = ctx.currentTime;
+  const cutoff = 500 + mood.bright * 450 + (mood.tense ? 150 : 0);
+  bed.filter.frequency.setTargetAtTime(cutoff, now, 0.8);
+  bed.lfo.frequency.setTargetAtTime(mood.tense ? 0.16 : 0.07, now, 0.8);
+  bed.oscillators[2].frequency.setTargetAtTime(BASE_C2 * (mood.tense ? 1.0595 : 1.004), now, 0.8);
+}
+
+// mood: { tense: true on Overload shifts, bright: 0..1 how far into the run we are }.
+export function setMusicMood(next) {
+  const bright = next && typeof next.bright === 'number' && Number.isFinite(next.bright) ? next.bright : 0;
+  mood = { tense: !!(next && next.tense), bright: Math.max(0, Math.min(1, bright)) };
+  applyMood();
+}
+
+export function getMusicMood() {
+  return { tense: mood.tense, bright: mood.bright };
 }
 
 export function startMusic() {
@@ -93,6 +120,7 @@ export function startMusic() {
   if (!bed) {
     bed = makeBed(ctx, out);
   }
+  applyMood();
   setBedLevel(ctx, BED_LEVEL * volume, FADE_SECONDS);
   if (!running) {
     running = true;

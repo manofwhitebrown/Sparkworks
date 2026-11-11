@@ -130,3 +130,19 @@ no text under 12 px, nothing hidden under FIRE or "Next shift".
 - [ ] Tutorial v2 (11 steps): Place Coil, Fire, Amplifier before, swap (bigger number), the steering step, build the detour (Bend down, Coil below, Bend right), Fire. Then try it WRONG once (only the first Bend and the Coil): the text must say the spark was lost off the bottom and let you add a Bend. The shop opens only after the detour lesson. "Skip tutorial" works on every step.
 - [ ] Sounds: a soft sigh when a spark is lost (not a harsh buzz), a pop for a bonus tile, a chime for Hint. All quiet enough to hear over the music.
 
+
+## 16. Round 5: look, effects, audio and the cheat menu
+
+Same rules as section 13 (7 sizes, normal and Large text, no sideways scroll, nothing under 44 px, no text under 12 px).
+Check each effect on the three quality tiers (Settings > Graphics: low, medium, high). `low` must feel as smooth as before round 5.
+- [ ] Meta screens (Workshop, Patent Book, Daily, Settings): one shared look (hero number panel, card surfaces, small caps labels). Locked parts have a dashed frame and the unlock hint. Settings toggles are grouped. Nothing is cut off at 320x568 with Large text.
+- [ ] Fire sequence: tapered spark with a trail, parts light up when entered, vault fills with light, total swells. On `low` there are fewer effects but the Fire is just as smooth. With Reduce motion on: no shake, shorter animation.
+- [ ] Legendary parts shimmer slowly on medium and high only. Merge: a flourish plays when three parts become one (`ui:merged`).
+- [ ] Shop: bought card flies to the bench, coin count ticks, sold card dims. Results: count-up, a medal for beating the target by a margin, a calm state for a loss with the loss tip.
+- [ ] Home: the idle board loops a small spark and pauses when the screen is hidden (check with another tab). Screen changes: one short fade plus a small rise, no jump.
+- [ ] Sound follows the Fire: a small Fire has soft bank chords, a very big Fire has fuller bank chords and a rising swell at the end (only when the shift is cleared). A lost shift has no swell.
+- [ ] Merge sound: level 2 is a short rising lift, level 3 adds a bright sparkle on top.
+- [ ] Win is a rising run then a held chord; Lose is a slow soft step down with a warm low note. Neither is harsh on a phone speaker.
+- [ ] Music mood: shifts get slightly brighter as the run goes on. On Overload shifts (4 and 8) the music is tenser (faster slow-wobble, a clashing low note, bells closer together). It relaxes again after the Overload. Starting a new run resets the mood. (Known: continuing a saved run mid-way keeps the default mood until the next shop opens.)
+- [ ] Cheat menu (needs the password): Close, Esc and Android Back close it and never open "Leave this run?". DEBUG > Sounds plays every sound including `swell`.
+- [ ] Frame time, low tier, real cheap phone (2 GB RAM): no dropped frames during a Fire with 100+ sparks. Headless numbers are in docs/notes/AI-8.md; a real device check is still open.

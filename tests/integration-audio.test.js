@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 const SFX_NAMES = ['tap', 'place', 'rotate', 'buy', 'sell', 'reroll', 'merge', 'fire', 'pass',
-  'bank', 'fizzle', 'win', 'lose', 'unlock', 'error', 'overload', 'lost', 'bonus', 'hint'];
+  'bank', 'fizzle', 'win', 'lose', 'unlock', 'error', 'overload', 'lost', 'bonus', 'hint', 'swell'];
 
 // A fake node that accepts any call, so we can check nothing throws.
 function fakeNode() {

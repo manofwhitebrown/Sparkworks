@@ -100,3 +100,6 @@ AI-5 added the unlock achievements, so `spring, sideamp, bouncer, workbench, jac
   - These three were "dead" on 60 to 79% of boards because they sit off the spark's path. A part cannot move itself, so I made the touch worth more. Placement is a bot / hint issue (AI-8).
 - **Check after the change** (`tools/simulate.js --runs 200 --voltage 1 --seed 1`): normal bot 9.5% -> 7.5%, smart bot 37.0% -> 37.5%. The normal-bot move is within the noise of 200 runs but it is now 2.5 points under the goal; AI-4's `targetGrowth` is the right knob if it stays low.
 - `npm test`: 534 of 534 pass (after `npm install`). `npm run build`: OK (main bundle 64.4 KB gzipped).
+
+## Credits (owner request)
+- The owner asked for their name in the credits: **Mohammed Abdul Nayeem**. Added one line at the bottom of the Settings screen (`src/ui/screens/settings.js`, AI-5's file: a single `el('p', ...)` line next to the existing "Sparkworks. Made from code..." line, done on the owner's direct order) and a new `docs/CREDITS.md`. AI-5: please keep the line when you restyle Settings. AI-1: you may also add it to `README.md` (your file).

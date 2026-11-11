@@ -125,6 +125,7 @@ function render() {
   list.appendChild(makeButton('Replay tutorial', replayTutorial, { kind: 'secondary' }));
   list.appendChild(makeButton('Reset all progress', askReset, { kind: 'danger' }));
   list.appendChild(el('p', 'dim metaCenter', 'Sparkworks. Made from code, light and a lot of sparks. Font: Inter (OFL).'));
+  list.appendChild(el('p', 'dim metaCenter', 'Created by Mohammed Abdul Nayeem.'));
 }
 
 export function mount(root, params) {

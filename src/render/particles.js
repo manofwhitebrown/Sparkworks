@@ -21,6 +21,9 @@ export function createParticles() {
   var cap = THEME.particleCaps.medium;
   var next = 0;
   var sprites = [];
+  // particles stay inside the framed panel: they fade near its edge and are removed outside
+  var bounds = { x0: -1e9, y0: -1e9, x1: 1e9, y1: 1e9 };
+  var FADE_PX = 18;
 
   function setCap(n) {
     cap = Math.min(MAX, Math.max(0, n));
@@ -56,6 +59,17 @@ export function createParticles() {
     }
   }
 
+  function setBounds(x0, y0, x1, y1) {
+    bounds.x0 = x0; bounds.y0 = y0; bounds.x1 = x1; bounds.y1 = y1;
+  }
+
+  // 0 outside the panel, 1 well inside, in between near the edge
+  function edgeFade(x, y) {
+    var d = Math.min(x - bounds.x0, bounds.x1 - x, y - bounds.y0, bounds.y1 - y);
+    if (d <= 0) { return 0; }
+    return d >= FADE_PX ? 1 : d / FADE_PX;
+  }
+
   function update(dt) {
     for (var i = 0; i < MAX; i++) {
       if (life[i] > 0) {
@@ -64,6 +78,7 @@ export function createParticles() {
         py[i] += vy[i] * dt;
         vx[i] *= 0.96;
         vy[i] *= 0.96;
+        if (edgeFade(px[i], py[i]) === 0) { life[i] = 0; }
       }
     }
   }
@@ -77,7 +92,7 @@ export function createParticles() {
     for (var i = 0; i < MAX; i++) {
       if (life[i] > 0) {
         var t = life[i] / maxLife[i];
-        drawGlow(ctx, sprites[color[i]], px[i], py[i], size[i] * (0.5 + t * 0.7), t);
+        drawGlow(ctx, sprites[color[i]], px[i], py[i], size[i] * (0.5 + t * 0.7), t * edgeFade(px[i], py[i]));
       }
     }
   }
@@ -92,5 +107,5 @@ export function createParticles() {
     return n;
   }
 
-  return { setCap: setCap, emit: emit, burst: burst, update: update, draw: draw, count: count };
+  return { setBounds: setBounds, setCap: setCap, emit: emit, burst: burst, update: update, draw: draw, count: count };
 }

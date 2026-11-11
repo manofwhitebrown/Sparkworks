@@ -19,6 +19,17 @@ plays event logs as an animation, and handles pointer input. No `shadowBlur`, no
 | `sparkDraw.js`, `boardDraw.js` | the draw order below |
 | `input.js` | pointer events: tap, drag with ghost, `cellAtPoint` |
 
+## Box and frame (round 3)
+- The canvas is transparent. `boardStatic.js` draws a rounded dark panel with a thin `line` border and clips everything
+  (grid, vignette) to it, so the corners blend into the page.
+- Height of the canvas = width x (rows + FOOTER 0.45 + VPAD 0.3) / (cols + 1). Cells are `floor(width / (cols + 1))`: the board is
+  limited by the WIDTH of its box, so a taller box does not make cells bigger (it only centres the board vertically). Only a
+  wider box helps. Tested sizes: 284x211, 328x243, 400x300, shop mini 150 wide (cells about 25 px).
+- The footer under the grid has a divider, a "VAULT" label and the running total (big, right-aligned under the vault slot,
+  swells a little on every bank).
+- Particles live inside the panel: they fade within 18 px of its edge and are removed outside it (no bleeding past the right
+  edge). The demo page has size buttons for all this.
+
 ## Draw order (every frame that needs one)
 1. the static picture (one `drawImage`)
 2. part tiles from the sprite cache (selection, highlights, disabled and banned looks)
@@ -60,19 +71,19 @@ frames, the view lowers itself one level and calls `options.onQualityDrop(level)
 ## Measured frame times
 Headless Chromium 153 (software rasteriser, NO GPU, so these are pessimistic), 390 x 900 viewport at DPR 2, Chrome DevTools
 protocol CPU throttling. 60 fps = 16.7 ms. Measured with the demo page (`/dev/renderDemo.html`), a real random machine
-(real engine) and the 500-event fire.
+(real engine) and the 500-event fire. Re-measured after the round 3 layout (framed panel, footer total):
 
 | CPU | quality | real random fire | 500-event fire |
 |-----|---------|------------------|----------------|
 | 1x | low / medium / high | 16.7 avg, 0% slow frames | 16.7 avg, 0% slow frames |
-| 4x | low | 16.7 avg, 0% frames over 20 ms | 16.7 avg, 0.2% over 20 ms |
-| 4x | medium | 16.8 avg, 1% over 20 ms | 17.6 avg, 5.5% over 20 ms |
-| 4x | high | 18.7 avg, 11.9% over 20 ms | 20.1 avg, 20.7% over 20 ms |
+| 4x | low | 16.7 avg, 0% frames over 20 ms | 16.7 avg, 0.4% over 20 ms |
+| 4x | medium | 16.7 avg, 0.3% over 20 ms | 17.6 avg, 5.5% over 20 ms |
+| 4x | high | 19.4 avg, 16.3% over 20 ms | 19.7 avg, 18.0% over 20 ms |
 
-Before the 1.5 DPR cap for `medium`, the 4x medium 500-event fire had 20% frames over 20 ms. The profile showed that the
-JavaScript of all render code is about 3% of the time; the rest is canvas rasterising (fill rate), which is why lowering the
-pixel count is the lever. `skip()` on the 500-event fire reported all 500 events in about 1 s of wall time including the
-tap delay. Real phones have a GPU, so expect better than these numbers; still, please check on a real cheap Android phone.
+The layout change cost nothing measurable. `medium` draws at 1.5 DPR (before that cap, the 4x medium 500-event fire had 20% frames
+over 20 ms). The profile shows the JavaScript of all render code is about 3% of the time; the rest is canvas rasterising (fill
+rate), so lowering the pixel count is the lever. `skip()` on the 500-event fire reports all 500 events in about 1 s of wall time
+including the tap delay. Real phones have a GPU, so expect better; still, please check on a real cheap Android phone.
 
 ## Demo page
 `/dev/renderDemo.html` (Vite dev server only, not in the production build): sample fire, big fire (500 events), blocked

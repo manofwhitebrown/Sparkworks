@@ -204,8 +204,37 @@ function drawCells(ctx, L, machine) {
   }
 }
 
+// The footer under the grid: a thin divider and the "VAULT" label. The running total is drawn live on top.
+function drawFooter(ctx, L) {
+  var y = L.gridY + L.gridH;
+  var h = L.cell * 0.45;
+  ctx.strokeStyle = THEME.colors.line;
+  ctx.globalAlpha = 0.8;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(L.gridX, Math.round(y + 4) + 0.5);
+  ctx.lineTo(L.gridX + L.gridW, Math.round(y + 4) + 0.5);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = THEME.colors.textDim;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold ' + Math.max(8, Math.round(L.cell * 0.15)) + 'px ' + THEME.font.family;
+  ctx.fillText('VAULT', L.gridX + 2, y + 4 + h / 2);
+}
+
+// The framed panel: a dark rounded rectangle with a thin border. Outside it the canvas stays
+// transparent, so the corners blend into the page instead of showing a lighter rectangle.
+export function panelPath(ctx, L) {
+  roundRect(ctx, 0.5, 0.5, L.width - 1, L.height - 1, Math.max(8, L.cell * 0.28));
+}
+
 // Draws the whole static layer into ctx (already scaled to CSS pixels).
 export function drawStaticLayer(ctx, L, machine) {
+  ctx.clearRect(0, 0, L.width, L.height);
+  ctx.save();
+  panelPath(ctx, L);
+  ctx.clip();
   ctx.fillStyle = THEME.colors.panel;
   ctx.fillRect(0, 0, L.width, L.height);
   drawGrid(ctx, L);
@@ -214,5 +243,11 @@ export function drawStaticLayer(ctx, L, machine) {
   var sy = L.gridY + machine.sourceRow * L.cell + L.cell / 2;
   drawSocket(ctx, L.gridX - L.cell / 4, sy, L.cell * 0.13, THEME.colors.spark);
   drawVaultSlot(ctx, L);
+  drawFooter(ctx, L);
   drawVignette(ctx, L);
+  ctx.restore();
+  panelPath(ctx, L);
+  ctx.strokeStyle = THEME.colors.line;
+  ctx.lineWidth = 1;
+  ctx.stroke();
 }

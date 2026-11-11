@@ -160,5 +160,19 @@ for (var i = 0; i < qButtons.length; i++) {
     e.target.className = 'on';
   };
 }
+// Size buttons: the board lives in a box of a fixed width and a 5:4 height, like the run screen.
+var wButtons = document.querySelectorAll('[data-w]');
+for (var wi = 0; wi < wButtons.length; wi++) {
+  wButtons[wi].onclick = function (e) {
+    var w = Number(e.target.getAttribute('data-w'));
+    var box = document.getElementById('board');
+    box.style.width = w > 0 ? w + 'px' : '';
+    box.style.height = w > 0 ? Math.round(w * 0.75) + 'px' : '';
+    box.style.margin = w > 0 ? '0 auto' : '';
+    for (var j = 0; j < wButtons.length; j++) { wButtons[j].className = ''; }
+    e.target.className = 'on';
+    say('board box ' + (w > 0 ? w + 'x' + Math.round(w * 0.75) : 'full width'));
+  };
+}
 window.__view = view;
 window.__ids = IDS;

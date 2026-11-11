@@ -2,7 +2,7 @@
 // Only redraws when something changes or moves. Uses the app's single frame loop.
 // Owner: AI-6
 import { THEME } from './theme.js';
-import { computeLayout, cellAtLocal, clampDpr, FOOTER } from './layout.js';
+import { computeLayout, cellAtLocal, clampDpr, FOOTER, VPAD } from './layout.js';
 import { drawStaticLayer } from './boardStatic.js';
 import { createEffects } from './effects.js';
 import { createParticles } from './particles.js';
@@ -72,13 +72,16 @@ export function createBoardView(container, options) {
     canvas.style.display = 'block';
     var w = rect.width > 0 ? rect.width : 360;
     var m = S.machine;
-    var aspectH = Math.round(w * (m.rows + FOOTER) / (m.cols + 1));
+    var aspectH = Math.round(w * (m.rows + FOOTER + VPAD) / (m.cols + 1));
     var h = rect.height > 60 ? Math.min(rect.height, aspectH) : aspectH;
     S.dpr = clampDpr(window.devicePixelRatio, dprCapFor(S.flags.quality));
     canvas.width = Math.round(w * S.dpr);
     canvas.height = Math.round(h * S.dpr);
     canvas.style.height = h + 'px';
+    // a box taller than the board: centre the board in it instead of hugging the top
+    canvas.style.marginTop = rect.height > h + 2 ? Math.floor((rect.height - h) / 2) + 'px' : '0';
     S.L = computeLayout(w, h, m.cols, m.rows);
+    S.particles.setBounds(4, 4, w - 4, h - 4);
     rebuildStatic();
   }
 

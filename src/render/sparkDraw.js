@@ -138,12 +138,16 @@ export function drawVaultGlow(ctx, L, fx) {
   }
 }
 
+// The running total sits in the footer, right under the vault slot, big and clear.
+// It swells a little when a spark banks.
 export function drawVault(ctx, L, fx, formatNumber) {
   var v = fx.vault;
-  var cx = L.gridX + L.gridW + L.cell / 4;
-  ctx.textAlign = 'center';
+  var right = L.gridX + L.gridW + L.cell * 0.4;
+  var y = L.gridY + L.gridH + 4 + L.cell * 0.225;
+  var swell = 1 + Math.min(1, v.pulse) * 0.18;
+  ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = v.shown > 0 ? THEME.colors.sparkHot : THEME.colors.textDim;
-  ctx.font = 'bold ' + Math.round(L.cell * 0.19) + 'px ' + THEME.font.numbers;
-  ctx.fillText(formatNumber(Math.round(v.shown)), cx, L.gridY + L.gridH + L.cell * 0.22, L.cell * 1.3);
+  ctx.font = 'bold ' + Math.round(L.cell * 0.3 * swell) + 'px ' + THEME.font.numbers;
+  ctx.fillText(formatNumber(Math.round(v.shown)), right, y, L.gridW * 0.75);
 }

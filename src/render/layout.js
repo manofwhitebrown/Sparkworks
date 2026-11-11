@@ -3,6 +3,8 @@
 // Owner: AI-6
 
 export var FOOTER = 0.45;
+// extra breathing room (in cells) split between the top and the bottom of the framed panel
+export var VPAD = 0.3;
 
 export function computeLayout(width, height, cols, rows) {
   var safeCols = Math.max(1, cols | 0);
@@ -11,7 +13,7 @@ export function computeLayout(width, height, cols, rows) {
   var h = Math.max(1, height);
   // the grid is cols cells wide, plus a half cell on each side
   // a little room under the grid is kept for the running total of the vault
-  var cell = Math.floor(Math.min(w / (safeCols + 1), h / (safeRows + FOOTER)));
+  var cell = Math.floor(Math.min(w / (safeCols + 1), h / (safeRows + FOOTER + VPAD)));
   if (cell < 1) {
     cell = 1;
   }
@@ -19,6 +21,7 @@ export function computeLayout(width, height, cols, rows) {
   var gridH = cell * safeRows;
   var totalW = gridW + cell;
   var left = Math.floor((w - totalW) / 2) + Math.floor(cell / 2);
+  // grid plus footer are centred vertically inside the panel
   var top = Math.floor((h - gridH - cell * FOOTER) / 2);
   return {
     cell: cell,

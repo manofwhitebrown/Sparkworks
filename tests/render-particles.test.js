@@ -32,3 +32,18 @@ test('cap of zero emits nothing', function () {
   p.burst(0, 0, 20, 50, 0.5, 5, 1, rand);
   assert.equal(p.count(), 0);
 });
+
+test('particles are removed outside the panel bounds and fade near the edge', function () {
+  var p = createParticles();
+  p.setCap(80);
+  p.setBounds(4, 4, 100, 100);
+  // fly to the right, out of the panel
+  p.emit(90, 50, 300, 0, 2, 5, 0);
+  assert.equal(p.count(), 1);
+  for (var i = 0; i < 10; i++) { p.update(0.02); }
+  assert.equal(p.count(), 0);
+  // a particle that stays inside lives on
+  p.emit(50, 50, 0, 0, 2, 5, 0);
+  p.update(0.02);
+  assert.equal(p.count(), 1);
+});

@@ -2,7 +2,7 @@
 // Owner: AI-6
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { computeLayout, cellCenter, cellAtLocal, clampDpr } from '../src/render/layout.js';
+import { computeLayout, cellCenter, cellAtLocal, clampDpr, FOOTER, VPAD } from '../src/render/layout.js';
 
 test('cells are square and fit the container', function () {
   var sizes = [[360, 300], [480, 400], [200, 600], [1000, 200]];
@@ -42,4 +42,18 @@ test('dpr is capped at 2 and sane for bad input', function () {
   assert.equal(clampDpr(1.5, 2), 1.5);
   assert.equal(clampDpr(NaN, 2), 1);
   assert.equal(clampDpr(0, 2), 1);
+});
+
+test('round 3: grid and footer sit inside the panel with breathing room at many box sizes', function () {
+  var sizes = [[284, 211], [328, 243], [400, 300], [150, 112], [412, 330], [900, 700]];
+  for (var i = 0; i < sizes.length; i++) {
+    var w = sizes[i][0];
+    var h = Math.round(w * (4 + FOOTER + VPAD) / 6);
+    var l = computeLayout(w, h, 5, 4);
+    assert.ok(l.gridY >= 1, 'top margin for ' + w);
+    assert.ok(l.gridY + l.gridH + l.cell * FOOTER <= h, 'footer fits for ' + w);
+    assert.ok(l.gridX - l.cell / 2 >= -1, 'source margin for ' + w);
+    assert.ok(l.gridX + l.gridW + l.cell / 2 <= w + 1, 'vault margin for ' + w);
+    assert.ok(l.cell >= 20, 'cell stays usable for ' + w);
+  }
 });

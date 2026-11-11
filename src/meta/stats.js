@@ -4,14 +4,17 @@ import { runSummary } from '../run/runState.js';
 import { checkAchievements } from './achievements.js';
 import { recordWin } from './voltage.js';
 import { upgradeLevel } from './workshop.js';
+import { DUST_RULES } from '../data/workshop.js';
 import { recordDaily } from './daily.js';
 
-// dust = (2 + 2 x shiftsCleared + (won ? 10 : 0) + 3 x (voltage - 1)) x (1 + 0.1 x dustBoost)
+// The numbers come from DUST_RULES in data/workshop.js (see the formula there).
 // Whole numbers only, so there is no floating point rounding surprise.
 export function dustFor(meta, summary) {
-  const base = 2 + 2 * summary.shiftsCleared + (summary.won ? 10 : 0) + 3 * (summary.voltage - 1);
+  const r = DUST_RULES;
+  const base = r.base + r.perShiftCleared * summary.shiftsCleared + (summary.won ? r.winBonus : 0) +
+    r.perVoltage * (summary.voltage - 1);
   const boost = upgradeLevel(meta, 'dustBoost');
-  return Math.floor(base * (10 + boost) / 10);
+  return Math.floor(base * (100 + r.boostPercentPerLevel * boost) / 100);
 }
 
 function updateStats(meta, run, summary) {

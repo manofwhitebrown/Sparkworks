@@ -58,3 +58,9 @@ Every part outside the starting 12 is unlocked by exactly one achievement (teste
 - Starting parts count as seen, so only new unlocks show a NEW badge.
 - Daily: seed from `hashString("sparkworks-daily-" + date)`, Voltage 1, uses the player's unlocked parts and Workshop bonuses. Streak counts consecutive local days.
 - `repairMeta` accepts anything and never throws.
+
+## Where the numbers live (one pass to rebalance)
+- Dust payout per run: `DUST_RULES` in `src/data/workshop.js` (base, per shift cleared, win bonus, per voltage, boost % per level).
+- Upgrade prices and max levels: `WORKSHOP_UPGRADES` in the same file.
+- Unlock thresholds: `TARGETS` at the top of `src/data/achievements.js`; dust rewards are in each achievement's `reward`. Descriptions are built from `TARGETS`, so text and checks stay in sync.
+- Nothing in `src/meta/*` or the screens holds a balance number. Values are unchanged for now: waiting for the bot baseline to improve.

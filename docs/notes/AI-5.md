@@ -9,6 +9,8 @@
 ## Working on
 - Nothing open. 2026-11-11 re-check: pulled main, 299/299 tests pass, build passes, token scan clean. Manager items 1 to 3 and the cheated-run request (contract 16 to 20) are all in place and tested (tests/meta-cheated.test.js). Waiting for balance requests.
 
+- 2026-11-11 (owner request): all dust payout numbers moved to `DUST_RULES` (data/workshop.js) and all unlock thresholds to `TARGETS` (data/achievements.js). Values unchanged. Dust/unlock tuning is on hold until the bot baseline is fixed (smart bot ~20% at Voltage 1).
+
 ## Blocked / Questions for manager
 - None.
 

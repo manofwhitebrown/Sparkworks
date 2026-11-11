@@ -50,6 +50,26 @@ function blockRandomCell(machine, rng) {
   machine.blocked.push(free[pick]);
 }
 
+// Block every cell of ONE random row. The source row is never chosen, so sparks can still be born.
+function blockRandomRow(machine, rng) {
+  const rows = [];
+  for (let y = 0; y < machine.rows; y++) {
+    if (y !== machine.sourceRow) {
+      rows.push(y);
+    }
+  }
+  if (rows.length === 0) {
+    return;
+  }
+  const pick = Math.min(Math.floor(rng() * rows.length), rows.length - 1);
+  const y = rows[pick];
+  for (let x = 0; x < machine.cols; x++) {
+    if (!isBlocked(machine, x, y)) {
+      machine.blocked.push({ x: x, y: y });
+    }
+  }
+}
+
 function banPart(machine, partId) {
   if (machine.banned.indexOf(partId) < 0) {
     machine.banned.push(partId);
@@ -121,6 +141,40 @@ export const TWISTS = {
     apply(machine) {
       machine.startValue = 0;
       addTwistName(machine, 'Cold Start');
+      return machine;
+    }
+  },
+  closedRow: {
+    id: 'closedRow',
+    name: 'Closed Row',
+    description: 'One whole row is dead. Sparks cannot enter it.',
+    apply(machine, rng) {
+      blockRandomRow(machine, rng);
+      addTwistName(machine, 'Closed Row');
+      return machine;
+    }
+  },
+  loneSpark: {
+    id: 'loneSpark',
+    name: 'Lone Spark',
+    description: 'Only 1 spark this shift. It starts at 5.',
+    apply(machine) {
+      machine.sparkCount = 1;
+      machine.startValue = 5;
+      addTwistName(machine, 'Lone Spark');
+      return machine;
+    }
+  },
+  noMult: {
+    id: 'noMult',
+    name: 'No Multipliers',
+    description: 'All multiplier parts are switched off this shift.',
+    apply(machine) {
+      const multParts = partsWithTag('mult');
+      for (let i = 0; i < multParts.length; i++) {
+        banPart(machine, multParts[i].id);
+      }
+      addTwistName(machine, 'No Multipliers');
       return machine;
     }
   }

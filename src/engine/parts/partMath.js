@@ -82,7 +82,7 @@ export function makeExample(part, level, options) {
   const before = opts.value === undefined ? 2 : opts.value;
   const ctx = {
     value: before,
-    dir: 'right',
+    dir: opts.dir || 'right',
     level: level,
     rot: 0,
     boost: 1,

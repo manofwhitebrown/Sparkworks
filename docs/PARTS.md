@@ -2,6 +2,7 @@
 
 Every part the player can place, and every Overload twist. Numbers come from the `NUMBERS` object at the top of each part file in `src/engine/parts/`.
 Texts show a part pointing DOWN. The "(2 -> 5)" part is the example for a spark with the number 2. Directional parts name their direction in the real text.
+Texts show a part pointing DOWN. The "(2 -> 5)" part is the example for a spark with the number 2. Directional parts name their direction in the real text.
 Boost (from a Battery next to a part): a multiplier m becomes `1 + (m - 1) * boost`; a flat bonus b becomes `b * boost`.
 
 | id | name | rarity | tags | cost | directional | L1 | L2 | L3 | combo ideas |
@@ -30,6 +31,13 @@ Boost (from a Battery next to a part): a multiplier m becomes `1 + (m - 1) * boo
 | `turnstile` | Turnstile (extra) | rare | route | 5 | yes | Each spark takes the next road: DOWN, then straight, then UP. | Each spark takes the next road: DOWN, then straight, then UP. | Each spark takes the next road: DOWN, then straight, then UP. | Three roads: Anvil on one, Fuse on another; Turnstile with Reverser |
 | `echo` | Echo (extra) | rare | add, state | 5 | no | Adds 10% of what is already in the vault. (2 -> 4) | Adds 15% of what is already in the vault. (2 -> 5) | Adds 25% of what is already in the vault. (2 -> 7) | Echo with Ember: later sparks get more; Echo before Compounder |
 | `mint` | Mint (extra) | common | economy, add | 3 | no | Takes 20% of the number. Pays 1 coin per 10 taken, up to 3. | Takes 20% of the number. Pays 1 coin per 10 taken, up to 5. | Takes 20% of the number. Pays 1 coin per 10 taken, up to 8. | Amplifier before Mint pays more coins; Mint plus Tollgate (double coin income) |
+| `spring` | Spring (new) | common | add, route | 4 | yes | Adds 2 and turns the spark DOWN. (2 -> 4) | Adds 4 and turns the spark DOWN. (2 -> 6) | Adds 7 and turns the spark DOWN. (2 -> 9) | Spring in the middle of a road: it adds AND steers; Spring then Amplifier (add before multiply) |
+| `sideamp` | Sideamp (new) | common | mult | 5 | no | Multiplies by x2. Only for sparks moving UP or DOWN. (2 -> 4) | Multiplies by x2.5. Only for sparks moving UP or DOWN. (2 -> 5) | Multiplies by x3. Only for sparks moving UP or DOWN. (2 -> 6) | Bend then Sideamp: the turn makes it work; Spring then Sideamp (steer, then multiply) |
+| `bouncer` | Bouncer (new) | common | route, risk | 3 | no | Sends the spark UP or DOWN. A coin flip. | Sends the spark UP or DOWN. A coin flip. Adds 2. (2 -> 4) | Sends the spark UP or DOWN. A coin flip. Adds 5. (2 -> 7) | Bouncer with a Sideamp on both the UP and the DOWN road; Bouncer at L2/L3 next to Battery |
+| `workbench` | Workbench (new) | common | economy | 4 | no | Once per Fire: 1 coin for every 2 parts on the board. Up to 3 coins. | Once per Fire: 1 coin for every 2 parts on the board. Up to 4 coins. | Once per Fire: 1 coin for every 2 parts on the board. Up to 6 coins. | Fill the board with cheap parts, then Workbench pays more; Workbench plus Tollgate for coins |
+| `jackpot` | Jackpot (new) | legendary | risk | 10 | no | A 20% chance of x20. Otherwise x0.9. (2 -> 40) | A 25% chance of x25. Otherwise x0.9. (2 -> 50) | A 30% chance of x30. Otherwise x0.9. (2 -> 60) | Jackpot next to Battery (bigger win); Jackpot after Starter or Coil so the x0.9 loss hurts less |
+| `finisher` | Finisher (new) | rare | mult | 6 | no | In the last column: x3. Anywhere else: nothing. (2 -> 6) | In the last column: x4. Anywhere else: nothing. (2 -> 8) | In the last column: x6. Anywhere else: nothing. (2 -> 12) | Finisher right before the vault after Amplifier; Finisher after a Splitter copy that ends in the last column |
+| `starter` | Starter (new) | common | add | 3 | no | In the first column: +6. Anywhere else: nothing. (2 -> 8) | In the first column: +10. Anywhere else: nothing. (2 -> 12) | In the first column: +16. Anywhere else: nothing. (2 -> 18) | Starter at the source cell, then Amplifier; Starter with Reverser (the spark comes back and gets it again) |
 
 ## The 4 extra parts
 
@@ -37,6 +45,19 @@ Boost (from a Battery next to a part): a multiplier m becomes `1 + (m - 1) * boo
 - **Turnstile** (rare, route): a new path puzzle. Spark 1 takes side A, spark 2 goes straight, spark 3 takes side B, then it repeats.
 - **Echo** (rare, uses `ctx.fire.bankedTotal`): adds a share of what the Fire has already banked. It is weak on spark 1 and strong later.
 - **Mint** (common, coins): turns 20% of the value into coins. Good for the shop economy, bad for the highest score.
+
+## The 7 round-4 parts (marked "new")
+
+These reward steering and position. Numbers are a first guess; AI-8's bot will tell us if they are off.
+**Status:** the files and tests are in, but the 7 parts are NOT in `index.js` yet (so not in the shop), because AI-5's tests need one unlock achievement per registered part. See `docs/notes/AI-3.md`.
+- **Spring** (common, add + route): an adder that also turns the spark. Cheap way to build a road with value on it.
+- **Sideamp** (common, mult): works only on sparks moving up or down, so the player must steer first.
+- **Bouncer** (common, route + risk): a coin flip between UP and DOWN (seeded). Put a good part on both roads.
+- **Workbench** (common, economy): once per Fire, 1 coin per 2 parts on the board (max 3 / 4 / 6).
+- **Jackpot** (legendary, risk): 20% / 25% / 30% for x20 / x25 / x30, otherwise x0.9. Average gain is high but it swings a lot.
+- **Finisher** (rare, mult): only in the last column. Needs `ctx.x` and `ctx.cols` (contract item 22).
+- **Starter** (common, add): only in the first column. Needs `ctx.x`.
+- **Portal** (rare, route) is NOT built yet: it waits for AI-2's portal pairs (stretch).
 
 ## Twists
 
@@ -48,5 +69,8 @@ Boost (from a Battery next to a part): a multiplier m becomes `1 + (m - 1) * boo
 | `fewerSparks` | Fewer Sparks | The source sends one spark less. |
 | `rust` | Rust | One kind of part you placed rusts and stops working this shift. |
 | `coldStart` | Cold Start | Sparks start at 0. Add before you multiply. |
+| `closedRow` | Closed Row | One whole row is dead (never the source row). Sparks cannot enter it. |
+| `loneSpark` | Lone Spark | Only 1 spark this shift. It starts at 5. |
+| `noMult` | No Multipliers | All multiplier parts are switched off this shift. |
 
-Every twist adds its name to `machine.flags.twistNames` so the UI can show it. `noSplit` bans every part with the `split` tag (Splitter, Triplet, Prism).
+Every twist adds its name to `machine.flags.twistNames` so the UI can show it. `noSplit` bans every part with the `split` tag (Splitter, Triplet, Prism). `noMult` bans every part with the `mult` tag.

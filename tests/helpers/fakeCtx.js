@@ -3,7 +3,7 @@
 const MAX_VALUE = 1e300;
 const ROT_DIRS = ['right', 'down', 'left', 'up'];
 
-// options: { value, dir, level, rot, boost, state, fire, rngValues }
+// options: { value, dir, level, rot, boost, x, y, cols, rows, state, fire, rngValues }
 // Pass the same `state` object to several makeFakeCtx calls to simulate several sparks.
 export function makeFakeCtx(options) {
   const opts = options || {};
@@ -15,6 +15,10 @@ export function makeFakeCtx(options) {
     level: opts.level || 1,
     rot: opts.rot || 0,
     boost: opts.boost || 1,
+    x: opts.x === undefined ? 1 : opts.x,
+    y: opts.y === undefined ? 1 : opts.y,
+    cols: opts.cols || 5,
+    rows: opts.rows || 4,
     state: opts.state || {},
     fire: opts.fire || { sparkNumber: 1, bankedTotal: 0, bankedCount: 0, partsOnBoard: 1 },
     calls: { setValue: [], setDir: [], split: [], addCoins: [], disable: 0, note: [] },

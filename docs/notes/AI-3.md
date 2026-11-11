@@ -7,6 +7,18 @@
 - `tests/parts-simulate.test.js`: real `simulate` combos (Coil/Amplifier order, Splitter+Bend banks the copy, Reverser loop, Overdrive, Tollgate, banned parts)
 - `docs/PARTS.md` (all 24 parts, 2 combo ideas each, twist list)
 
+## Done in round 4 (manager's list in `docs/manager/to-AI-3.md`)
+- **Part A:** every `describe(level, rot)` rewritten for kids (max 10 words a sentence, no jargon, directions in words); `example(level)` added to all parts (`{ before, after }` for the number 2, or `null`); `tests/parts-text.test.js`; `docs/PARTS.md` regenerated.
+  - The numbers in the manager's drafts did not match the real parts in a few places (Rectifier +2, Gambler x5, Ember +1, Counter every 2nd at all levels). I used the REAL numbers because the text must be exact.
+  - `example` runs the part's real `onPass` on a tiny fake ctx (`makeExample` in `partMath.js`), so the example can never disagree with the part.
+- **Part B:** 7 new parts: `spring`, `sideamp`, `bouncer`, `workbench`, `jackpot`, `finisher`, `starter` (31 parts now). `tests/parts-new.test.js`.
+- **Part C:** 3 new twists: `closedRow`, `loneSpark`, `noMult`. Tests in `tests/parts-twists.test.js`.
+
+## HELD STEP (one small change, waiting for AI-5)
+The 7 new part files are pushed and tested, but NOT registered in `src/engine/parts/index.js`. If I registered them now, 3 of AI-5's tests fail (`content cross-checks`, `every non-starting part is unlocked by exactly one achievement`, `unlockHint returns text for every locked part`) because there is no unlock achievement for them, and I may not edit AI-5's files.
+- **AI-5:** please add one unlock achievement (or starting-kit entry) for each of `spring, sideamp, bouncer, workbench, jackpot, finisher, starter` and write in your notes that it is pushed.
+- **Then I (AI-3) do:** add the 7 imports and names to `index.js` (after `mint`), delete `PENDING_FILES` in `tests/parts-basic.test.js`, set its count from 24 to 31. About 10 lines. If the owner or manager prefers, AI-5 can also do this step themselves, it is only in my files.
+
 ## Working on
 - Nothing blocking. Parts, twists, tests and PARTS.md are finished. Next: retune `dynamo` and `capacitor` in small steps ONLY when the bot shows real lifts (manager item 4 and 5).
 
@@ -21,9 +33,17 @@
 - I add one helper file `src/engine/parts/partMath.js` (pure boost and label maths, no ctx). It lives in my own folder. Tell me if you want it inside each part instead.
 
 ## Changes I need from other AIs
+- **AI-2:** `ctx.x`, `ctx.y`, `ctx.cols`, `ctx.rows` are NOT in `simulate.js` yet (contract item 22). `finisher` and `starter` are written for them and do NOTHING until they exist (they never crash). When you push, tell me and I will add real `simulate` tests for both.
+- **AI-2:** `portal` (stretch) is NOT built. I will build it once portal pairs are in `simulate`. Tell me the event shape and how a part tells the engine it is a portal.
+- **AI-4:** new twist ids for `shifts.js`: `closedRow`, `loneSpark`, `noMult`. New part ids for shop weights and inventor kits: `spring`, `sideamp`, `bouncer`, `workbench`, `jackpot` (legendary), `finisher` (rare), `starter`. `jackpot` costs 10 like the other legendaries.
+- **AI-5:** the same 7 part ids for the Patent Book and unlocks (rarity and cost are in `docs/PARTS.md`). Twist ids above if you list them anywhere.
+- **AI-6:** icons for `spring` (add + route), `sideamp`, `bouncer`, `workbench` (economy), `jackpot`, `finisher`, `starter`.
+- **AI-7:** `describe(level, rot)` now takes the rotation (pass `cell.rot`, or nothing in the shop) and `example(level)` returns `{ before, after }` or `null`.
 - AI-2: `ctx.fire.partsOnBoard` must count placed parts (including blocked-by-ban parts? I assume only placed parts).
 
 ## Balance worries (to confirm with the bot)
+- `jackpot` is the strongest new part on paper: average multiplier x4.7 / x6.1 / x9.6 for cost 10, but it can also lose 10% per pass. Build-around for sure; watch it. `starter` at the source cell is a flat +6 / +10 / +16 for every spark for cost 3, so it may be better than `coil`. `bouncer` L1 is a pure coin flip with no bonus, so it is a risk part you only want with two good roads.
+- Labels I used instead of the manager's long note text: `finisher` shows `last col` and `starter` shows `1st col` (labels stay short).
 - `fuse` L3 x15 and `overdrive` L3 x6 may be too strong when stacked with Battery (boost 2 turns x15 into x29). Maybe cap boost on risk parts.
 - `prism` L3 gives 3 full-value roads; strong, but costs 10 and needs 3 roads to reach the vault.
 - `mint` may be too weak at L1 (max 3 coins). `echo` is weak when sparks bank late.

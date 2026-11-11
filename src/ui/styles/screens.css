@@ -321,3 +321,6 @@ html.largeText .selectedPanel { min-height: 144px; }
 .howtoToken.vault { color: var(--good); border-color: var(--good); }
 .howtoToken.lost { color: var(--bad); border-color: var(--bad); }
 .howtoToken.empty { border-color: transparent; background: transparent; }
+
+/* How to play: a small real board that loops (AI-6's createDiagram) */
+.howtoDiagram { width: 100%; max-width: 320px; margin: 0 auto; position: relative; overflow: hidden; contain: size layout paint; }

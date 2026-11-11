@@ -300,6 +300,7 @@ function togglePath() {
   setFlag('showPath', showPath ? 'on' : 'off');
   ui.pathBtn.querySelector('.btnLabel').textContent = pathLabel(showPath);
   pathKey = '';
+  emit('ui:previewToggled', { on: showPath });
   playSfx('tap');
   drawPreview();
 }

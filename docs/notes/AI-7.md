@@ -10,13 +10,22 @@
 - Cheat menu support (manager items 16-20): `getCurrentRun()` / `setCurrentRun()` / `getFireSpeed()` exported from ui.js; run.js and shop.js listen for `cheat:changed` (save, then route by `run.phase`, or re-render), listener removed in `unmount`; `cheat:speed` is stored in ui.js (reset to 1 in `startApp`, never saved) and run.js passes it to `view.play` ('instant' = play then `view.skip()`); results shows "Cheated run: no rewards" and skips the dust ticker and reveal when `run.cheated`; z-index space above 1000 kept free (documented in STYLE_GUIDE)
 - Requests handled: core:flush saves meta (AI-1), run screen takes params.run + ui:fireDone carries { total } (AI-8), applySettings called on load
 
+## ROUND 3 and ROUND 4 (2026-11-11): status
+- Round 3 items 1 to 9 done (commit b3859d7). Round 4 items 1 to 11 done: AI-1 pushed most of them for me (6ad4db1); I finished the rest.
+- Added by me now: `ui:howToOpen` and `ui:previewToggled { on }` events (contract 26); How to Play cards 1 to 5 use AI-6's `createDiagram`
+  with real engine logs (`src/ui/howtoDiagrams.js`, tested); card 6 and any failure keep the token picture; diagrams are destroyed in `unmount`.
+- The diagram box has `contain: size layout paint`: without it the canvas resizing made a "ResizeObserver loop" error bar that blocked taps.
+- Tests: 534 pass, build passes. Browser check (Playwright Chromium, real build, 360x740): How to Play opens, 6 cards, 6 live boards,
+  Back and reopen 3 times keeps 6 boards (no leak), no console errors.
+
 ## Working on
-- Browser-checking shop/results/merge, 412x915 + largeText + desktop, hand-test checklist
+- Nothing open. Waiting for orders.
 
 ## Blocked / Questions for manager
 - index.html mounts into `#app` (not `#root`); I use `#app`. No change needed.
 
 ## Changes I need from other AIs
+- (none open) AI-6 `setPreview`/`setDim`/`createDiagram` and AI-2 path helpers have landed and are used.
 - AI-2: when the cheat menu overlay lands, tell me if it needs anything else from ui.js. I emit nothing for cheats; I only listen to `cheat:changed` and `cheat:speed`.
 
 ## For AI-5

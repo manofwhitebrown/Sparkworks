@@ -246,12 +246,11 @@ export function mount(root, params) {
   const top = el('div', 'row');
   top.append(el('h1', '', 'Shop'), el('div', 'spacer'));
   const coins = el('div', 'pill coin');
-  top.appendChild(coins);
-
   const offers = el('div', 'offerGrid');
   offers.dataset.tut = 'offers';
   const reroll = makeButton('Reroll', onReroll, { small: true });
   reroll.dataset.tut = 'reroll';
+  top.append(reroll, coins);
   const mini = el('div', 'miniBoard');
   const bench = el('div');
   const panel = el('div');
@@ -265,7 +264,7 @@ export function mount(root, params) {
     body.appendChild(el('div', 'tipLine', SHOP_TIP));
     setFlag('shopTip', true);
   }
-  body.append(offers, reroll, mini, bench, panel);
+  body.append(offers, mini, bench, panel);
   const strip = clearedStripFor(run);
   if (strip) body.insertBefore(strip, body.firstChild);
   screen.append(top, body, next);

@@ -169,6 +169,8 @@ html.reduceMotion .partCard.legendary::after { animation: none; opacity: 0.6; }
   transition: opacity var(--t-normal) var(--ease), transform var(--t-normal) var(--ease);
 }
 .toast.isShown { opacity: 1; transform: translate(-50%, 0); }
+/* On the run screen a tip must not cover the HUD (shift name, TARGET): show it low, above the Fire button (audit R5 item 2). */
+#app:has(.runScreen) .toast { top: auto; bottom: calc(var(--tap) * 2 + var(--s6) + var(--safe-bottom)); }
 
 /* ---------- tooltip ---------- */
 .tip { position: relative; }

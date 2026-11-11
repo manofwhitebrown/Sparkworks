@@ -54,6 +54,11 @@ function playBank(options) {
   playTone({ type: 'sine', freq: noteFreq(4, shift), dur: 0.4, gain: gain * 0.7, start: 0.04 });
 }
 
+function playLost() {
+  playTone({ type: 'sine', freq: 330, slideTo: 250, dur: 0.16, gain: 0.08, lowpass: 1100 });
+  playTone({ type: 'sine', freq: 250, slideTo: 170, dur: 0.22, gain: 0.07, start: 0.09, lowpass: 900 });
+}
+
 // Each entry plays one named sound. Kept as small functions so each is easy to tune.
 const SOUNDS = {
   tap: function tap() {
@@ -90,8 +95,18 @@ const SOUNDS = {
     playClick({ freq: 3000, dur: 0.06, gain: 0.06 });
   },
   bank: playBank,
-  fizzle: function fizzle() {
-    playTone({ type: 'sine', freq: 360, slideTo: 120, dur: 0.3, gain: 0.12, lowpass: 1200 });
+  // A soft two-note sigh when a spark is lost. Quiet on purpose: losing a spark is not an error.
+  lost: playLost,
+  fizzle: playLost,
+  // A little pop when a spark picks up a bonus tile.
+  bonus: function bonus() {
+    playTone({ type: 'sine', freq: 520, slideTo: 1040, dur: 0.12, gain: 0.13, attack: 0.004, lowpass: 4000 });
+    playClick({ freq: 2600, dur: 0.03, gain: 0.05 });
+  },
+  // A bright, gentle chime for the Hint button.
+  hint: function hint() {
+    playTone({ type: 'sine', freq: noteFreq(7, 0), dur: 0.35, gain: 0.1 });
+    playTone({ type: 'sine', freq: noteFreq(9, 0), dur: 0.45, gain: 0.1, start: 0.1 });
   },
   win: function win() {
     const notes = [0, 2, 4, 5, 7];

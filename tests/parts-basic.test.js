@@ -23,22 +23,17 @@ test('allPartIds has no duplicates and every id has a part', () => {
   assert.equal(getPart('nope'), null);
 });
 
-test('all 20 required parts and 4 extra parts exist', () => {
+test('all 20 required parts, 4 extra parts and 7 round-4 parts exist', () => {
   for (const id of REQUIRED) {
     assert.ok(getPart(id), id);
   }
-  assert.equal(allPartIds().length, 24);
+  assert.equal(allPartIds().length, 31);
 });
-
-// Round-4 parts that are written and tested but not registered in index.js yet: AI-5's tests need an
-// unlock achievement for every registered part. Delete this list when they are registered.
-const PENDING_FILES = ['spring', 'sideamp', 'bouncer', 'workbench', 'jackpot', 'finisher', 'starter'];
 
 test('every part file matches an id and every id has a file', () => {
   const files = readdirSync(new URL('../src/engine/parts/', import.meta.url))
     .filter((f) => !NOT_PARTS.includes(f))
-    .map((f) => f.replace('.js', ''))
-    .filter((id) => !PENDING_FILES.includes(id));
+    .map((f) => f.replace('.js', ''));
   assert.deepEqual(files.sort(), allPartIds().slice().sort());
 });
 

@@ -24,6 +24,13 @@ import prism from './prism.js';
 import turnstile from './turnstile.js';
 import echo from './echo.js';
 import mint from './mint.js';
+import spring from './spring.js';
+import sideamp from './sideamp.js';
+import bouncer from './bouncer.js';
+import workbench from './workbench.js';
+import jackpot from './jackpot.js';
+import finisher from './finisher.js';
+import starter from './starter.js';
 
 // The fixed order of this list is the order of allPartIds().
 const LIST = [
@@ -31,7 +38,8 @@ const LIST = [
   bend, switchPart, reverser, splitter, triplet,
   capacitor, counter, anvil, flywheel, battery,
   gambler, fuse, rectifier, tollgate,
-  prism, turnstile, echo, mint
+  prism, turnstile, echo, mint,
+  spring, sideamp, bouncer, workbench, jackpot, finisher, starter
 ];
 
 export const PARTS = {};

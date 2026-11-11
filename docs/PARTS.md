@@ -49,7 +49,7 @@ Boost (from a Battery next to a part): a multiplier m becomes `1 + (m - 1) * boo
 ## The 7 round-4 parts (marked "new")
 
 These reward steering and position. Numbers are a first guess; AI-8's bot will tell us if they are off.
-**Status:** the files and tests are in, but the 7 parts are NOT in `index.js` yet (so not in the shop), because AI-5's tests need one unlock achievement per registered part. See `docs/notes/AI-3.md`.
+**Status:** all 7 are registered in `index.js` (AI-5 added their unlocks). `portal` is still not built.
 - **Spring** (common, add + route): an adder that also turns the spark. Cheap way to build a road with value on it.
 - **Sideamp** (common, mult): works only on sparks moving up or down, so the player must steer first.
 - **Bouncer** (common, route + risk): a coin flip between UP and DOWN (seeded). Put a good part on both roads.

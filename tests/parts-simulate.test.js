@@ -85,3 +85,46 @@ test('tollgate pays coins per spark pass', () => {
   place(machine, 1, 1, 'tollgate', 0);
   assert.equal(run(machine).coins, 3);
 });
+
+test('sideamp works after a bend turns the spark down, not on the straight row', () => {
+  const straight = rowMachine(['sideamp'], 1);
+  assert.equal(run(straight).total, 1);
+  const steered = makeMachine({ startValue: 1, sparkCount: 1 });
+  place(steered, 1, 1, 'bend', 1);
+  place(steered, 1, 2, 'sideamp', 0);
+  place(steered, 1, 3, 'bend', 0);
+  assert.equal(run(steered).total, 2);
+});
+
+test('spring adds and steers in one part, then amplifier multiplies the result', () => {
+  const machine = makeMachine({ startValue: 1, sparkCount: 1 });
+  place(machine, 1, 1, 'spring', 1);
+  place(machine, 1, 2, 'bend', 0);
+  place(machine, 2, 2, 'amplifier', 0);
+  assert.equal(run(machine).total, (1 + 2) * 2);
+});
+
+test('workbench pays coins once per Fire even when 3 sparks pass', () => {
+  const machine = makeMachine({ startValue: 1, sparkCount: 3 });
+  place(machine, 1, 1, 'workbench', 0);
+  place(machine, 2, 1, 'coil', 0);
+  place(machine, 3, 1, 'coil', 0);
+  place(machine, 4, 1, 'coil', 0);
+  assert.equal(simulate(machine, { recordEvents: false }).coins, 2);
+});
+
+test('bouncer uses the seeded rng: same seed, same result', () => {
+  const machine = makeMachine({ startValue: 1, sparkCount: 3, seed: 7 });
+  place(machine, 1, 1, 'bouncer', 0, 3);
+  const a = simulate(machine, { recordEvents: false });
+  const b = simulate(machine, { recordEvents: false });
+  assert.deepEqual(a, b);
+});
+
+test('jackpot is the same for the same seed and stays finite', () => {
+  const machine = makeMachine({ startValue: 1, sparkCount: 3, seed: 11 });
+  place(machine, 1, 1, 'jackpot', 0, 3);
+  const a = simulate(machine, { recordEvents: false });
+  assert.deepEqual(a, simulate(machine, { recordEvents: false }));
+  assert.ok(Number.isFinite(a.total));
+});

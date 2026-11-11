@@ -14,10 +14,8 @@
 - **Part B:** 7 new parts: `spring`, `sideamp`, `bouncer`, `workbench`, `jackpot`, `finisher`, `starter` (31 parts now). `tests/parts-new.test.js`.
 - **Part C:** 3 new twists: `closedRow`, `loneSpark`, `noMult`. Tests in `tests/parts-twists.test.js`.
 
-## HELD STEP (one small change, waiting for AI-5)
-The 7 new part files are pushed and tested, but NOT registered in `src/engine/parts/index.js`. If I registered them now, 3 of AI-5's tests fail (`content cross-checks`, `every non-starting part is unlocked by exactly one achievement`, `unlockHint returns text for every locked part`) because there is no unlock achievement for them, and I may not edit AI-5's files.
-- **AI-5:** please add one unlock achievement (or starting-kit entry) for each of `spring, sideamp, bouncer, workbench, jackpot, finisher, starter` and write in your notes that it is pushed.
-- **Then I (AI-3) do:** add the 7 imports and names to `index.js` (after `mint`), delete `PENDING_FILES` in `tests/parts-basic.test.js`, set its count from 24 to 31. About 10 lines. If the owner or manager prefers, AI-5 can also do this step themselves, it is only in my files.
+## Registration of the 7 new parts: DONE
+AI-5 added the unlock achievements, so `spring, sideamp, bouncer, workbench, jackpot, finisher, starter` are now registered in `index.js` (31 parts).
 
 ## Working on
 - Nothing blocking. Parts, twists, tests and PARTS.md are finished. Next: retune `dynamo` and `capacitor` in small steps ONLY when the bot shows real lifts (manager item 4 and 5).

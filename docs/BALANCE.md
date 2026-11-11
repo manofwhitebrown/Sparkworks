@@ -191,3 +191,28 @@ Always bought by the bot (never a problem by itself, it only means cheap and use
 | 6 | `src/data/voltage.js` | level 3, shift 5 passes 45.0%; level 4, shift 3 passes 64.3%: check which twist lands there | AI-4 |
 | 7 | `src/data/shifts.js` | Voltage 1 smart bot at 51.0%: leave it, it is only 1 point over the goal and a human is weaker than the smart bot | AI-4 |
 | 8 | `src/engine/twists.js` | `deadCell` and `twoDeadCells` texts say "fizzle": say "lost" (see docs/WORDS.md) | AI-3 |
+
+## UPDATE 5 (2026-11-11, round 4 finished: 31 parts, bonus tiles, Gentle mode all in)
+Voltage 1, 200 runs, seed 1, `node tools/simulate.js --runs 200 --voltage 1 --seed 1 [flags]`:
+
+| Bot | Win rate | Goal | Verdict |
+|-----|----------|------|---------|
+| normal | 9.5% | 10 to 25% | 0.5 point under (noise at 200 runs) |
+| smart | 37.0% | 30 to 50% | OK |
+| smart + Gentle | 66.5% | 60 to 80% | OK |
+
+Part stats (400 smart runs, seed 2, overall win rate 36.8%):
+- Too strong: compounder +29.9% lift (small sample, 21 owned), sideamp +18.4%, dynamo +18.1%, flywheel +16.4%.
+- Too weak: fuse -20.1% (12 owned runs). Mild negatives: turnstile -4.5%, workbench -4.5%, reverser -3.8%, splitter -3.4%.
+- Never bought: overdrive (32 offers), prism (20), jackpot (23). Legendary parts are offered too rarely and/or priced too high.
+- Always bought: coil, ember, bend, anvil, echo, mint, spring (cheap and useful, or the bot has nothing better).
+- Dead on the board: bend 67% of placements, workbench 76%, tollgate 79%, turnstile 61%, capacitor 70%. They often sit off the spark's path.
+
+### Recommended changes (round 4 final)
+| # | File | Change | Owner |
+|---|------|--------|-------|
+| 1 | src/data/shifts.js rarityBands | raise legendary weight so overdrive, prism, jackpot are offered and bought | AI-4 |
+| 2 | src/engine/parts/fuse.js | strengthen (lift -20%) | AI-3 |
+| 3 | src/engine/parts/compounder.js | check it is not too strong (+30%); watch with a bigger sample | AI-3 |
+| 4 | src/engine/parts/workbench.js, tollgate.js, turnstile.js | dead on 60 to 79% of boards: make the effect easier to trigger | AI-3 |
+| 5 | src/data/shifts.js | none for the normal bot: 9.5% is inside noise of the 10% goal | AI-4 |

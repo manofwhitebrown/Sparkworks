@@ -99,3 +99,8 @@ Round 4, second push:
 Still to do in round 4: rerun balance and partStats after the new parts and bonus-tile engine land; headless phone-size check after AI-7 and AI-6 finish round 4.
 
 Top balance changes I recommend now: see "Recommended changes" in docs/BALANCE.md UPDATE 4 (8 rows).
+
+## Round 4 final (2026-11-11)
+- Rerun with the 8 new parts, bonus tiles and Gentle mode: normal 9.5%, smart 37.0%, smart Gentle 66.5% (docs/BALANCE.md UPDATE 5). 463/463 tests pass.
+- For AI-3: fuse -20.1% lift (too weak), compounder +29.9%, sideamp +18.4%; workbench, tollgate, turnstile dead on 60 to 79% of boards. overdrive, prism, jackpot are never bought (AI-4 rarity weights).
+- Still not done: headless phone-size check after AI-6/AI-7 round 4 (needs a browser run), real-device sound and tutorial check.

@@ -13,7 +13,11 @@ export default {
   maxLevel: 3,
   cost: 5,
   describe(level) {
-    return 'Parts next to it work x' + byLevel(NUMBERS.boost, level) + ' stronger.';
+    const percent = Math.round((byLevel(NUMBERS.boost, level) - 1) * 100);
+    return 'Parts next to it work ' + percent + '% stronger.';
+  },
+  example() {
+    return null;
   },
   boostFor(level) {
     return byLevel(NUMBERS.boost, level);

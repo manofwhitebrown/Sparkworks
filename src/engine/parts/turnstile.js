@@ -1,7 +1,7 @@
 // Turnstile: a rotating gate. Each spark takes the next road in a cycle:
 // 1st turns to face the rotation, 2nd goes straight, 3rd turns to the opposite side, then repeat.
 // Owner: AI-3
-import { dirOfRot } from './partMath.js';
+import { dirOfRot, dirWord } from './partMath.js';
 
 export default {
   id: 'turnstile',
@@ -11,8 +11,11 @@ export default {
   directional: true,
   maxLevel: 3,
   cost: 5,
-  describe() {
-    return 'Each spark takes the next road: first the way it points, then straight, then the opposite way.';
+  describe(level, rot) {
+    return 'Each spark takes the next road: ' + dirWord(rot) + ', then straight, then ' + dirWord(rot === undefined ? undefined : rot + 2) + '.';
+  },
+  example() {
+    return null;
   },
   onPass(ctx) {
     const step = ctx.state.step || 0;

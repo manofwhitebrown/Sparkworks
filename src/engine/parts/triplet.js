@@ -1,7 +1,7 @@
 // Triplet: the spark goes straight AND two copies go to both sides.
 // Copy shares are boosted but never above 100% of the value.
 // Owner: AI-3
-import { dirOfRot, byLevel } from './partMath.js';
+import { dirOfRot, byLevel, dirWord } from './partMath.js';
 
 const NUMBERS = { share: [0.4, 0.5, 0.6] };
 
@@ -13,9 +13,13 @@ export default {
   directional: true,
   maxLevel: 3,
   cost: 7,
-  describe(level) {
+  describe(level, rot) {
     const percent = Math.round(byLevel(NUMBERS.share, level) * 100);
-    return 'Spark goes straight and two copies with ' + percent + '% of the value go to both sides.';
+    const sides = rot === undefined ? 'to both sides' : dirWord(rot) + ' and ' + dirWord(rot + 2);
+    return 'The spark goes straight. Copies (' + percent + '% of the number) go ' + sides + '.';
+  },
+  example() {
+    return null;
   },
   onPass(ctx) {
     const share = Math.min(byLevel(NUMBERS.share, ctx.level) * ctx.boost, 1);

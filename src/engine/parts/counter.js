@@ -1,6 +1,6 @@
 // Counter: every Nth spark that passes gets a big multiplier.
 // Owner: AI-3
-import { boostMult, multLabel, byLevel } from './partMath.js';
+import { boostMult, multLabel, byLevel, makeExample } from './partMath.js';
 
 const NUMBERS = { every: [3, 3, 2], mult: [3, 4, 4] };
 
@@ -16,6 +16,9 @@ export default {
     const n = byLevel(NUMBERS.every, level);
     const word = n === 2 ? '2nd' : '3rd';
     return 'Every ' + word + ' spark gets x' + byLevel(NUMBERS.mult, level) + '.';
+  },
+  example(level) {
+    return makeExample(this, level, { state: { count: byLevel(NUMBERS.every, level) - 1 } });
   },
   onPass(ctx) {
     const every = byLevel(NUMBERS.every, ctx.level);

@@ -15,7 +15,13 @@ export default {
   cost: 6,
   describe(level) {
     const n = byLevel(NUMBERS.uses, level);
-    return 'Turns the spark around. Works ' + n + (n === 1 ? ' time' : ' times') + ' per Fire.';
+    if (n === 1) {
+      return 'Sends the spark back. Works once per Fire.';
+    }
+    return 'Sends the spark back. Works ' + n + ' times per Fire.';
+  },
+  example() {
+    return null;
   },
   onPass(ctx) {
     const limit = byLevel(NUMBERS.uses, ctx.level);

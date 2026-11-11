@@ -13,7 +13,11 @@ export default {
   maxLevel: 3,
   cost: 3,
   describe(level) {
-    return 'Pays +' + byLevel(NUMBERS.coins, level) + ' coins each time a spark passes.';
+    const n = byLevel(NUMBERS.coins, level);
+    return 'Pays ' + n + (n === 1 ? ' coin' : ' coins') + ' each time a spark comes by.';
+  },
+  example() {
+    return null;
   },
   onPass(ctx) {
     const coins = Math.round(boostAdd(byLevel(NUMBERS.coins, ctx.level), ctx.boost));

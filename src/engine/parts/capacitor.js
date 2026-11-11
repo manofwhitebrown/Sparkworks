@@ -14,7 +14,10 @@ export default {
   cost: 4,
   describe(level) {
     const percent = Math.round(byLevel(NUMBERS.store, level) * 100);
-    return 'One spark stores ' + percent + '% of its value. The next spark gets it added.';
+    return 'Keeps ' + percent + '% of one spark. The next spark gets it.';
+  },
+  example() {
+    return null;
   },
   onPass(ctx) {
     if (ctx.state.full) {

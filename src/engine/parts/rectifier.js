@@ -1,6 +1,6 @@
 // Rectifier: odd values get a flat bonus, even values get a multiplier.
 // Owner: AI-3
-import { boostAdd, boostMult, addLabel, multLabel, isOdd, byLevel } from './partMath.js';
+import { boostAdd, boostMult, addLabel, multLabel, isOdd, byLevel, makeExample } from './partMath.js';
 
 const NUMBERS = { oddAdd: [4, 6, 9], evenMult: [1.5, 1.75, 2] };
 
@@ -13,9 +13,10 @@ export default {
   maxLevel: 3,
   cost: 4,
   describe(level) {
-    const add = byLevel(NUMBERS.oddAdd, level);
-    const mult = byLevel(NUMBERS.evenMult, level);
-    return 'Odd value: +' + add + '. Even value: x' + mult + '.';
+    return 'Odd number: +' + byLevel(NUMBERS.oddAdd, level) + '. Even number: x' + byLevel(NUMBERS.evenMult, level) + '.';
+  },
+  example(level) {
+    return makeExample(this, level);
   },
   onPass(ctx) {
     if (isOdd(ctx.value)) {

@@ -15,7 +15,10 @@ export default {
   cost: 3,
   describe(level) {
     const percent = Math.round(NUMBERS.take * 100);
-    return 'Takes ' + percent + '% of the value. Pays 1 coin per ' + NUMBERS.perCoin + ' taken, up to ' + byLevel(NUMBERS.maxCoins, level) + ' coins.';
+    return 'Takes ' + percent + '% of the number. Pays 1 coin per ' + NUMBERS.perCoin + ' taken, up to ' + byLevel(NUMBERS.maxCoins, level) + '.';
+  },
+  example() {
+    return null;
   },
   onPass(ctx) {
     const taken = ctx.value * NUMBERS.take;

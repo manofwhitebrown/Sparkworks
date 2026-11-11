@@ -1,7 +1,7 @@
 // Gambler: a random multiplier from the seeded rng. Boost only helps the winning rolls
 // (multipliers above 1); the x0.5 roll is not made worse by a boost.
 // Owner: AI-3
-import { boostMult, multLabel, byLevel } from './partMath.js';
+import { boostMult, multLabel, byLevel, times, orList } from './partMath.js';
 
 // Each entry is [multiplier, chance]. Chances of one level add up to 1.
 const NUMBERS = {
@@ -12,14 +12,6 @@ const NUMBERS = {
   ]
 };
 
-function describeRolls(table) {
-  const parts = [];
-  for (let i = 0; i < table.length; i++) {
-    parts.push('x' + table[i][0] + ' (' + Math.round(table[i][1] * 100) + '%)');
-  }
-  return parts.join(', ');
-}
-
 export default {
   id: 'gambler',
   name: 'Gambler',
@@ -29,7 +21,19 @@ export default {
   maxLevel: 3,
   cost: 3,
   describe(level) {
-    return 'Random multiplier: ' + describeRolls(byLevel(NUMBERS.rolls, level)) + '.';
+    const table = byLevel(NUMBERS.rolls, level);
+    const list = [];
+    for (let i = 0; i < table.length; i++) {
+      list.push(times(table[i][0]));
+    }
+    const text = 'Random multiplier: ' + orList(list) + '.';
+    if (table[0][0] >= 1) {
+      return text + ' Never less than x1.';
+    }
+    return text;
+  },
+  example() {
+    return null;
   },
   onPass(ctx) {
     const table = byLevel(NUMBERS.rolls, ctx.level);

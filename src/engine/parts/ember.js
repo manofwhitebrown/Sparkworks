@@ -1,6 +1,6 @@
 // Ember: rewards later sparks. The first source spark gets nothing.
 // Owner: AI-3
-import { boostAdd, addLabel, byLevel } from './partMath.js';
+import { boostAdd, addLabel, byLevel, makeExample } from './partMath.js';
 
 const NUMBERS = { perEarlier: [3, 5, 8] };
 
@@ -13,7 +13,10 @@ export default {
   maxLevel: 3,
   cost: 4,
   describe(level) {
-    return 'Adds +' + byLevel(NUMBERS.perEarlier, level) + ' for each spark that came before this one.';
+    return 'Later sparks get more: +' + byLevel(NUMBERS.perEarlier, level) + ' for each earlier spark.';
+  },
+  example(level) {
+    return makeExample(this, level, { fire: { sparkNumber: 2, bankedTotal: 0, bankedCount: 0, partsOnBoard: 5 } });
   },
   onPass(ctx) {
     const earlier = Math.max(ctx.fire.sparkNumber - 1, 0);

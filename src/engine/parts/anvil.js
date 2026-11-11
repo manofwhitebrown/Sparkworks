@@ -1,6 +1,6 @@
 // Anvil: adds more each time a spark passes it in the same Fire.
 // Owner: AI-3
-import { boostAdd, addLabel, byLevel } from './partMath.js';
+import { boostAdd, addLabel, byLevel, makeExample } from './partMath.js';
 
 const NUMBERS = { perPass: [2, 3, 4] };
 
@@ -13,7 +13,11 @@ export default {
   maxLevel: 3,
   cost: 4,
   describe(level) {
-    return 'Adds +' + byLevel(NUMBERS.perPass, level) + ' times the number of sparks that passed so far (this one included).';
+    const n = byLevel(NUMBERS.perPass, level);
+    return 'Gets stronger each spark: +' + n + ', then +' + n * 2 + ', then +' + n * 3 + ', and so on.';
+  },
+  example(level) {
+    return makeExample(this, level);
   },
   onPass(ctx) {
     const passes = (ctx.state.passes || 0) + 1;

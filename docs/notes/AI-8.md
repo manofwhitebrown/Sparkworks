@@ -104,3 +104,18 @@ Top balance changes I recommend now: see "Recommended changes" in docs/BALANCE.m
 - Rerun with the 8 new parts, bonus tiles and Gentle mode: normal 9.5%, smart 37.0%, smart Gentle 66.5% (docs/BALANCE.md UPDATE 5). 463/463 tests pass.
 - For AI-3: fuse -20.1% lift (too weak), compounder +29.9%, sideamp +18.4%; workbench, tollgate, turnstile dead on 60 to 79% of boards. overdrive, prism, jackpot are never bought (AI-4 rarity weights).
 - Still not done: headless phone-size check after AI-6/AI-7 round 4 (needs a browser run), real-device sound and tutorial check.
+
+## Round 5 (2026-11-11, proxy manager + AI-8)
+Done:
+- Round 5 brief pushed (docs/manager/ROUND5_AESTHETICS.md); AI-7 files covered by AI-1 and AI-4, AI-7 given small tasks.
+- Screenshot audit in real Chrome at phone sizes: docs/manager/AUDIT_R5.md (11 ranked problems, owners named). Board-vs-HUD gap is 8 px or more at all 7 sizes, normal and large text.
+- Cheat menu checked in a browser: gate (wrong password says No), every RUN / SHOP / META / DEBUG cheat tested, all pass.
+- BUG FIXED: closing the cheat menu (Close, Esc, Android Back) opened "Leave this run?" because main.js started the app before installing the cheat listener. installCheats() now runs first (plus capture listener in gate.js). Test: tests/integration-cheats-extra.test.js.
+- New cheats: start value 100 / 1K / 1M / 1T, "Give 3 x L1 / L2 (merge)", DEBUG Sounds panel (every sound, rising scale, music on/off). docs/CHEATS.md updated.
+- 575 tests pass, build clean.
+
+Left to do (not started):
+- Audio sync: a function that scales the bank / finish sound by fireStats intensity (src/audio), one call in run.js finishFire (AI-1 file: ask AI-1 or do as proxy manager), richer win / lose / merge sounds, per-shift ambient mood (Overload tenser) in music.js.
+- docs/QA.md: add round 5 screens, effects and the cheat menu checks.
+- Frame-time check on the low tier.
+- Fixes from AUDIT_R5.md go to AI-1 (items 2, 3, 4, 6, 7, 8, 10), AI-4 (5, 11), AI-6 (9).

@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   progressRatio, shiftText, firesLeftText, nextScreenAfterFire, fireBannerText, backAction,
-  screenForPhase, fireSpeedFrom, isTutorialRun, continuableRun, fitBoardSize, validDropCells
+  screenForPhase, fireSpeedFrom, isTutorialRun, continuableRun, fitBoardSize, validDropCells, emptyPanelText
 } from '../src/ui/flow.js';
 
 test('progressRatio clamps and survives bad input', () => {
@@ -101,4 +101,16 @@ test('validDropCells skips parts and blocked cells', () => {
   assert.equal(cells.length, 4);
   assert.ok(!cells.some((c) => c.x === 0 && c.y === 0));
   assert.ok(!cells.some((c) => c.x === 2 && c.y === 1));
+});
+
+test('emptyPanelText follows the game and stays short and plain', () => {
+  assert.match(emptyPanelText(2, 0, 0), /place it/);
+  assert.match(emptyPanelText(0, 3, 1), /FIRE again/);
+  assert.match(emptyPanelText(0, 3, 0), /press FIRE/);
+  assert.match(emptyPanelText(0, 0, 0), /shop/);
+  assert.match(emptyPanelText(NaN, undefined, null), /shop/);
+  [emptyPanelText(2, 0, 0), emptyPanelText(0, 3, 1), emptyPanelText(0, 3, 0), emptyPanelText(0, 0, 0)].forEach((t) => {
+    assert.ok(t.split(' ').length <= 12, t);
+    assert.doesNotMatch(t, /\b(pass|bank|fizzle|value)\b/i);
+  });
 });

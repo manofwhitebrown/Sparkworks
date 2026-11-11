@@ -26,7 +26,7 @@ import { getPart } from '../../engine/parts/index.js';
 import { HINTS_PER_SHIFT, hintLabel, pathLabel, machineKey, previewCells, hintText, hintsLeftFor } from '../runHelp.js';
 import { firesPerShiftOf } from '../../run/runRules.js';
 import { reasonText, shownTotalDuring, nextScreenAfterFire, fireBannerText, screenForPhase,
-  fitBoardSize, validDropCells } from '../flow.js';
+  fitBoardSize, validDropCells, emptyPanelText } from '../flow.js';
 
 let run = null;
 let view = null;
@@ -134,7 +134,7 @@ function drawLower() {
   ui.benchSlot.replaceChildren(bench);
   ui.panelSlot.replaceChildren(makeSelectedPanel(selectedInfo(), {
     onRotate: onRotate, onToBench: onToBench, onSell: onSell
-  }));
+  }, { emptyText: emptyPanelText(run.bench.length, run.machine.cells.length, firesPerShiftOf(run) - run.firesLeft) }));
   ui.fireBtn.disabled = firing || run.firesLeft <= 0 || run.phase !== 'build';
   ui.fireLabel.textContent = 'FIRE';
 }

@@ -133,3 +133,16 @@ export function validDropCells(machine) {
   }
   return list;
 }
+
+// The line shown in the info panel when nothing is selected (audit R5 item 6). It follows the game:
+// no parts on the bench -> go on to FIRE; a Fire already played -> change the board or FIRE again.
+// Plain words only (docs/WORDS.md), under 12 words.
+export function emptyPanelText(benchCount, boardCount, firesUsed) {
+  const onBench = Number(benchCount) || 0;
+  const onBoard = Number(boardCount) || 0;
+  const used = Number(firesUsed) || 0;
+  if (onBench > 0) return 'Tap a part, then tap a cell to place it.';
+  if (used > 0) return 'Tap a part on the board to change it, or FIRE again.';
+  if (onBoard > 0) return 'Tap a part on the board to move it, or press FIRE.';
+  return 'Your bench is empty. Buy parts in the shop.';
+}

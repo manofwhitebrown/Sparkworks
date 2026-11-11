@@ -146,3 +146,4 @@ Check each effect on the three quality tiers (Settings > Graphics: low, medium, 
 - [ ] Music mood: shifts get slightly brighter as the run goes on. On Overload shifts (4 and 8) the music is tenser (faster slow-wobble, a clashing low note, bells closer together). It relaxes again after the Overload. Starting a new run resets the mood. (Known: continuing a saved run mid-way keeps the default mood until the next shop opens.)
 - [ ] Cheat menu (needs the password): Close, Esc and Android Back close it and never open "Leave this run?". DEBUG > Sounds plays every sound including `swell`.
 - [ ] Frame time, low tier, real cheap phone (2 GB RAM): no dropped frames during a Fire with 100+ sparks. Headless numbers are in docs/notes/AI-8.md; a real device check is still open.
+- [ ] **Credits:** Settings, bottom: "Created by Mohammed Abdul Nayeem." is there and readable at Large text. `docs/CREDITS.md` says the same.

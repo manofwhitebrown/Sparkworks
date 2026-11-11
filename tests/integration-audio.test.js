@@ -10,7 +10,7 @@ const SFX_NAMES = ['tap', 'place', 'rotate', 'buy', 'sell', 'reroll', 'merge', '
 // A fake node that accepts any call, so we can check nothing throws.
 function fakeNode() {
   const param = { value: 0, setValueAtTime() {}, linearRampToValueAtTime() {},
-    exponentialRampToValueAtTime() {}, cancelScheduledValues() {} };
+    exponentialRampToValueAtTime() {}, cancelScheduledValues() {}, setTargetAtTime() {} };
   return { gain: param, frequency: param, connect() {}, disconnect() {}, start() {}, stop() {},
     buffer: null, getChannelData() { return new Float32Array(10000); } };
 }

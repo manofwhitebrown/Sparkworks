@@ -114,3 +114,42 @@ test('500 events play to the end', async function () {
   await p;
   assert.equal(played.length, 500);
 });
+
+// The real engine order: split at the part, spawn only after the parent finished its walk.
+function realSplitEvents() {
+  var ev = [];
+  function add(e) { e.n = ev.length; ev.push(e); }
+  add({ type: 'spawn', spark: 1, x: 0, y: 1, dir: 'right', value: 1, parent: 0 });
+  add({ type: 'enter', spark: 1, x: 0, y: 1, dir: 'right', value: 1 });
+  add({ type: 'enter', spark: 1, x: 1, y: 1, dir: 'right', value: 1 });
+  add({ type: 'split', spark: 1, x: 1, y: 1, partId: 'splitter', child: 2, dir: 'down', value: 0.5, label: '50%' });
+  add({ type: 'enter', spark: 1, x: 2, y: 1, dir: 'right', value: 1 });
+  add({ type: 'bank', spark: 1, value: 1, runningTotal: 1 });
+  add({ type: 'spawn', spark: 2, x: 1, y: 1, dir: 'down', value: 0.5, parent: 1 });
+  add({ type: 'enter', spark: 2, x: 1, y: 2, dir: 'down', value: 0.5 });
+  add({ type: 'turn', spark: 2, x: 1, y: 2, partId: 'bend', from: 'down', to: 'right' });
+  add({ type: 'enter', spark: 2, x: 2, y: 2, dir: 'right', value: 0.5 });
+  add({ type: 'fizzle', spark: 2, x: 2, y: 2, value: 0.5, reason: 'blocked' });
+  add({ type: 'end', spark: 0, total: 1, coins: 0 });
+  return ev;
+}
+
+test('real split order: child waits at the part, then walks, all events once', async function () {
+  var played = [];
+  var player = makePlayer(played);
+  var events = realSplitEvents();
+  var p = player.play(events, {});
+  var sawWaiting = false;
+  var frames = 0;
+  while (player.isPlaying() && frames < 5000) {
+    player.update(1 / 60);
+    for (var k = 0; k < player.sparks.length; k++) {
+      if (player.sparks[k].on && player.sparks[k].waiting) { sawWaiting = true; }
+    }
+    frames++;
+  }
+  await p;
+  assert.ok(sawWaiting, 'the child should be visible as a waiting dot after split');
+  assert.equal(played.length, events.length);
+  for (var i = 0; i < played.length; i++) { assert.equal(played[i], i); }
+});

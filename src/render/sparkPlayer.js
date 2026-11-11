@@ -19,7 +19,7 @@ export function createSparkPlayer(env) {
   var i;
   for (i = 0; i < MAX_SPARKS; i++) {
     sparks.push({ on: false, id: 0, fx: 0, fy: 0, tx: 0, ty: 0, x: 0, y: 0, t0: 0, dur: 1,
-      dx: 1, dy: 0, fade: 1, dying: false, trail: new Float32Array(TRAIL * 2), trailLen: 0, trailTick: 0 });
+      dx: 1, dy: 0, fade: 1, dying: false, waiting: false, trail: new Float32Array(TRAIL * 2), trailLen: 0, trailTick: 0 });
   }
 
   function findSpark(id, create) {
@@ -30,7 +30,7 @@ export function createSparkPlayer(env) {
     }
     if (!create || free < 0) { return null; }
     var s = sparks[free];
-    s.on = true; s.id = id; s.dying = false; s.fade = 1; s.trailLen = 0; s.dur = 1; s.t0 = 0;
+    s.on = true; s.id = id; s.dying = false; s.waiting = false; s.fade = 1; s.trailLen = 0; s.dur = 1; s.t0 = 0;
     return s;
   }
 
@@ -40,6 +40,7 @@ export function createSparkPlayer(env) {
 
   function moveSpark(s, x, y, start, dur) {
     s.fx = s.x; s.fy = s.y; s.tx = x; s.ty = y; s.t0 = start; s.dur = Math.max(1, dur);
+    if (s.waiting) { return; }
     if (x !== s.x) { s.dx = x > s.x ? 1 : -1; s.dy = 0; }
     if (y !== s.y) { s.dy = y > s.y ? 1 : -1; s.dx = 0; }
   }
@@ -47,15 +48,50 @@ export function createSparkPlayer(env) {
   function px(cx) { var L = env.getLayout(); return L.gridX + cx * L.cell + L.cell / 2; }
   function py(cy) { var L = env.getLayout(); return L.gridY + cy * L.cell + L.cell / 2; }
 
+  function setHeading(s, dir) {
+    s.dx = dir === 'right' ? 1 : (dir === 'left' ? -1 : 0);
+    s.dy = dir === 'down' ? 1 : (dir === 'up' ? -1 : 0);
+  }
+
+  // The real log makes a child at 'split' time but its 'spawn' comes after the parent's whole walk.
+  // So the child leaves the part when the part runs and waits there as a small dot.
+  function startSplit(step, ev) {
+    var c = findSpark(ev.child, true);
+    if (!c) { return; }
+    placeSpark(c, ev.x, ev.y);
+    c.waiting = true;
+    setHeading(c, ev.dir);
+    moveSpark(c, ev.x + c.dx * 0.3, ev.y + c.dy * 0.3, step.start, step.dur);
+  }
+
+  function startSpawn(step, ev) {
+    var s = findSpark(ev.spark, true);
+    if (!s) { return; }
+    if (ev.parent === 0) {
+      placeSpark(s, SOURCE_X, ev.y);
+      setHeading(s, 'right');
+    } else if (s.waiting) {
+      // the child comes back to the cell centre, then its first 'enter' moves it on
+      s.waiting = false;
+      moveSpark(s, ev.x, ev.y, step.start, step.dur);
+      setHeading(s, ev.dir);
+    } else {
+      placeSpark(s, ev.x, ev.y);
+      setHeading(s, ev.dir);
+    }
+  }
+
   // Called when a step begins: only movement is set up here.
   function onStart(step, ev) {
     var machine = env.getMachine();
     var s;
     if (ev.type === 'spawn') {
-      s = findSpark(ev.spark, true);
-      if (s) {
-        if (ev.parent === 0) { placeSpark(s, SOURCE_X, ev.y); } else { placeSpark(s, ev.x, ev.y); }
-      }
+      startSpawn(step, ev);
+    } else if (ev.type === 'split') {
+      startSplit(step, ev);
+    } else if (ev.type === 'turn') {
+      s = findSpark(ev.spark, false);
+      if (s) { setHeading(s, ev.to); }
     } else if (ev.type === 'enter' || ev.type === 'blocked') {
       s = findSpark(ev.spark, true);
       if (s) { moveSpark(s, ev.x, ev.y, step.start, step.moveMs); }

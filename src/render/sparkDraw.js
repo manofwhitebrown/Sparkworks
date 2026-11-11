@@ -66,8 +66,9 @@ export function drawSparks(ctx, L, player, flags) {
     drawTrail(ctx, s, L, flags, sp);
     var x = L.gridX + s.x * L.cell + L.cell / 2;
     var y = L.gridY + s.y * L.cell + L.cell / 2;
-    drawGlow(ctx, sp.spark, x, y, L.cell * 0.36, 0.75 * s.fade);
-    drawGlow(ctx, sp.hot, x, y, L.cell * 0.11, 0.9 * s.fade);
+    var size = s.waiting ? 0.6 : 1;
+    drawGlow(ctx, sp.spark, x, y, L.cell * 0.36 * size, 0.75 * s.fade);
+    drawGlow(ctx, sp.hot, x, y, L.cell * 0.11 * size, 0.9 * s.fade);
   }
 }
 

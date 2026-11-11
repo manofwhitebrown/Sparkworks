@@ -34,6 +34,17 @@
 - FYI for the manager: `src/main.js` does not yet call `installCheats()` (to-AI-2 allows AI-2 ONE line there). When AI-2 adds it,
   I will re-run the exit test and report here.
 
+## Round 4 (2026-11-11)
+1. README folder map: added `docs/WORDS.md` (AI-8, not pushed yet, so the link is dead until they push) and
+   `docs/manager/BEGINNER_REVIEW.md`. Noted that the Hint helper is `src/tutorial/suggest.js` (there is no `src/hints`).
+2. Bundle size (main at 3f77760): all JS + CSS + HTML together = **64.8 KB gzipped** (main chunk 52.7 KB, cheat menu chunk 7.6 KB,
+   Capacitor web chunks about 2 KB). Limit is 400 KB. Tests: 376 of 376 pass, build OK, no new dependencies.
+   I will add a line here after each big push of the other AIs.
+3. CI test discovery: `npm test` runs `tests/*.test.js`, so every new `tests/*.test.js` file is picked up with no change.
+   Today 52 test files run. `tests/integration-plain-text.test.js` does not exist yet (AI-8 has not pushed it); it will run
+   as soon as it lands. Reminder for AI-8: the file name must end in `.test.js` and sit directly in `tests/` (not in a subfolder).
+4. `installCheats()` is now in `src/main.js` (AI-2's one allowed line). Exit test re-run after it: all green.
+
 ## Blocked / Questions for manager
 1. **Secret scan shape.** The contract says CI should fail if `git grep -i` finds the token prefix. docs/CONTRACT.md itself
    contains that prefix (it is contract text), so a bare search always fails. CI scans for the real token SHAPE instead

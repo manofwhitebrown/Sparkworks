@@ -34,10 +34,11 @@ Needs Node 22 or newer.
 | `src/meta/`, workshop / patent book / daily / settings screens | progress kept between runs | AI-5 |
 | `src/render/`, `dev/` | board drawing and effects | AI-6 |
 | `src/ui/` (shell, home, run, shop, results, components, styles) | main screens and design system | AI-7 |
-| `src/audio/`, `src/tutorial/`, `tools/`, `tests/integration-*` | sound, tutorial, bot, QA | AI-8 |
+| `src/audio/`, `src/tutorial/` (also the Hint helper `suggest.js`), `tools/`, `tests/integration-*` | sound, tutorial, hints, bot, QA | AI-8 |
+| `docs/WORDS.md` | the one list of words the whole game uses (what to say, what never to say) | AI-8 |
 | `src/cheats/`, `tests/cheats-*` | hidden cheat menu (cheated runs earn nothing) | AI-2 |
 | `docs/CONTRACT.md` | the shared contract every AI follows | AI-1 (manager edits) |
 | `docs/notes/AI-N.md` | each AI's progress notes | each AI |
-| `docs/manager/` | messages and status from the manager (read-only for the AIs) | manager |
+| `docs/manager/` | messages and status from the manager, including `BEGINNER_REVIEW.md` (read-only for the AIs) | manager |
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the layers fit together.

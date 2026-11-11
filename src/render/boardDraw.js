@@ -3,7 +3,7 @@
 // particles, popups, notes, vault total, drag ghost.
 // Owner: AI-6
 import { THEME } from './theme.js';
-import { drawPartTile, drawTileCached } from './partTile.js';
+import { drawTileCached } from './partTile.js';
 import { popCurve } from './juice.js';
 import { drawShimmer } from './shimmer.js';
 import { bonusLabel } from './bonusTiles.js';
@@ -39,6 +39,8 @@ function drawMarks(ctx, S) {
   }
 }
 
+var tileState = { scale: 1, dim: 0, banned: false };
+
 function drawParts(ctx, S) {
   var L = S.L;
   var fx = S.effects;
@@ -55,7 +57,8 @@ function drawParts(ctx, S) {
     if (S.drag && S.drag.fromX === c.x && S.drag.fromY === c.y) { dim = 1; }
     var untouched = S.dimKeys !== null && S.dimKeys[c.x + ',' + c.y] === true;
     if (untouched) { dim = Math.max(dim, 0.75); }
-    var state = { scale: scale, dim: dim, banned: banned.indexOf(c.partId) >= 0 };
+    var state = tileState; // one reused object: drawTileCached only reads it
+    state.scale = scale; state.dim = dim; state.banned = banned.indexOf(c.partId) >= 0;
     if (!S.tileSlots[k]) { S.tileSlots[k] = {}; }
     drawTileCached(ctx, L, c, L.gridX + c.x * L.cell + L.cell / 2, L.gridY + c.y * L.cell + L.cell / 2,
       state, S.getPart, S.tileSlots[k], S.dpr);
@@ -121,9 +124,12 @@ function drawGhost(ctx, S) {
   var cells = S.machine.cells || [];
   for (var i = 0; i < cells.length; i++) {
     if (cells[i].x === S.drag.fromX && cells[i].y === S.drag.fromY) {
-      ctx.globalAlpha = 0.85;
-      drawPartTile(ctx, S.L, cells[i], S.drag.px, S.drag.py, { scale: 1.12, glow: 0.5, dim: 0 }, S.getPart);
-      ctx.globalAlpha = 1;
+      // The cached tile of this cell (no gradients built per frame during a drag).
+      var gk = cells[i].y * S.machine.cols + cells[i].x;
+      if (!S.tileSlots[gk]) { S.tileSlots[gk] = {}; }
+      tileState.scale = 1.12; tileState.dim = 0;
+      tileState.banned = (S.machine.banned || []).indexOf(cells[i].partId) >= 0;
+      drawTileCached(ctx, S.L, cells[i], S.drag.px, S.drag.py, tileState, S.getPart, S.tileSlots[gk], S.dpr);
     }
   }
 }

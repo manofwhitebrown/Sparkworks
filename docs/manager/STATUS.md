@@ -36,3 +36,10 @@ Done and pushed (589 tests expected green, build green). AUDIT_R5 items 2 to 11 
 Also: music mood on Continue run (`ui:runShown`), shorter trails with many sparks, cached vault text and notes font, KNOWN lines removed, README credits.
 **None of the UI fixes were checked in a browser** (none in the sandbox). AI-8 / the owner: re-run the 7 phone sizes and the shop, Home and results screens.
 Still open: AI-6 perf asks 2, 5, 6 (docs/notes/AI-2.md), `targetGrowth` 1.40 vs 1.42, prism + compounder loop, a transition test, skins questions, real-device sound / frame rate / Android back button. Rotate the GitHub token.
+
+## Final cover pass (2026-11-11)
+- **Back button / Home:** done (see docs/ANDROID.md). Run is saved before leaving; Home button on run and shop; Android Back never closes the game by accident.
+- **Render perf (AI-2 review):** all six asks done (trail length, vault text and gradient, notes font, tile state reuse, drag ghost uses the cached tile).
+- **Balance decisions taken:** `targetGrowth` stays 1.40 (V1 smart bot about 52%, normal bot about 15%; the bot is weaker than a human). The `prism` + `compounder` loop board (1 in 20,000 random boards) is left as is; the visit limit of 4 already removed most of them. Change `maxVisitsPerCell` to 3 if it ever shows up in real play.
+- **Not done on purpose:** board skins (`docs/SKINS.md` is a design only, a post-launch feature); a DOM test for the screen transition (timing and styles only).
+- **Needs a person:** try the APK on a phone (Back, Home, Continue run, layout at 7 phone sizes, sound, frame rate), then rotate the GitHub token.

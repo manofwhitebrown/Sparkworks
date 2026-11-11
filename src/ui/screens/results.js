@@ -96,7 +96,7 @@ export function mount(root, params) {
   // A won run: a medal with a burst of light. A lost run: a calm line and one dot per shift.
   let burstAnchor = null;
   if (won && !cheatedRun) {
-    const medal = makeMedal(rating);
+    const medal = makeMedal(rating, tier);
     screen.appendChild(medal);
     burstAnchor = medal;
   } else if (!won && !cheatedRun) {

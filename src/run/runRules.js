@@ -29,6 +29,11 @@ function passiveNumber(run, field) {
   return 0;
 }
 
+// Coins the inventor gets at the start of every shift (The Banker: 2, others: 0).
+export function shiftStartCoinsOf(run) {
+  return passiveNumber(run, 'shiftStartCoins');
+}
+
 export function benchSizeOf(run) {
   return SHIFT_RULES.startBenchSize + run.bonuses.benchSize + passiveNumber(run, 'benchSize');
 }

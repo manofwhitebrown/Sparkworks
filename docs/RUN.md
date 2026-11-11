@@ -41,13 +41,15 @@ Shift rarity weights (common / rare / legendary): shifts 1-2 = 85/15/0, 3-5 = 65
 | tinkerbot | coil, coil, bend, amplifier | 6 | none |
 | clockmaker | counter, anvil, bend, bend | 4 | benchSize +1 |
 | drvolt | splitter, battery, coil, bend | 5 | startValue 2 |
+| msbounce | coil, bend, spring, sideamp | 6 | shopSlots +1 |
+| banker | mint, tollgate, workbench, coil | 4 | shiftStartCoins 2 (+2 coins at the start of every shift, shift 1 too) |
 
 | Voltage | Target x | Twists by shift |
 |---------|----------|-----------------|
 | 1 | 1.0 | 4 deadCell, 8 twoDeadCells |
 | 2 | 1.35 | 4 noSplit, 8 rust |
 | 3 | 1.4 | 4 noSplit+deadCell, 5 fewerSparks, 6 coldStart, 8 rust+twoDeadCells |
-| 4 | 1.7 | 3 fewerSparks, 4 noSplit+deadCell, 5 coldStart, 6 deadCell, 7 rust, 8 rust+twoDeadCells |
+| 4 | 1.7 | 3 fewerSparks, 4 noSplit+deadCell, 5 coldStart, 6 noMult, 7 rust, 8 rust+twoDeadCells |
 
 ## Exported functions
 `src/run/runState.js`

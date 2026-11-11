@@ -1,5 +1,6 @@
 // Difficulty levels ("voltage"). twistsByShift maps a shift number to twist ids.
-// Twist ids come from AI-3: deadCell, twoDeadCells, noSplit, fewerSparks, rust, coldStart.
+// Twist ids come from AI-3: deadCell, twoDeadCells, noSplit, fewerSparks, rust, coldStart,
+// closedRow, loneSpark, noMult.
 // Owner: AI-4
 
 export const VOLTAGES = [
@@ -35,7 +36,7 @@ export const VOLTAGES = [
       3: ['fewerSparks'],
       4: ['noSplit', 'deadCell'],
       5: ['coldStart'],
-      6: ['deadCell'],
+      6: ['noMult'],
       7: ['rust'],
       8: ['rust', 'twoDeadCells']
     }

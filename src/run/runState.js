@@ -14,7 +14,7 @@ import { applyMerges } from './merge.js';
 import { makeOffers } from './shop.js';
 import { returnToBench as returnToBenchAction } from './boardActions.js';
 import {
-  cleanBonuses, benchSizeOf, firesPerShiftOf, baseSparkFields, targetOfRun, sellValueOf, gentleStartCoins
+  cleanBonuses, benchSizeOf, firesPerShiftOf, baseSparkFields, targetOfRun, sellValueOf, gentleStartCoins, shiftStartCoinsOf
 } from './runRules.js';
 import { makeBonusCells } from './bonusCells.js';
 
@@ -81,6 +81,7 @@ function startShift(run, d) {
   run.lastFire = null;
   run.shiftBestFire = 0;
   run.offers = [];
+  run.coins += shiftStartCoinsOf(run);
   const base = baseSparkFields(run.inventorId);
   run.machine.sparkCount = base.sparkCount;
   run.machine.startValue = base.startValue;

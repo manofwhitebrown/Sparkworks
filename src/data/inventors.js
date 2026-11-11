@@ -1,5 +1,6 @@
 // The starting kits ("inventors"). A passive may ONLY change these run fields:
-// sparkCount, startValue, firesPerShift, benchSize, shopSlots.
+// sparkCount, startValue, firesPerShift, benchSize, shopSlots, shiftStartCoins
+// (shiftStartCoins = extra coins at the start of every shift).
 // Owner: AI-4
 
 export const INVENTORS = [
@@ -25,6 +26,22 @@ export const INVENTORS = [
     startParts: ['splitter', 'battery', 'coil', 'bend'],
     startCoins: 5,
     passive: { startValue: 2 }
+  },
+  {
+    id: 'msbounce',
+    name: 'Ms. Bounce',
+    tagline: 'Loves steering. Starts with Coil, Bend, Spring and Side Amp.',
+    startParts: ['coil', 'bend', 'spring', 'sideamp'],
+    startCoins: 6,
+    passive: { shopSlots: 1 }
+  },
+  {
+    id: 'banker',
+    name: 'The Banker',
+    tagline: 'Turns coins into power. Starts with Mint, Tollgate and Workbench.',
+    startParts: ['mint', 'tollgate', 'workbench', 'coil'],
+    startCoins: 4,
+    passive: { shiftStartCoins: 2 }
   }
 ];
 

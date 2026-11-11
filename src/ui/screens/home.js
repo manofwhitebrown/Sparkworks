@@ -3,6 +3,7 @@
 
 import { go, getMeta } from '../ui.js';
 import { makeButton } from '../components/button.js';
+import { makeWordmark } from '../components/wordmark.js';
 import { INVENTORS, getInventor } from '../../data/inventors.js';
 import { VOLTAGES } from '../../data/voltage.js';
 import { loadRun } from '../../core/save.js';
@@ -36,7 +37,7 @@ function makeSparkMark() {
 function makeTitle() {
   const box = el('div', 'homeTitle');
   box.appendChild(makeSparkMark());
-  box.appendChild(el('h1', 'homeLogo', 'SPARKWORKS'));
+  box.appendChild(makeWordmark());
   box.appendChild(el('p', 'dim', 'Build the machine. Fire the sparks.'));
   box.appendChild(el('p', 'goalLine', GOAL_LINE));
   return box;

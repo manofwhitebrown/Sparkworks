@@ -54,3 +54,12 @@ Cheat support, tested with Playwright Chromium 360x740 on the dev server (emitti
 - [x] No console errors
 - [x] Daily Share button (Playwright, clipboard allowed): toast "Copied to clipboard.", clipboard holds the share code, "New run" is hidden for daily runs
 Not yet tested: real Android back button, a physical device, the real cheat menu overlay (src/cheats has only gate.js and sha256.js so far: AI-2).
+
+## ROUND 5 small tasks (AI-7, nearly out of capacity)
+Done:
+- Screen transitions in `ui.js` (`showScreen`/`go`): leave = 120 ms fade plus 5 px up, arrive = 220 ms fade plus 10 px up (tokens `--t-fast`,
+  `--t-normal`, `--ease`), transform and opacity only; inline styles are cleared afterwards so no screen keeps a transform; instant under `reduceMotion`.
+- Wordmark: `src/ui/components/wordmark.js` ("SPARK" heavy and bright, "WORKS" light, fading spark line with a small diamond), used in the title area of
+  `home.js` only. Tokens only, no raw hex. The h1 keeps class `homeLogo`, so AI-1's short-phone size rules still apply.
+Checked: 534 tests, build, Playwright 360x740 (Home look, transition mid-point and settled, reduceMotion instant), no console errors.
+Left (not done, for AI-1): a test for the transition (it is only timing and styles, no pure logic); phone-size re-check of the wordmark at 320x568 and largeText.

@@ -29,7 +29,8 @@ import { backAction, fireSpeedFrom, isTutorialRun } from './flow.js';
 import { on } from '../core/events.js';
 
 const SCREENS = { home, run, shop, results, workshop, patentBook, daily, settings, howto };
-const FADE_MS = 160;
+const FADE_MS = 120; // leaving is quicker than arriving
+const SLIDE_MS = 220; // arriving (matches --t-normal)
 
 let meta = null;
 let current = null;
@@ -63,6 +64,31 @@ export function applySettingsFromMeta() {
 }
 
 // ---------- screen switching ----------
+// One short fade plus a small slide, transform and opacity only. Instant under reduceMotion.
+// The inline styles are removed again afterwards, so no screen keeps a transform
+// (a transform would trap position:fixed children).
+const SLIDE_PX = 10;
+
+function isReduced() {
+  return document.documentElement.classList.contains('reduceMotion');
+}
+
+function slideIn(node) {
+  if (!node || isReduced()) return;
+  node.style.transition = 'opacity var(--t-normal) var(--ease), transform var(--t-normal) var(--ease)';
+  node.style.transform = 'translateY(' + SLIDE_PX + 'px)';
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () { node.style.transform = 'translateY(0)'; });
+  });
+  setTimeout(function () { node.style.transition = ''; node.style.transform = ''; }, SLIDE_MS + 80);
+}
+
+function slideOut(node) {
+  node.style.transition = 'opacity var(--t-fast) var(--ease), transform var(--t-fast) var(--ease)';
+  node.style.transform = 'translateY(-' + (SLIDE_PX / 2) + 'px)';
+  node.classList.remove('isShown'); // fade out (opacity)
+}
+
 function showScreen(name, params) {
   const root = document.getElementById('app');
   if (current) current.unmount();
@@ -70,15 +96,15 @@ function showScreen(name, params) {
   current = SCREENS[name] || SCREENS.home;
   currentName = SCREENS[name] ? name : 'home';
   current.mount(root, params);
+  slideIn(root.firstElementChild);
 }
 
 export function go(screenName, params) {
   const root = document.getElementById('app');
   const old = root.firstElementChild;
-  const reduce = document.documentElement.classList.contains('reduceMotion');
   history.pushState({ screen: screenName }, '');
-  if (old && !reduce) {
-    old.classList.remove('isShown'); // fade out (opacity only)
+  if (old && !isReduced()) {
+    slideOut(old);
     setTimeout(function () { showScreen(screenName, params); }, FADE_MS);
   } else {
     showScreen(screenName, params);

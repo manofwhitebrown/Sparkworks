@@ -91,9 +91,21 @@ function applyMood() {
   }
   const now = ctx.currentTime;
   const cutoff = 500 + mood.bright * 450 + (mood.tense ? 150 : 0);
-  bed.filter.frequency.setTargetAtTime(cutoff, now, 0.8);
-  bed.lfo.frequency.setTargetAtTime(mood.tense ? 0.16 : 0.07, now, 0.8);
-  bed.oscillators[2].frequency.setTargetAtTime(BASE_C2 * (mood.tense ? 1.0595 : 1.004), now, 0.8);
+  glide(bed.filter.frequency, cutoff, now);
+  glide(bed.lfo.frequency, mood.tense ? 0.16 : 0.07, now);
+  glide(bed.oscillators[2].frequency, BASE_C2 * (mood.tense ? 1.0595 : 1.004), now);
+}
+
+// Move an audio parameter smoothly. Falls back to a plain set on a very old or fake WebAudio.
+function glide(param, target, now) {
+  if (!param) {
+    return;
+  }
+  if (typeof param.setTargetAtTime === 'function') {
+    param.setTargetAtTime(target, now, 0.8);
+  } else {
+    param.value = target;
+  }
 }
 
 // mood: { tense: true on Overload shifts, bright: 0..1 how far into the run we are }.

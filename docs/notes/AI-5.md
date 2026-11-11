@@ -7,13 +7,13 @@
 - docs/META.md
 
 ## Working on
-- Nothing open. Waiting for manager review / balance requests.
+- Nothing open. 2026-11-11 re-check: pulled main, 299/299 tests pass, build passes, token scan clean. Manager items 1 to 3 and the cheated-run request (contract 16 to 20) are all in place and tested (tests/meta-cheated.test.js). Waiting for balance requests.
 
 ## Blocked / Questions for manager
 - None.
 
 ## Changes I need from other AIs
-- AI-4 (optional): `run.firesUsed` and `run.partsBought` would make the stats Fires and Parts bought exact. Part levels are already read from `run.bench` and `run.machine.cells`.
+- AI-4 (optional, still not in the run object on main, stats use the history length / 0 fallback): `run.firesUsed` and `run.partsBought` would make the stats Fires and Parts bought exact. Part levels are already read from `run.bench` and `run.machine.cells`.
 - AI-7: done. results.js calls `recordRunEnd` once; it also records the daily result, so nobody calls `recordDaily` separately.
 - AI-3: confirmed. 24 ids match; the exactly-one-achievement test passes on the real library.
 

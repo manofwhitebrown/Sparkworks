@@ -7,7 +7,7 @@ import { on as realOn, off as realOff, emit as realEmit } from '../core/events.j
 import { loadRun as realLoadRun } from '../core/save.js';
 import { STEPS } from './steps.js';
 import { createOverlay } from './overlay.js';
-import { tutorialRun, isContinuableRun } from './tutorialRun.js';
+import { tutorialRun, isContinuableRun, giveSteeringParts as realGive } from './tutorialRun.js';
 
 export { tutorialRun, isContinuableRun };
 
@@ -40,7 +40,7 @@ function realLastTotal() {
   return null;
 }
 
-// deps (for tests): { on, off, finish, lastTotal, createOverlay, findTarget }
+// deps (for tests): { on, off, finish, lastTotal, createOverlay, findTarget, giveSteeringParts }
 export function startTutorial(root, deps) {
   const d = deps || {};
   const on = d.on || realOn;
@@ -48,6 +48,7 @@ export function startTutorial(root, deps) {
   const finishApp = d.finish || realFinish;
   const lastTotalOf = d.lastTotal || realLastTotal;
   const makeOverlay = d.createOverlay || createOverlay;
+  const giveParts = d.giveSteeringParts || realGive;
   const findTarget = d.findTarget || function find(name) {
     return name ? document.querySelector('[data-tut="' + name + '"]') : null;
   };
@@ -92,6 +93,9 @@ export function startTutorial(root, deps) {
       clearTimeout(retryTimer);
       retryTimer = null;
     }
+    if (step.onEnter === 'steerParts') {
+      giveParts();
+    }
     placeSpotlight(step, 0);
     if (step.waitFor) {
       const handler = function onEvent(data) {
@@ -107,6 +111,11 @@ export function startTutorial(root, deps) {
       let total = data && typeof data.total === 'number' ? data.total : lastTotalOf();
       if (typeof total !== 'number') {
         total = null;
+      }
+      // The detour made 0: the spark was lost. Explain it and let the player try again.
+      if (step.failText && total === 0) {
+        overlay.showStep(step.failText, findTarget(step.target), false);
+        return;
       }
       // "Order matters": only move on when the swap really gave the bigger number.
       if (step.needsHigher && total !== null && total <= lastTotal) {

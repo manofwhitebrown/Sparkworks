@@ -101,16 +101,25 @@ then `./gradlew assembleRelease`. `npm run android:open` opens the project in An
 
 ## Changing the icon or splash screen
 
-Edit and run the art script, then regenerate every size:
+The icon is ONE design: a spark steered along a path over the board grid (the ring is the source, the bright
+spark is the vault). It is drawn in code by `assets/make_icons.py`, so every size matches.
 
 ```bash
-pip install pillow
-python3 assets/make_icons.py    # redraws assets/*.png (or replace them with your own art)
-npm run android:icons           # writes android/app/src/main/res/...
+pip install pillow numpy
+python3 assets/make_icons.py    # redraws assets/*.png, the favicon, the web icons and the splash
+npm run android:icons           # writes android/app/src/main/res/... and then makes the adaptive layers sharp
 ```
 
-Your own art: `assets/icon-only.png` (1024), `icon-foreground.png` + `icon-background.png` (1024, adaptive icon,
-keep the picture in the middle 60%), `splash.png` and `splash-dark.png` (2732).
+What it makes:
+- **Android**: legacy icon, round icon, adaptive icon (foreground and background drawn at the real 72 dp window size in every
+  density, so it is sharp), a **monochrome layer** for Android 13 "themed icons", and the splash screens.
+- **Web**: `public/favicon.svg` (hand-written vector, same design), `favicon.ico` (16, 32, 48), `favicon-32.png`, `apple-touch-icon.png`,
+  `icon-192.png`, `icon-512.png` and `manifest.webmanifest`. `index.html` links them.
+- Everything that matters stays inside Android's safe zone, so no launcher shape (circle, squircle, square) cuts the spark.
+
+Your own art instead: replace `assets/icon-only.png` (1024), `icon-foreground.png` + `icon-background.png` (1024; keep the picture
+inside the middle 60%), `splash.png` and `splash-dark.png` (2732), then run `npm run android:icons`. The last step of that command
+rewrites the adaptive layers from the same files and adds a monochrome layer drawn by `make_icons.py`.
 
 ## Reminders (notifications)
 

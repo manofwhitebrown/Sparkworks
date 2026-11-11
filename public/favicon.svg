@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#171D28"/>
+      <stop offset="1" stop-color="#090C12"/>
+    </linearGradient>
+    <linearGradient id="tr" gradientUnits="userSpaceOnUse" x1="11" y1="47" x2="44" y2="23">
+      <stop offset="0" stop-color="#E89C24" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#FFC857"/>
+    </linearGradient>
+    <radialGradient id="gl" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#FFF4D0" stop-opacity="0.85"/>
+      <stop offset="0.4" stop-color="#FFC857" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#FFC857" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
+  <circle cx="44" cy="24" r="22" fill="url(#gl)"/>
+  <path d="M11 47 H25 Q31 47 31 41 V30 Q31 24 37 24 H44" fill="none" stroke="url(#tr)" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <polygon points="44,8 45.6,22.4 60,24 45.6,25.6 44,40 42.4,25.6 28,24 42.4,22.4" fill="#FFC857"/>
+  <polygon points="44,15 45.8,22.2 53,24 45.8,25.8 44,33 42.2,25.8 35,24 42.2,22.2" fill="#FFF4D0"/>
+  <circle cx="44" cy="24" r="3.6" fill="#FFF4D0"/>
+</svg>

@@ -17,6 +17,7 @@ import { shareCode } from '../../meta/daily.js';
 import { getPart } from '../../engine/parts/index.js';
 import { getInventor } from '../../data/inventors.js';
 import { startNormalRun } from '../startRun.js';
+import { CHEATED_TEXT } from '../flow.js';
 
 let timers = [];
 
@@ -93,15 +94,20 @@ export function mount(root, params) {
   );
   screen.appendChild(stats);
 
+  // A cheated run earns nothing, so there is no dust panel and no reveal animation.
+  const cheated = run.cheated === true;
   const dust = el('div', 'panel row');
-  dust.appendChild(el('div', 'dim', 'Spark Dust earned'));
+  dust.appendChild(el('div', 'dim', cheated ? CHEATED_TEXT : 'Spark Dust earned'));
   const dustNum = el('div', 'num dustNum', '0');
-  dust.append(el('div', 'spacer'), dustNum);
+  dust.append(el('div', 'spacer'));
+  if (!cheated) dust.appendChild(dustNum);
   screen.appendChild(dust);
 
   const lines = [];
-  gains.newAchievements.forEach(function (a) { lines.push(a.name + ': ' + a.description); });
-  gains.newUnlocks.forEach(function (u) { lines.push(unlockName(u)); });
+  if (!cheated) {
+    gains.newAchievements.forEach(function (a) { lines.push(a.name + ': ' + a.description); });
+    gains.newUnlocks.forEach(function (u) { lines.push(unlockName(u)); });
+  }
   if (lines.length > 0) {
     screen.appendChild(el('h2', '', 'Unlocked'));
     screen.appendChild(revealList(lines));
@@ -122,10 +128,12 @@ export function mount(root, params) {
   playSfx(won ? 'win' : 'lose');
   buzz(won ? 'heavy' : 'medium');
   emit('ui:runEnded', { won: won });
-  timers.push(setTimeout(function () {
-    tickNumber(dustNum, 0, gains.dustEarned, 900);
-    if (lines.length > 0) playSfx('unlock');
-  }, 400));
+  if (!cheated) {
+    timers.push(setTimeout(function () {
+      tickNumber(dustNum, 0, gains.dustEarned, 900);
+      if (lines.length > 0) playSfx('unlock');
+    }, 400));
+  }
   requestAnimationFrame(function () { screen.classList.add('isShown'); });
 }
 

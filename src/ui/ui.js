@@ -24,7 +24,7 @@ import { shouldShowTutorial, startTutorial, tutorialRun } from '../tutorial/tuto
 import { saveRun } from '../core/save.js';
 import { openModal, isModalOpen } from './components/modal.js';
 import { makeButton } from './components/button.js';
-import { backAction } from './flow.js';
+import { backAction, fireSpeedFrom } from './flow.js';
 import { on } from '../core/events.js';
 
 const SCREENS = { home, run, shop, results, workshop, patentBook, daily, settings };
@@ -35,10 +35,19 @@ let current = null;
 let currentName = '';
 let audioStarted = false;
 let tutorialHandle = null;
+let liveRun = null;   // the run object the run and shop screens work on (cheats change it)
+let fireSpeed = 1;    // from the cheat menu; never saved, back to 1 on every app start
 
 // ---------- meta access (AI-5 screens use these) ----------
 export function getMeta() { return meta; }
 export function saveCurrentMeta() { if (meta) saveMeta(meta); }
+
+// ---------- live run (the cheat menu uses these) ----------
+export function getCurrentRun() { return liveRun; }
+export function setCurrentRun(run) { liveRun = run || null; }
+
+// Fire animation speed set by the cheat menu: { speed, instant }.
+export function getFireSpeed() { return fireSpeedFrom(fireSpeed); }
 
 // Applies largeText / reduceMotion / colorblind classes and audio + haptics flags.
 // Screens that change a setting call this afterwards.
@@ -115,7 +124,10 @@ function onFirstTap() {
 
 export function startApp() {
   meta = loadMeta();
+  fireSpeed = 1;
+  liveRun = null;
   applySettingsFromMeta();
+  on('cheat:speed', function (data) { fireSpeed = data ? data.speed : 1; });
   window.addEventListener('popstate', onPopState);
   // main.js says the page is being hidden: write the meta now (runs save after every action).
   on('core:flush', saveCurrentMeta);

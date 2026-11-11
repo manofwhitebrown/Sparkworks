@@ -2,7 +2,7 @@
 // The run lives in the save (loadRun/saveRun), so a reload resumes it.
 // Owner: AI-7
 
-import { go, getMeta, saveCurrentMeta } from '../ui.js';
+import { go, getMeta, saveCurrentMeta, setCurrentRun, getFireSpeed } from '../ui.js';
 import { makeButton } from '../components/button.js';
 import { showToast } from '../components/toast.js';
 import { makeHud } from '../components/hud.js';
@@ -10,7 +10,7 @@ import { makeBenchRow } from '../components/benchRow.js';
 import { makeSelectedPanel } from '../components/selectedPanel.js';
 import { createBoardView } from '../../render/boardView.js';
 import { loadRun, saveRun } from '../../core/save.js';
-import { emit } from '../../core/events.js';
+import { emit, on, off } from '../../core/events.js';
 import { playSfx, playPass } from '../../audio/sfx.js';
 import { buzz } from '../../platform/haptics.js';
 import { getCellAt } from '../../engine/board.js';
@@ -18,7 +18,7 @@ import { partStatus, markSeen } from '../../meta/patentBook.js';
 import { placeFromBench, moveOnBoard, rotatePart, returnToBench, fire } from '../../run/runState.js';
 import { sellPart } from '../../run/shop.js';
 import { benchSizeOf } from '../../run/runRules.js';
-import { reasonText, shownTotalDuring, nextScreenAfterFire, fireBannerText } from '../flow.js';
+import { reasonText, shownTotalDuring, nextScreenAfterFire, fireBannerText, screenForPhase } from '../flow.js';
 
 let run = null;
 let view = null;
@@ -27,6 +27,7 @@ let firing = false;
 let selected = null; // null | { where: 'bench', index } | { where: 'board', x, y }
 let ui = null;       // pointers to the elements we update
 let timers = [];
+let leaving = false; // a go() is already on its way
 
 function later(fn, ms) { timers.push(setTimeout(fn, ms)); }
 
@@ -209,7 +210,10 @@ async function onFire() {
   // The run's shiftTotal already includes this Fire, so show the earlier total first.
   ui.hud.update(run, totalBefore);
   ui.onEvent = makePlayHandler(totalBefore, { step: 0 });
-  await view.play(out.result.events, { speed: 1, reduceMotion: !!meta.settings.reduceMotion });
+  const pace = getFireSpeed(); // cheat menu speed; 'instant' means skip at once
+  const playing = view.play(out.result.events, { speed: pace.speed, reduceMotion: !!meta.settings.reduceMotion });
+  if (pace.instant) view.skip();
+  await playing;
   if (!alive) return;
   finishFire(out);
 }
@@ -230,6 +234,17 @@ function finishFire(out) {
   }, getMeta().settings.reduceMotion ? 500 : 1300);
 }
 
+// ---------- cheat menu ----------
+// A cheat changed the live run: save it and show whatever its phase needs.
+function onCheatChanged() {
+  if (!alive || !run || leaving) return;
+  if (firing) return; // finishFire() refreshes the screen when the Fire ends
+  save();
+  const next = screenForPhase(run.phase);
+  if (next !== 'run') { leaving = true; go(next); return; }
+  refresh();
+}
+
 // ---------- mount ----------
 export function mount(root, params) {
   // The tutorial hands over its own scripted run in params.run.
@@ -239,7 +254,10 @@ export function mount(root, params) {
   if (run.phase === 'won' || run.phase === 'lost') { later(function () { go('results'); }, 0); return; }
   alive = true;
   firing = false;
+  leaving = false;
   selected = null;
+  setCurrentRun(run);
+  on('cheat:changed', onCheatChanged);
 
   const screen = el('div', 'screen runScreen');
   screen.dataset.screen = 'run';
@@ -275,6 +293,8 @@ export function mount(root, params) {
 
 export function unmount() {
   alive = false;
+  off('cheat:changed', onCheatChanged);
+  setCurrentRun(null);
   timers.forEach(clearTimeout);
   timers = [];
   if (view) view.destroy();

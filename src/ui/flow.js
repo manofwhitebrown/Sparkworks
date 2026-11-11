@@ -77,3 +77,21 @@ export function reasonText(reason) {
 export function shownTotalDuring(totalBefore, runningTotal) {
   return totalBefore + runningTotal;
 }
+
+// Which screen shows a run in this phase. Used when a cheat changes the run.
+export function screenForPhase(phase) {
+  if (phase === 'won' || phase === 'lost') return 'results';
+  if (phase === 'shop') return 'shop';
+  return 'run';
+}
+
+// Fire animation speed from the cheat menu: 0.25, 1, 2, 4 or 'instant'.
+// Anything else falls back to normal speed. `instant` means: play, then skip at once.
+export function fireSpeedFrom(value) {
+  if (value === 'instant') return { speed: 1, instant: true };
+  if (typeof value === 'number' && value > 0 && value <= 16) return { speed: value, instant: false };
+  return { speed: 1, instant: false };
+}
+
+// The line shown on the results screen for a cheated run.
+export const CHEATED_TEXT = 'Cheated run: no rewards';

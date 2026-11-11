@@ -2,7 +2,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  progressRatio, shiftText, firesLeftText, nextScreenAfterFire, fireBannerText, backAction
+  progressRatio, shiftText, firesLeftText, nextScreenAfterFire, fireBannerText, backAction,
+  screenForPhase, fireSpeedFrom
 } from '../src/ui/flow.js';
 
 test('progressRatio clamps and survives bad input', () => {
@@ -49,4 +50,21 @@ test('reasonText has a sentence for known codes and a fallback', () => {
 
 test('shownTotalDuring adds the running total to the earlier total', () => {
   assert.equal(shownTotalDuring(40, 12), 52);
+});
+
+test('screenForPhase picks the screen for a run phase', () => {
+  assert.equal(screenForPhase('build'), 'run');
+  assert.equal(screenForPhase('shop'), 'shop');
+  assert.equal(screenForPhase('won'), 'results');
+  assert.equal(screenForPhase('lost'), 'results');
+  assert.equal(screenForPhase('whatever'), 'run');
+});
+
+test('fireSpeedFrom accepts the cheat speeds and ignores junk', () => {
+  assert.deepEqual(fireSpeedFrom(0.25), { speed: 0.25, instant: false });
+  assert.deepEqual(fireSpeedFrom(4), { speed: 4, instant: false });
+  assert.deepEqual(fireSpeedFrom('instant'), { speed: 1, instant: true });
+  assert.deepEqual(fireSpeedFrom(undefined), { speed: 1, instant: false });
+  assert.deepEqual(fireSpeedFrom(-2), { speed: 1, instant: false });
+  assert.deepEqual(fireSpeedFrom('fast'), { speed: 1, instant: false });
 });

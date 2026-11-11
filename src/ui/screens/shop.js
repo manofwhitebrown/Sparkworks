@@ -1,7 +1,7 @@
 // The shop between shifts: offers, reroll, bench (to sell), mini board, Next shift.
 // Owner: AI-7
 
-import { go, getMeta, saveCurrentMeta } from '../ui.js';
+import { go, getMeta, saveCurrentMeta, setCurrentRun } from '../ui.js';
 import { makeButton, setButtonLabel } from '../components/button.js';
 import { makePartCard } from '../components/partCard.js';
 import { makeBenchRow } from '../components/benchRow.js';
@@ -9,7 +9,7 @@ import { makeSelectedPanel } from '../components/selectedPanel.js';
 import { showToast } from '../components/toast.js';
 import { createBoardView } from '../../render/boardView.js';
 import { loadRun, saveRun } from '../../core/save.js';
-import { emit } from '../../core/events.js';
+import { emit, on, off } from '../../core/events.js';
 import { formatNumber } from '../../core/format.js';
 import { playSfx } from '../../audio/sfx.js';
 import { buzz } from '../../platform/haptics.js';
@@ -18,7 +18,7 @@ import { partStatus, markSeen } from '../../meta/patentBook.js';
 import { buyOffer, sellPart, rerollOffers, rerollPrice } from '../../run/shop.js';
 import { startNextShift } from '../../run/runState.js';
 import { benchSizeOf } from '../../run/runRules.js';
-import { reasonText } from '../flow.js';
+import { reasonText, screenForPhase } from '../flow.js';
 
 let run = null;
 let view = null;
@@ -26,6 +26,7 @@ let selectedBench = -1;
 let mergedPartId = '';
 let els = null;
 let timers = [];
+let leaving = false; // a go() is already on its way
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -146,6 +147,18 @@ function onNext() {
   go('run');
 }
 
+// ---------- cheat menu ----------
+// A cheat changed the live run: save it and show whatever its phase needs.
+function onCheatChanged() {
+  if (!run || !els || leaving) return;
+  saveRun(run);
+  const next = screenForPhase(run.phase);
+  if (next !== 'shop') { leaving = true; go(next); return; }
+  if (selectedBench >= run.bench.length) selectedBench = -1;
+  mergedPartId = '';
+  draw();
+}
+
 // ---------- mount ----------
 export function mount(root, params) {
   run = loadRun();
@@ -156,6 +169,9 @@ export function mount(root, params) {
   }
   selectedBench = -1;
   mergedPartId = '';
+  leaving = false;
+  setCurrentRun(run);
+  on('cheat:changed', onCheatChanged);
   const screen = el('div', 'screen shopScreen');
   screen.dataset.screen = 'shop';
   const top = el('div', 'row');
@@ -185,6 +201,8 @@ export function mount(root, params) {
 }
 
 export function unmount() {
+  off('cheat:changed', onCheatChanged);
+  setCurrentRun(null);
   timers.forEach(clearTimeout);
   timers = [];
   if (view) view.destroy();

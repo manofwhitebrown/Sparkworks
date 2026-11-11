@@ -1,6 +1,6 @@
 /* Design tokens for Sparkworks: colors, spacing, radii, type, timing.
    Every other stylesheet reads these variables, never raw numbers.
-   Owner: AI-7 */
+   Owner: AI-7 (covered by AI-1 in round 5) */
 
 @font-face {
   font-family: 'Inter';
@@ -22,6 +22,14 @@
   font-style: normal;
   font-display: swap;
   src: url('/fonts/inter-Bold.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('/fonts/spacegrotesk-Bold.woff2') format('woff2');
 }
 
 :root {
@@ -94,4 +102,76 @@ html.reduceMotion {
   --t-fast: 1ms;
   --t-normal: 1ms;
   --t-slow: 1ms;
+}
+
+/* ---------- round 5: depth, type hierarchy, motion ---------- */
+/* Only NEW names live here. The palette above (contract section 10) is unchanged:
+   no new colour families, only warmer or darker mixes of the same colours. */
+:root {
+  /* display font: big numbers and the wordmark ONLY. Falls back to Inter, then the system font. */
+  --font-display: 'Space Grotesk', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* type hierarchy: hero number > number > title > body > label > tiny */
+  --fs-hero: 56px;      /* the one big number on a screen (Fire total, run result) */
+  --fs-number: 28px;    /* counters: target, coins, stats */
+  --fs-label: 11px;     /* small caps labels like TARGET (never for reading text) */
+  --ls-label: 0.12em;   /* letter spacing for those labels */
+  --ls-tight: -0.02em;  /* big numbers sit a little tighter */
+  --lh-tight: 1.05;
+
+  /* one pre-rendered grain tile (64 x 64 PNG, about 3.6 KB, drawn once, never animated) */
+  --noise: url('data:image/png;base64,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');
+
+  /* surfaces: static gradients only. Light comes from the top, so the top edge is brighter. */
+  --surface-panel: linear-gradient(180deg, #19212E 0%, #141A24 100%);
+  --surface-raised: linear-gradient(180deg, #232D3E 0%, #1C2432 100%);
+  --surface-inset: linear-gradient(180deg, #0E131B 0%, #121821 100%);
+  --edge-light: inset 0 1px 0 rgba(255, 241, 194, 0.07);   /* top highlight, 1px, no blur */
+  --edge-dark: inset 0 -1px 0 rgba(0, 0, 0, 0.35);
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.45);                /* tiny and static: fine for panels */
+  --shadow-2: 0 6px 14px rgba(0, 0, 0, 0.35);               /* only for things that never move */
+
+  /* warm light: the spark colour as soft static gradients */
+  --warm-wash: radial-gradient(120% 80% at 50% 0%, rgba(255, 200, 87, 0.10) 0%, rgba(255, 200, 87, 0) 70%);
+  --spark-fill: linear-gradient(180deg, #FFD777 0%, #FFC857 55%, #F2B13E 100%);
+  --spark-fill-pressed: linear-gradient(180deg, #F2B13E 0%, #FFC857 100%);
+  --glow-spark: radial-gradient(closest-side, rgba(255, 200, 87, 0.55) 0%, rgba(255, 200, 87, 0) 100%);
+  --glow-accent: radial-gradient(closest-side, rgba(79, 209, 197, 0.40) 0%, rgba(79, 209, 197, 0) 100%);
+  --ring-focus: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+
+  /* motion: transform and opacity only */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --t-screen: 220ms;          /* every screen change: fade plus a small rise */
+  --move-screen: 10px;        /* how far a screen rises while it fades in */
+  --t-press: 90ms;            /* pressed state */
+}
+
+/* big numbers use the display font and tabular figures */
+.numHero, .numBig {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+  line-height: var(--lh-tight);
+}
+.numHero { font-size: var(--fs-hero); color: var(--sparkHot); }
+.numBig { font-size: var(--fs-number); }
+.labelCaps {
+  font-size: var(--fs-label);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--textDim);
+}
+
+html.largeText {
+  --fs-hero: 62px;
+  --fs-number: 32px;
+  --fs-label: 13px;
+}
+html.reduceMotion {
+  --t-screen: 1ms;
+  --t-press: 1ms;
+  --move-screen: 0px;
 }

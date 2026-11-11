@@ -36,6 +36,13 @@ Layout: one column, max 480 px. Top: title row. Middle: content in `.panel` bloc
 `.screen .panel .pill .pill.coin .pill.dust .bar (with child .fill, scaleX) .dim .num .row .spacer .btn(.primary/.secondary/.ghost/.danger/.small/.big) .partCard`.
 Progress bar: set `fill.style.transform = 'scaleX(' + ratio + ')'` (ratio 0..1). Never animate width.
 
+## Round 5 tokens (depth and hierarchy)
+Everything is in `src/ui/styles/tokens.css`. Same palette, no new colour families. Use these names, never raw values.
+- **Type:** `--font-display` (Space Grotesk, big numbers and wordmark ONLY), `--fs-hero` 56, `--fs-number` 28, `--fs-label` 11, `--ls-label`, `--ls-tight`, `--lh-tight`. Classes: `.numHero` (the one hero number of a screen, sparkHot), `.numBig`, `.labelCaps` (small TARGET-style labels). `largeText` scales them.
+- **Surfaces** (static gradients, top lit): `--surface-panel`, `--surface-raised`, `--surface-inset`, plus `--edge-light` / `--edge-dark` (1px inner lines, no blur), `--shadow-1` (tiny), `--shadow-2` (only for things that never move), and `--noise` (one grain tile, use as a second background layer at low opacity on big areas).
+- **Warm light:** `--warm-wash` (top glow for a screen or panel), `--spark-fill` and `--spark-fill-pressed` (primary button), `--glow-spark` and `--glow-accent` (radial pictures: put them on a pseudo-element and fade it with `opacity`, never animate a shadow), `--ring-focus`.
+- **Motion:** `--ease-out`, `--ease-spring`, `--t-screen` (220 ms), `--move-screen` (10 px rise), `--t-press` (90 ms). `reduceMotion` sets the times to 1 ms and the rise to 0.
+
 ## Do
 - Use the spacing scale and tokens only. One primary button per screen.
 - Put every number through `formatNumber`. Reserve space for changing numbers (fixed min-width).

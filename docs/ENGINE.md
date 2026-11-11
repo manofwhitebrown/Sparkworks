@@ -127,6 +127,23 @@ How `touchedParts` is exact from the log alone: an `enter` event has an OPTIONAL
 part acts in that cell (it is left out for empty cells, blocked cells, banned parts and disabled parts). Renderers
 may ignore it.
 
+## Fire stats for the juice (`src/engine/fireStats.js`)
+
+`fireStats(events)` reads the event list of one Fire and returns plain numbers, so the renderer (AI-6) and the audio (AI-8)
+can scale their effects. Pure, changes nothing, never NaN or Infinity, bad input gives all zeros (multiplier 1).
+A 120-spark Fire takes well under 1 ms (a test checks it).
+
+| field | meaning |
+|---|---|
+| `chainLength` | the most changes ONE spark had: `value`, `turn`, `split`, `bonus`, `portal` events |
+| `biggestMultiplier` | largest after / before of a `value` event (events labelled `+n` or `-n` do not count) or of a `mult` bonus tile; 1 when none |
+| `biggestBank` | the largest single banked value; 0 when nothing banked |
+| `bankedCount`, `lostCount` | number of `bank` and of `fizzle` events |
+| `splitCount` | number of `split` events |
+| `intensity` | 0..1 overall size: 40% bank (log10, full at 1e6), 25% multiplier (log2, full at x64), 20% chain (full at 12), 15% splits (full at 10) |
+
+Example: Coil then Amplifier gives `{ chainLength: 2, biggestMultiplier: 2, biggestBank: 8, bankedCount: 3, lostCount: 0, splitCount: 0 }`.
+
 ## Edge cases
 
 - **Empty board:** each spark walks straight to the vault. Total = `sparkCount * startValue`.

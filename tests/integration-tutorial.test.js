@@ -99,3 +99,19 @@ test('skip finishes right away', () => {
   t.callbacks.onSkip();
   assert.equal(t.finished(), 1);
 });
+
+test('by default, skipping announces tutorial:finished and never imports ui.js', async () => {
+  const { on, off } = await import('../src/core/events.js');
+  let heard = 0;
+  function listener() { heard = heard + 1; }
+  on('tutorial:finished', listener);
+  let callbacks = null;
+  const handle = startTutorial({}, {
+    on() {}, off() {}, findTarget() { return null; },
+    createOverlay(host, cb) { callbacks = cb; return { showStep() {}, destroy() {} }; }
+  });
+  callbacks.onSkip();
+  off('tutorial:finished', listener);
+  handle.stop();
+  assert.equal(heard, 1);
+});

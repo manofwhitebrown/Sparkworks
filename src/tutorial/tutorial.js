@@ -3,7 +3,7 @@
 // (it saves tutorialRun() and opens the run screen), so this file only guides.
 // Owner: AI-8
 
-import { on as realOn, off as realOff } from '../core/events.js';
+import { on as realOn, off as realOff, emit as realEmit } from '../core/events.js';
 import { loadRun as realLoadRun } from '../core/save.js';
 import { STEPS } from './steps.js';
 import { createOverlay } from './overlay.js';
@@ -24,14 +24,11 @@ export function markTutorialDone(meta) {
   return meta;
 }
 
-// ui.js is imported only when needed: it pulls in CSS, which plain Node cannot load.
-// It also owns the live meta, so we record "done" there (a later settings save must not undo it).
+// The tutorial never imports ui.js (that made a circular import and a build warning).
+// It only announces that it is over. ui.js owns the live meta, so it listens for this event,
+// marks the tutorial done, saves the meta and goes home. Owner of that listener: AI-7.
 function realFinish() {
-  return import('../ui/ui.js').then(function open(module) {
-    markTutorialDone(module.getMeta());
-    module.saveCurrentMeta();
-    module.go('home');
-  });
+  realEmit('tutorial:finished', {});
 }
 
 // The total of the Fire that just ended, read from the saved run when the event has none.

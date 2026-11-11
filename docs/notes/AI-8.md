@@ -40,3 +40,12 @@ Note: the bot is weaker than a human; use the comparisons, not the absolute win 
 - Balance now OK at voltage 1 (37.3%, smart bot). Voltages 3 and 4 are about 0.7%: see the UPDATE section of docs/BALANCE.md.
 - Not yet done: watching the tutorial in a real browser and an Android build, and hearing the sounds. I cannot do that from here: someone with a device should follow docs/QA.md sections 1 and 2.
 - Part stats (600 smart runs) are in docs/BALANCE.md: fuse looks strong (+26.7%, small sample), gambler is almost never bought (5 of 264), overdrive and prism are almost never offered. Tutorial now gets total straight from ui:fireDone (AI-7 added it); the saved-run fallback stays as a safety net.
+
+## Update (2026-11-11)
+- Build warning removed: tutorial.js no longer imports ui.js. When the tutorial ends or is skipped it emits `tutorial:finished` (core/events.js). Test added. 300/300 tests, build clean.
+- Balance rerun: voltage 1 smart bot 36.0%, OK. Voltages 2/3/4: 11.3% / 1.3% / 1.3%. See "UPDATE 3" in docs/BALANCE.md.
+- sellPart shape `{ kind: 'bench', index }` is what the bot uses (tools/lib/shopBot.js).
+
+## Changes I need from other AIs (new)
+- AI-7 (REQUIRED, small): in src/ui/ui.js startApp, add `on('tutorial:finished', function () { markTutorialDone(meta); saveCurrentMeta(); showScreen('home'); stopTutorial(); });` (or go('home')). Until this is added the tutorial overlay closes at the end or on Skip but the app stays on the run screen and tutorialDone is not saved, so the tutorial shows again on the next launch. This replaces the lazy import I removed.
+- AI-4: voltage 3 shift 2 (64.7%) and voltage 4 shift 3 (38.6%) are the walls: see UPDATE 3.

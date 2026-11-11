@@ -110,3 +110,34 @@ Average coins when the shop opens: 10.5 after shift 1, then about 5 to 7. That i
 
 Do #1 and #2 first, then re-run. Target after the change: win rate 15% to 40% for the smart bot at
 voltage 1, and a pass rate that falls gently by shift instead of dropping off a cliff at shift 4.
+
+## UPDATE 3 (2026-11-11, smart bot, after the visit limit and the kit changes)
+
+Voltage 1 (200 runs): win rate 36.0%, average shift reached 7.13, verdict OK.
+Per inventor: tinkerbot 37.3%, clockmaker 37.3%, drvolt 33.3%. The three kits are now even.
+Pass rate per shift: 100, 99.5, 99.0, 89.8, 97.2, 90.7, 80.8, 57.1. Shift 8 is the wall, which is right for a final shift.
+
+Higher voltages (150 smart runs each):
+
+| Voltage | Win rate | Weakest shift (pass rate) |
+|---------|----------|---------------------------|
+| 2 | 11.3% | shift 8 (28.3%) |
+| 3 | 1.3% | shift 2 (64.7%) |
+| 4 | 1.3% | shift 3 (38.6%) |
+
+Part stats (300 smart runs):
+- `bend`: bought 319 of 316 offers and dead on 65% of boards. The bot buys it because it is cheap and shares tags. Probably a bot artefact, but a human should check that it feels useful.
+- `gambler` (3 of 149 bought) and `prism` / `overdrive` (offered 18 and 23 times, almost never owned): still not seen in play.
+- `compounder` +26.3%, `triplet` +25.2%, `fuse` +29.3%: strong, but small samples (11, 8, 6 runs). `gambler` and `prism` show +62.7% from 2 and 1 winning runs: ignore.
+- `overdrive` -37.3% from 1 run: ignore.
+
+### Recommended changes (for the manager to route)
+
+| # | File | Number | Owner |
+|---|------|--------|-------|
+| 1 | `src/data/voltage.js` | level 3: move `fewerSparks` off shift 2 (shift 2 passes 64.7%, every other shift is above 79%) | AI-4 |
+| 2 | `src/data/voltage.js` | level 4: shift 3 passes only 38.6%. Check which twist or multiplier lands there | AI-4 |
+| 3 | `src/data/voltage.js` | levels 3 and 4 win 1.3%. A human is better than the bot, but lower `targetMultiplier` a little if they feel impossible by hand | AI-4 |
+| 4 | `src/data/shifts.js` | `rarityBands`: raise the legendary weight so `overdrive` and `prism` appear (18 and 23 offers in 300 runs) | AI-4 |
+| 5 | `src/engine/parts/gambler.js` | give it a clearer upside (bought 3 of 149 offers) | AI-3 |
+| 6 | `src/engine/parts/bend.js` | dead on 65% of boards: check it is readable and useful by hand | AI-3 |

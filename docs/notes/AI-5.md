@@ -19,8 +19,8 @@
 ## Round 5 (aesthetics)
 - **Done:** `docs/SKINS.md` (design only: 6 things a skin may change, 5 first skins, `meta.skins = { owned, active }`, `data/skins.js`, `setSkin` on the board view, tests list, 3 questions for the manager).
 - **Done:** Workshop, Patent Book, Daily and Settings restyled (hero number panels, card surfaces with a static gradient, uppercase section labels, bigger level pips, dashed silhouette frame for locked parts, grouped Settings). All styles live in `src/meta/screenKit.js` and `patentBook.js`. Checked in Chromium at 360x740 and 390x844: four screens open, no sideways scroll, no page errors.
-- **Colors:** only existing tokens (`--panel`, `--panel2`, `--line`, `--spark`, `--sparkHot`, `--textDim`, `--bg`). No new colors invented.
-- **Waiting on AI-1:** the new surface tokens (gradients, noise, button states) were not in `main` yet at my last pull. When they land I swap my `linear-gradient(var(--panel2), var(--panel))` lines in `screenKit.js` for the new surface tokens and re-check the 4 screens.
+- **Colors:** no color invented. Surfaces use AI-1's tokens (`--surface-panel`, `--surface-raised`, `--surface-inset`, `--warm-wash`, `--edge-light`, `--shadow-1`), big numbers use `--font-display` with `--fs-hero` (Workshop dust) or `--fs-huge`, labels use `--fs-label` / `--ls-label`. All static, no blur, no animation. Checked again at 360x740 and 320x568 with largeText: no sideways scroll, no page errors.
+- AI-1 tokens landed (fbabb0a) and are in use. Not used: `--noise` (on the shared panel/screen surfaces, AI-1's call).
 - **Waiting on AI-6:** the new part tile look. The Patent Book uses `makePartCard`, so rarity borders follow automatically; I will re-check when AI-1/AI-6 push the new tile CSS.
 
 ## Blocked / Questions for manager

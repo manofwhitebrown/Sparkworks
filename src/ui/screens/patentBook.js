@@ -16,7 +16,7 @@ const CSS = [
   '.pbNew { position: absolute; top: var(--s1); right: var(--s1); padding: 0 var(--s2); border-radius: var(--r1);',
   '  background: var(--spark); color: var(--bg); font-size: var(--fs-tiny); font-weight: 700; z-index: 1; }',
   '.pbHint { font-size: var(--fs-small); color: var(--textDim); text-align: center; }',
-  '.pbCell.isLocked { padding: var(--s1); border: 1px dashed var(--line); border-radius: var(--r2); background: var(--bg); }',
+  '.pbCell.isLocked { padding: var(--s1); border: 1px dashed var(--line); border-radius: var(--r2); background: var(--surface-inset); }',
   '.pbCell.isLocked .partCard { opacity: 0.35; }',
   '.pbCell.isLocked .pbHint { padding-bottom: var(--s1); }',
   '.pbLevel { margin-top: var(--s2); }',

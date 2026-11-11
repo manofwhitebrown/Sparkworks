@@ -62,7 +62,7 @@ export function mount(root, params) {
   screen.appendChild(makeHeader('Workshop', function () { saveCurrentMeta(); go('home'); }));
   const hero = el('div', 'metaHero');
   hero.appendChild(el('div', 'metaLabel', 'Spark Dust'));
-  dustPill = el('div', 'metaHeroNum', '');
+  dustPill = el('div', 'metaHeroNum isHero', '');
   hero.appendChild(dustPill);
   hero.appendChild(el('div', 'dim', 'Earn it at the end of every run. Upgrades last forever.'));
   screen.appendChild(hero);

@@ -81,3 +81,37 @@ device and what you tapped. Update this file as the game grows.
 
 ## Found problems
 (none yet)
+
+## 13. Phone layout checklist (round 3)
+
+Do this once per size, once with normal text and once with Large text (Settings) on.
+Sizes (width x height): 320x568, 360x640, 375x667, 360x740, 390x844, 412x915, 430x932.
+On a laptop use the browser's device mode and type the size in. Reload after changing the size.
+
+Rules that must hold on EVERY screen:
+- [ ] No sideways scroll (swipe left and right: the page does not move).
+- [ ] Every button and tap target is at least 44 x 44 px.
+- [ ] No text is smaller than 12 px.
+- [ ] Nothing hides under FIRE or "Next shift", and there is at least 12 px of space between the last thing you can scroll to and those buttons.
+- [ ] The sticky button does not touch the screen edge (it keeps a margin and the safe-area inset).
+
+Screens, and what to look for:
+- [ ] Home: PLAY, Continue (only for a real run, NEVER after skipping the tutorial), inventor picker, Voltage stepper, bottom links all visible or reachable by scroll.
+- [ ] Run, nothing selected: the board never overlaps the HUD (target, Fires), the bench, or FIRE. Board top is below the HUD bottom.
+- [ ] Run, a part selected: the info panel does not overlap the board; Rotate, Remove and the bench are all reachable.
+- [ ] Fire in progress: numbers and the banner do not cover the HUD; Skip is reachable.
+- [ ] Shop: every offer, Reroll, the bench and the mini board can be reached by scrolling; "Next shift" does not cover the bench. Tapping a cell on the mini board does what the text says.
+- [ ] Results (win and loss): totals, Spark Dust and the buttons are all visible or reachable.
+- [ ] Workshop, Patent Book, Daily, Settings: cards line up, nothing is cut off, back works.
+- [ ] Big phones (412x915, 430x932): the board grows to use the space (it should not stay a small box in the middle).
+
+How to fill it in: write the size and "pass" or the problem in one line each, for example
+`360x640 largeText, Shop: Next shift covers the bench (BUG)`.
+The automated numbers (board top minus HUD bottom per size) are in docs/notes/AI-8.md.
+
+## 14. Tutorial skip and continue
+
+- [ ] First launch: the tutorial starts. Press "Skip tutorial". Home must NOT show "Continue run".
+- [ ] Close and reopen the app: the tutorial does not start again, Home still has no Continue.
+- [ ] Settings > Replay tutorial: the tutorial starts again from step 1. Finish it: Home has no Continue.
+- [ ] Start a normal run, place a part, close the app: Home shows "Continue run" and it resumes the same board.

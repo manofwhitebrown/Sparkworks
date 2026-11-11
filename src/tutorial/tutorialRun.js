@@ -59,3 +59,12 @@ export function tutorialRun(deps) {
   run.tutorial = true;
   return run;
 }
+
+// True when a saved run may be offered as "Continue run" on Home. The guided tutorial run
+// is never offered: skipping the tutorial must not leave a fake "shift 1" to continue.
+export function isContinuableRun(run) {
+  if (!run || run.tutorial === true) {
+    return false;
+  }
+  return run.phase === 'build' || run.phase === 'shop';
+}

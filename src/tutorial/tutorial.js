@@ -7,9 +7,9 @@ import { on as realOn, off as realOff, emit as realEmit } from '../core/events.j
 import { loadRun as realLoadRun } from '../core/save.js';
 import { STEPS } from './steps.js';
 import { createOverlay } from './overlay.js';
-import { tutorialRun } from './tutorialRun.js';
+import { tutorialRun, isContinuableRun } from './tutorialRun.js';
 
-export { tutorialRun };
+export { tutorialRun, isContinuableRun };
 
 // How often and how many times to look for a target that its screen has not drawn yet.
 const FIND_RETRY_MS = 120;

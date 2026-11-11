@@ -16,6 +16,13 @@ import { getPart } from '../engine/parts/index.js';
 var QUALITY_ORDER = ['low', 'medium', 'high'];
 var DEFAULT_MACHINE = { cols: 5, rows: 4, sourceRow: 1, cells: [], blocked: [], banned: [] };
 
+// Sharpness costs fill rate: high gets the contract cap of 2, medium 1.5, low 1.25.
+function dprCapFor(quality) {
+  if (quality === 'low') { return THEME.lowDpr; }
+  if (quality === 'medium') { return THEME.mediumDpr; }
+  return THEME.maxDpr;
+}
+
 export function createBoardView(container, options) {
   var opts = options || {};
   var deps = opts.deps || {};
@@ -67,7 +74,7 @@ export function createBoardView(container, options) {
     var m = S.machine;
     var aspectH = Math.round(w * (m.rows + FOOTER) / (m.cols + 1));
     var h = rect.height > 60 ? Math.min(rect.height, aspectH) : aspectH;
-    S.dpr = clampDpr(window.devicePixelRatio, S.flags.quality === 'low' ? THEME.lowDpr : THEME.maxDpr);
+    S.dpr = clampDpr(window.devicePixelRatio, dprCapFor(S.flags.quality));
     canvas.width = Math.round(w * S.dpr);
     canvas.height = Math.round(h * S.dpr);
     canvas.style.height = h + 'px';
@@ -128,7 +135,7 @@ export function createBoardView(container, options) {
     S.particles.setCap(THEME.particleCaps[level]);
     S.dirty = true;
     // a new quality can mean a new pixel density, which needs a new canvas size
-    if (clampDpr(window.devicePixelRatio, level === 'low' ? THEME.lowDpr : THEME.maxDpr) !== before) { resize(); }
+    if (clampDpr(window.devicePixelRatio, dprCapFor(level)) !== before) { resize(); }
   }
 
   function play(events, playOptions) {

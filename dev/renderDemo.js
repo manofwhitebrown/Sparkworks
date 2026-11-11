@@ -2,6 +2,9 @@
 // This is a dev tool, it is not part of the production build. Owner: AI-6
 import { createBoardView } from '../src/render/boardView.js';
 import { sampleEvents, bigEvents, blockedEvents } from './sampleEvents.js';
+import { simulate } from '../src/engine/simulate.js';
+import { makeMachine as makeRealMachine, placePart } from '../src/engine/board.js';
+import { allPartIds } from '../src/engine/parts/index.js';
 
 var IDS = ['coil', 'dynamo', 'ember', 'amplifier', 'compounder', 'overdrive', 'bend', 'switch',
   'reverser', 'splitter', 'triplet', 'capacitor', 'counter', 'anvil', 'flywheel', 'battery',
@@ -95,6 +98,46 @@ document.getElementById('blockedFire').onclick = function () {
   document.getElementById('blocked').textContent = 'fake blocked cells: on';
   play(blockedEvents());
 };
+// Real data: a machine with real parts, real simulate(), real event log.
+function realCuratedMachine() {
+  var m = makeRealMachine({ sparkCount: 3, seed: 7 });
+  placePart(m, 0, 1, 'coil', 1, 0);
+  placePart(m, 1, 1, 'amplifier', 1, 0);
+  placePart(m, 2, 1, 'splitter', 2, 1);
+  placePart(m, 3, 1, 'compounder', 1, 0);
+  placePart(m, 4, 1, 'tollgate', 1, 0);
+  placePart(m, 2, 2, 'bend', 1, 0);
+  placePart(m, 3, 2, 'overdrive', 1, 0);
+  placePart(m, 4, 2, 'flywheel', 1, 0);
+  placePart(m, 1, 0, 'battery', 1, 0);
+  return m;
+}
+
+// Random real parts on random cells: a stress test with logs nobody wrote by hand.
+function realRandomMachine() {
+  var ids = allPartIds();
+  var m = makeRealMachine({ sparkCount: 3, seed: Math.floor(Math.random() * 100000) });
+  for (var y = 0; y < m.rows; y++) {
+    for (var x = 0; x < m.cols; x++) {
+      if (Math.random() < 0.7) {
+        placePart(m, x, y, ids[Math.floor(Math.random() * ids.length)], 1 + Math.floor(Math.random() * 3),
+          Math.floor(Math.random() * 4));
+      }
+    }
+  }
+  return m;
+}
+
+function playReal(machine) {
+  view.setMachine(machine);
+  var result = simulate(machine);
+  window.__real = result;
+  say('REAL fire: total ' + result.total + ', ' + result.events.length + ' events');
+  play(result.events);
+}
+document.getElementById('real').onclick = function () { playReal(realCuratedMachine()); };
+document.getElementById('realRandom').onclick = function () { playReal(realRandomMachine()); };
+
 document.getElementById('skip').onclick = function () { view.skip(); };
 document.getElementById('reduce').onclick = function (e) {
   state.reduce = !state.reduce;

@@ -139,14 +139,18 @@ export function drawFlashes(ctx, L, fx, cols, rows) {
 }
 
 export function drawNotes(ctx, L, fx, cols, rows) {
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font = 'bold ' + Math.round(L.cell * 0.17) + 'px ' + THEME.font.numbers;
+  var fontSet = false; // set the font only when a note is really shown (no new string per frame otherwise)
   for (var y = 0; y < rows; y++) {
     for (var x = 0; x < cols; x++) {
       var k = y * cols + x;
       var text = fx.noteOf(k);
       if (text) {
+        if (!fontSet) {
+          fontSet = true;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.font = 'bold ' + Math.round(L.cell * 0.17) + 'px ' + THEME.font.numbers;
+        }
         ctx.globalAlpha = Math.min(1, 2 - fx.noteAge(k));
         ctx.fillStyle = THEME.colors.legendary;
         ctx.fillText(text, L.gridX + x * L.cell + L.cell / 2, L.gridY + y * L.cell + L.cell * 0.1);

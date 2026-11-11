@@ -39,7 +39,7 @@ export function createBoardView(container, options) {
 
   var S = {
     L: computeLayout(360, 300, 5, 4), machine: DEFAULT_MACHINE, staticCanvas: staticCanvas, dpr: 1,
-    tileSlots: [], selected: null, highlights: [], drag: null, time: 0, dirty: true,
+    tileSlots: [], selected: null, highlights: [], rawHighlights: [], drag: null, time: 0, dirty: true,
     flags: { quality: 'medium', reduceMotion: false },
     effects: createEffects(), particles: createParticles(),
     formatNumber: deps.formatNumber || formatNumber, getPart: deps.getPart || getPart
@@ -122,8 +122,26 @@ export function createBoardView(container, options) {
     }
   }
 
+  // Valid-drop highlights never go on blocked cells: they cannot take a part, and an
+  // always-pulsing highlight would keep the idle board redrawing every frame.
+  function applyHighlights() {
+    var out = [];
+    var blocked = S.machine.blocked || [];
+    for (var i = 0; i < S.rawHighlights.length; i++) {
+      var h = S.rawHighlights[i];
+      var isBlocked = false;
+      for (var b = 0; b < blocked.length; b++) {
+        if (blocked[b].x === h.x && blocked[b].y === h.y) { isBlocked = true; }
+      }
+      if (!isBlocked) { out.push(h); }
+    }
+    S.highlights = out;
+    S.dirty = true;
+  }
+
   function setMachine(machine) {
     S.machine = machine || DEFAULT_MACHINE;
+    applyHighlights();
     var sizeChanged = S.L.cols !== S.machine.cols || S.L.rows !== S.machine.rows;
     if (sizeChanged) { S.effects.reset(S.machine.cols, S.machine.rows); resize(); } else { rebuildStatic(); }
   }
@@ -175,7 +193,7 @@ export function createBoardView(container, options) {
   return {
     setMachine: setMachine,
     setSelectedCell: function (x, y) { S.selected = x === null || x === undefined ? null : { x: x, y: y }; S.dirty = true; },
-    setHighlightCells: function (list) { S.highlights = list || []; S.dirty = true; },
+    setHighlightCells: function (list) { S.rawHighlights = list || []; applyHighlights(); },
     cellAtPoint: cellAtPoint, play: play, skip: function () { S.player.skip(); },
     setQuality: setQuality, resize: resize,
     frame: frame,

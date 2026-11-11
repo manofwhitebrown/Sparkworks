@@ -57,27 +57,77 @@ function drawTrace(ctx, L, sourceRow) {
   ctx.setLineDash([]);
 }
 
+// A soft halo made with a radial gradient (no blur effects), drawn once into the static picture.
+function drawHalo(ctx, cx, cy, r, color, alpha) {
+  var grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+  grad.addColorStop(0, color);
+  grad.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = grad;
+  ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+  ctx.globalAlpha = 1;
+}
+
+// Source: a glowing socket with a hot core and a small arrow showing where the spark goes.
 function drawSocket(ctx, cx, cy, r, color) {
+  drawHalo(ctx, cx, cy, r * 3.2, color, 0.35);
+  ctx.fillStyle = THEME.colors.bg;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 1.15, 0, Math.PI * 2);
+  ctx.fill();
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r * 1.15, 0, Math.PI * 2);
   ctx.stroke();
-  ctx.fillStyle = THEME.colors.bg;
+  ctx.globalAlpha = 0.45;
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.6, 0, Math.PI * 2);
+  ctx.arc(cx, cy, r * 1.6, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.globalAlpha = 1;
+  drawHalo(ctx, cx, cy, r * 1.1, THEME.colors.sparkHot, 0.9);
+  ctx.fillStyle = THEME.colors.sparkHot;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r * 0.32, 0, Math.PI * 2);
   ctx.fill();
+  // small chevron on the right side of the socket
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(cx + r * 1.9, cy - r * 0.45);
+  ctx.lineTo(cx + r * 2.5, cy);
+  ctx.lineTo(cx + r * 1.9, cy + r * 0.45);
+  ctx.stroke();
 }
 
+// Vault: a dark slot with an amber inner gradient, level ticks and a faint halo.
 function drawVaultSlot(ctx, L) {
   var w = L.cell * 0.3;
-  var x = L.gridX + L.gridW + L.cell / 4 - w / 2;
-  roundRect(ctx, x, L.gridY + 4, w, L.gridH - 8, w / 2);
-  ctx.fillStyle = THEME.colors.bg;
+  var cx = L.gridX + L.gridW + L.cell / 4;
+  var x = cx - w / 2;
+  var y = L.gridY + 4;
+  var h = L.gridH - 8;
+  drawHalo(ctx, cx, y + h / 2, h * 0.6, THEME.colors.spark, 0.12);
+  roundRect(ctx, x, y, w, h, w / 2);
+  var grad = ctx.createLinearGradient(0, y, 0, y + h);
+  grad.addColorStop(0, THEME.colors.bg);
+  grad.addColorStop(1, '#2A2110');
+  ctx.fillStyle = grad;
   ctx.fill();
   ctx.strokeStyle = THEME.colors.spark;
-  ctx.globalAlpha = 0.7;
+  ctx.globalAlpha = 0.75;
   ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.globalAlpha = 0.3;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  for (var t = 1; t < 8; t++) {
+    var ty = y + (h * t) / 8;
+    ctx.moveTo(x + w * 0.28, ty);
+    ctx.lineTo(x + w * 0.72, ty);
+  }
   ctx.stroke();
   ctx.globalAlpha = 1;
 }
@@ -162,7 +212,7 @@ export function drawStaticLayer(ctx, L, machine) {
   drawCells(ctx, L, machine);
   drawTrace(ctx, L, machine.sourceRow);
   var sy = L.gridY + machine.sourceRow * L.cell + L.cell / 2;
-  drawSocket(ctx, L.gridX - L.cell / 4, sy, L.cell * 0.15, THEME.colors.spark);
+  drawSocket(ctx, L.gridX - L.cell / 4, sy, L.cell * 0.13, THEME.colors.spark);
   drawVaultSlot(ctx, L);
   drawVignette(ctx, L);
 }

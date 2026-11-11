@@ -13,6 +13,7 @@ function makeLog() {
   };
 }
 
+// Spark ids follow creation order like the real engine (a child gets its id at split time).
 // Sample fire: 3 sparks along row 1, a split, a turn, coins, a disable, a fizzle, banks.
 export function sampleEvents() {
   var log = makeLog();
@@ -37,33 +38,33 @@ export function sampleEvents() {
   add({ type: 'enter', spark: 2, x: 1, y: 1, dir: 'right', value: 4 });
   add({ type: 'value', spark: 2, x: 1, y: 1, partId: 'amplifier', before: 4, after: 8, label: 'x2' });
   add({ type: 'enter', spark: 2, x: 2, y: 1, dir: 'right', value: 8 });
-  add({ type: 'split', spark: 2, x: 2, y: 1, partId: 'splitter', child: 4, dir: 'down', value: 8, label: 'split' });
+  add({ type: 'split', spark: 2, x: 2, y: 1, partId: 'splitter', child: 3, dir: 'down', value: 8, label: 'split' });
   add({ type: 'enter', spark: 2, x: 3, y: 1, dir: 'right', value: 8 });
   add({ type: 'value', spark: 2, x: 3, y: 1, partId: 'compounder', before: 8, after: 16, label: 'x2' });
   add({ type: 'enter', spark: 2, x: 4, y: 1, dir: 'right', value: 16 });
   add({ type: 'coins', spark: 2, x: 4, y: 1, partId: 'tollgate', amount: 2 });
   add({ type: 'bank', spark: 2, value: 16, runningTotal: 32 });
-  add({ type: 'spawn', spark: 4, x: 2, y: 1, dir: 'down', value: 8, parent: 2 });
-  add({ type: 'enter', spark: 4, x: 2, y: 2, dir: 'down', value: 8 });
-  add({ type: 'turn', spark: 4, x: 2, y: 2, partId: 'bend', from: 'down', to: 'right' });
-  add({ type: 'enter', spark: 4, x: 3, y: 2, dir: 'right', value: 8 });
-  add({ type: 'value', spark: 4, x: 3, y: 2, partId: 'overdrive', before: 8, after: 240, label: 'x30' });
-  add({ type: 'enter', spark: 4, x: 4, y: 2, dir: 'right', value: 240 });
-  add({ type: 'value', spark: 4, x: 4, y: 2, partId: 'flywheel', before: 240, after: 1920, label: 'x8' });
-  add({ type: 'bank', spark: 4, value: 1920, runningTotal: 1952 });
+  add({ type: 'spawn', spark: 3, x: 2, y: 1, dir: 'down', value: 8, parent: 2 });
+  add({ type: 'enter', spark: 3, x: 2, y: 2, dir: 'down', value: 8 });
+  add({ type: 'turn', spark: 3, x: 2, y: 2, partId: 'bend', from: 'down', to: 'right' });
+  add({ type: 'enter', spark: 3, x: 3, y: 2, dir: 'right', value: 8 });
+  add({ type: 'value', spark: 3, x: 3, y: 2, partId: 'overdrive', before: 8, after: 240, label: 'x30' });
+  add({ type: 'enter', spark: 3, x: 4, y: 2, dir: 'right', value: 240 });
+  add({ type: 'value', spark: 3, x: 4, y: 2, partId: 'flywheel', before: 240, after: 1920, label: 'x8' });
+  add({ type: 'bank', spark: 3, value: 1920, runningTotal: 1952 });
   // spark 3: the compounder burns out, the child goes up and fizzles at the edge
-  add({ type: 'spawn', spark: 3, x: 0, y: 1, dir: 'right', value: 1, parent: 0 });
-  add({ type: 'enter', spark: 3, x: 0, y: 1, dir: 'right', value: 1 });
-  add({ type: 'value', spark: 3, x: 0, y: 1, partId: 'coil', before: 1, after: 4, label: '+3' });
-  add({ type: 'enter', spark: 3, x: 1, y: 1, dir: 'right', value: 4 });
-  add({ type: 'value', spark: 3, x: 1, y: 1, partId: 'amplifier', before: 4, after: 8, label: 'x2' });
-  add({ type: 'enter', spark: 3, x: 2, y: 1, dir: 'right', value: 8 });
-  add({ type: 'split', spark: 3, x: 2, y: 1, partId: 'splitter', child: 5, dir: 'up', value: 8, label: 'split' });
-  add({ type: 'enter', spark: 3, x: 3, y: 1, dir: 'right', value: 8 });
-  add({ type: 'disable', spark: 3, x: 3, y: 1, partId: 'compounder' });
-  add({ type: 'enter', spark: 3, x: 4, y: 1, dir: 'right', value: 8 });
-  add({ type: 'bank', spark: 3, value: 8, runningTotal: 1960 });
-  add({ type: 'spawn', spark: 5, x: 2, y: 1, dir: 'up', value: 8, parent: 3 });
+  add({ type: 'spawn', spark: 4, x: 0, y: 1, dir: 'right', value: 1, parent: 0 });
+  add({ type: 'enter', spark: 4, x: 0, y: 1, dir: 'right', value: 1 });
+  add({ type: 'value', spark: 4, x: 0, y: 1, partId: 'coil', before: 1, after: 4, label: '+3' });
+  add({ type: 'enter', spark: 4, x: 1, y: 1, dir: 'right', value: 4 });
+  add({ type: 'value', spark: 4, x: 1, y: 1, partId: 'amplifier', before: 4, after: 8, label: 'x2' });
+  add({ type: 'enter', spark: 4, x: 2, y: 1, dir: 'right', value: 8 });
+  add({ type: 'split', spark: 4, x: 2, y: 1, partId: 'splitter', child: 5, dir: 'up', value: 8, label: 'split' });
+  add({ type: 'enter', spark: 4, x: 3, y: 1, dir: 'right', value: 8 });
+  add({ type: 'disable', spark: 4, x: 3, y: 1, partId: 'compounder' });
+  add({ type: 'enter', spark: 4, x: 4, y: 1, dir: 'right', value: 8 });
+  add({ type: 'bank', spark: 4, value: 8, runningTotal: 1960 });
+  add({ type: 'spawn', spark: 5, x: 2, y: 1, dir: 'up', value: 8, parent: 4 });
   add({ type: 'enter', spark: 5, x: 2, y: 0, dir: 'up', value: 8 });
   add({ type: 'fizzle', spark: 5, x: 2, y: 0, value: 8, reason: 'edge' });
   add({ type: 'end', spark: 0, total: 1960, coins: 4 });

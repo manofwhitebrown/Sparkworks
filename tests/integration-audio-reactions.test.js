@@ -89,6 +89,16 @@ test('reactions: the music mood follows the shift (shop after shift 3 means Over
   assert.equal(getMusicMood().bright, 0);
 });
 
+test('reactions: ui:runShown sets the mood for a resumed run (shift 4 is tense)', () => {
+  installAudioReactions();
+  emit('ui:runShown', { shift: 4 });
+  assert.equal(getMusicMood().tense, true);
+  emit('ui:runShown', { shift: 5 });
+  assert.equal(getMusicMood().tense, false);
+  emit('ui:runShown', {});
+  assert.equal(getMusicMood().bright, 0);
+});
+
 test('setSoundContext and setMusicMood clamp and ignore garbage', () => {
   setSoundContext({ intensity: 5 });
   assert.equal(getSoundContext().intensity, 1);

@@ -48,6 +48,11 @@ function onShopOpened(data) {
   setMusicMood(moodForShift((Number(data.shift) || 0) + 1));
 }
 
+// The run screen is on show: covers Continue run, where no runStarted or shopOpened event is sent.
+function onRunShown(data) {
+  setMusicMood(moodForShift(Number(data.shift) || 1));
+}
+
 function onRunEnded() {
   setMusicMood(moodForShift(1));
 }
@@ -62,6 +67,7 @@ export function installAudioReactions() {
   on('ui:merged', safe(onMerged));
   on('ui:runStarted', safe(onRunStarted));
   on('ui:shopOpened', safe(onShopOpened));
+  on('ui:runShown', safe(onRunShown));
   on('ui:runEnded', safe(onRunEnded));
   return true;
 }

@@ -483,6 +483,8 @@ export function mount(root, params) {
   watchSize();
   refresh();
   if (shiftJustStarted()) showTwistBanner();
+  // Tells the music which shift is on screen (also after Continue run, when no other event is sent).
+  emit('ui:runShown', { shift: run.shift });
   requestAnimationFrame(function () { screen.classList.add('isShown'); });
 }
 

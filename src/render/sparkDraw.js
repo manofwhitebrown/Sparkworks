@@ -48,7 +48,17 @@ export function drawCellLight(ctx, L, fx, cols, rows) {
 
 // Trail: on low, a few fading glow dots (as before). On medium and high, a tapered ribbon:
 // short line segments that get thinner and fainter toward the tail, plus a faint afterglow dot.
-function drawTrail(ctx, s, L, flags, sp) {
+// How many trail segments one spark draws. With many sparks alive the trail is shortened (it still tapers),
+// which cuts the canvas strokes per frame a lot in the worst case (docs/notes/AI-2.md, finding 1).
+export function trailSegmentsFor(trailLen, sparkCount) {
+  var len = Math.max(0, Math.floor(Number(trailLen) || 0));
+  var many = Number(sparkCount) || 0;
+  if (many > 12) { return Math.min(len, 3); }
+  if (many > 6) { return Math.min(len, 4); }
+  return len;
+}
+
+function drawTrail(ctx, s, L, flags, sp, sparkCount) {
   if (flags.reduceMotion || s.trailLen < 2) { return; }
   var n;
   var t;
@@ -65,7 +75,8 @@ function drawTrail(ctx, s, L, flags, sp) {
     }
     return;
   }
-  n = s.trailLen;
+  n = trailSegmentsFor(s.trailLen, sparkCount);
+  if (n < 1) { return; }
   ctx.strokeStyle = THEME.colors.spark;
   ctx.lineCap = 'round';
   var px0 = L.gridX + s.x * L.cell + L.cell / 2;
@@ -95,7 +106,7 @@ export function drawSparks(ctx, L, player, flags) {
   for (var k = 0; k < list.length; k++) {
     var s = list[k];
     if (!s.on) { continue; }
-    drawTrail(ctx, s, L, flags, sp);
+    drawTrail(ctx, s, L, flags, sp, list.length);
     var x = L.gridX + s.x * L.cell + L.cell / 2;
     var y = L.gridY + s.y * L.cell + L.cell / 2;
     var size = s.waiting ? 0.6 : 1;
@@ -180,6 +191,8 @@ export function drawVaultGlow(ctx, L, fx) {
 
 // The running total sits in the footer, right under the vault slot, big and clear.
 // It swells a little when a spark banks.
+var vaultMemo = { px: -1, font: '', num: null, fmt: null, text: '' };
+
 export function drawVault(ctx, L, fx, formatNumber) {
   var v = fx.vault;
   var right = L.gridX + L.gridW + L.cell * 0.4;
@@ -188,8 +201,17 @@ export function drawVault(ctx, L, fx, formatNumber) {
   ctx.textAlign = 'right';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = v.shown > 0 ? THEME.colors.sparkHot : THEME.colors.textDim;
-  ctx.font = 'bold ' + Math.round(L.cell * 0.3 * swell) + 'px ' + THEME.font.numbers;
-  ctx.fillText(formatNumber(Math.round(v.shown)), right, y, L.gridW * 0.75);
+  // The font string and the formatted number are rebuilt only when they change, not on every drawn frame.
+  var fontPx = Math.round(L.cell * 0.3 * swell);
+  if (vaultMemo.px !== fontPx) { vaultMemo.px = fontPx; vaultMemo.font = 'bold ' + fontPx + 'px ' + THEME.font.numbers; }
+  var shownInt = Math.round(v.shown);
+  if (vaultMemo.num !== shownInt || vaultMemo.fmt !== formatNumber) {
+    vaultMemo.num = shownInt;
+    vaultMemo.fmt = formatNumber;
+    vaultMemo.text = formatNumber(shownInt);
+  }
+  ctx.font = vaultMemo.font;
+  ctx.fillText(vaultMemo.text, right, y, L.gridW * 0.75);
 }
 
 // Lost spark marker: a small "x" where a spark left through a side edge. It grows a little,

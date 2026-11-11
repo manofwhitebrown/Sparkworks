@@ -39,3 +39,14 @@ test('blocked cell: its red stroke does not leak into the empty cells drawn afte
   // The hatch and the crack are the only red strokes (2 calls); the 19 empty cells draw their corners in another color.
   assert.ok(red.length >= 1 && red.length <= 3, 'red strokes: ' + red.length);
 });
+
+import { trailSegmentsFor } from '../src/render/sparkDraw.js';
+
+test('trailSegmentsFor: full trail for a few sparks, shorter when many sparks are alive, never negative', () => {
+  assert.equal(trailSegmentsFor(8, 3), 8);
+  assert.equal(trailSegmentsFor(8, 7), 4);
+  assert.equal(trailSegmentsFor(8, 20), 3);
+  assert.equal(trailSegmentsFor(2, 20), 2);
+  assert.equal(trailSegmentsFor(NaN, 5), 0);
+  assert.equal(trailSegmentsFor(-4, 30), 0);
+});

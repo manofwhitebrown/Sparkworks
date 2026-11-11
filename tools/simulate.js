@@ -1,5 +1,5 @@
 // Balance bot. Example: node tools/simulate.js --runs 500 --voltage 1 --inventor tinkerbot --seed 1
-// Options: --runs N, --voltage 1..4, --inventor id|all, --seed N, --smart, --layouts N
+// Options: --runs N, --voltage 1..4, --inventor id|all, --seed N, --smart, --layouts N, --gentle
 // Owner: AI-8
 
 import { playRun } from './lib/bot.js';
@@ -20,7 +20,8 @@ export function playMany(settings, api) {
       voltage: settings.voltage,
       seed: settings.seed + i,
       layouts: settings.layouts,
-      smart: settings.smart
+      smart: settings.smart,
+      gentle: settings.gentle
     }, api));
   }
   return results;
@@ -33,7 +34,8 @@ export function settingsFromArgs(args) {
     inventor: typeof args.inventor === 'string' ? args.inventor : 'all',
     seed: Number(args.seed) || 1,
     layouts: Number(args.layouts) || 60,
-    smart: !!args.smart
+    smart: !!args.smart,
+    gentle: !!args.gentle
   };
 }
 
@@ -42,7 +44,7 @@ function main() {
   console.log('Sparkworks balance bot: ' + JSON.stringify(settings));
   const results = playMany(settings, realApi());
   const unfinished = results.filter(function open(r) { return !r.finished; }).length;
-  console.log(formatReport(summarize(results), settings.smart, settings.voltage));
+  console.log(formatReport(summarize(results), settings.smart, settings.voltage, settings.gentle));
   if (unfinished > 0) {
     console.log('\nWARNING: ' + unfinished + ' runs did not finish (the run modules may still be stubs).');
   }

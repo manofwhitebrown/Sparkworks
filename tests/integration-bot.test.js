@@ -87,3 +87,16 @@ test('report, verdict and part stats work on results', () => {
   assert.ok(data.rows.coil.ownedRuns >= 1);
   assert.ok(flagsFor(data.rows.dynamo, 0.5).flags.indexOf('NEVER BOUGHT') >= 0);
 });
+
+test('verdict follows the round 4 goals: normal bot, smart bot and Gentle mode', () => {
+  const at = function at(rate) { return { winRate: rate }; };
+  assert.match(verdict(at(0.12), false, 1), /OK/);
+  assert.match(verdict(at(0.3), false, 1), /TOO EASY/);
+  assert.match(verdict(at(0.05), false, 1), /TOO HARD/);
+  assert.match(verdict(at(0.4), true, 1), /OK \(smart goal/);
+  assert.match(verdict(at(0.75), true, 1), /TOO EASY/);
+  assert.match(verdict(at(0.67), true, 1, true), /OK/);
+  assert.match(verdict(at(0.9), true, 1, true), /TOO EASY/);
+  assert.match(verdict(at(0.4), true, 1, true), /TOO HARD/);
+  assert.match(verdict(at(0.4), true, 3), /n\/a/);
+});

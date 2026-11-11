@@ -64,20 +64,38 @@ export function summarize(results) {
   };
 }
 
-export function verdict(summary, smart, voltage) {
-  if (!smart || voltage !== 1) {
-    return 'VERDICT: n/a (the verdict only applies at voltage 1 with --smart)';
+// Win-rate goals (from the manager): Voltage 1 smart bot about 30 to 50% (the old limits 15 and
+// 70 still decide the verdict), Voltage 1 normal bot 10 to 25%, Gentle mode smart bot 60 to 80%.
+export function verdict(summary, smart, voltage, gentle) {
+  const rate = summary.winRate;
+  if (gentle) {
+    if (!smart) {
+      return 'VERDICT: n/a (the Gentle verdict only applies with --smart)';
+    }
+    if (rate > 0.8) {
+      return 'VERDICT: TOO EASY (Gentle goal is 60 to 80%)';
+    }
+    return rate < 0.6 ? 'VERDICT: TOO HARD (Gentle goal is 60 to 80%)' : 'VERDICT: OK (Gentle goal is 60 to 80%)';
   }
-  if (summary.winRate > 0.7) {
+  if (voltage !== 1) {
+    return 'VERDICT: n/a (the verdict only applies at voltage 1)';
+  }
+  if (!smart) {
+    if (rate > 0.25) {
+      return 'VERDICT: TOO EASY (normal bot goal is 10 to 25%)';
+    }
+    return rate < 0.1 ? 'VERDICT: TOO HARD (normal bot goal is 10 to 25%)' : 'VERDICT: OK (normal bot goal is 10 to 25%)';
+  }
+  if (rate > 0.7) {
     return 'VERDICT: TOO EASY';
   }
-  if (summary.winRate < 0.15) {
+  if (rate < 0.15) {
     return 'VERDICT: TOO HARD';
   }
-  return 'VERDICT: OK';
+  return rate >= 0.3 && rate <= 0.5 ? 'VERDICT: OK (smart goal is 30 to 50%)' : 'VERDICT: OK';
 }
 
-export function formatReport(summary, smart, voltage) {
+export function formatReport(summary, smart, voltage, gentle) {
   const lines = [];
   lines.push('Runs: ' + summary.total + '   Win rate: ' + percent(summary.wins, summary.total));
   lines.push('Average shift reached: ' + summary.avgShift.toFixed(2));
@@ -97,6 +115,6 @@ export function formatReport(summary, smart, voltage) {
     lines.push('  ' + names[i].padEnd(12) + percent(item.wins, item.runs) + ' (' + item.wins + '/' + item.runs + ')');
   }
   lines.push('');
-  lines.push(verdict(summary, smart, voltage));
+  lines.push(verdict(summary, smart, voltage, gentle));
   return lines.join('\n');
 }

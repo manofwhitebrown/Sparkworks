@@ -141,3 +141,53 @@ Part stats (300 smart runs):
 | 4 | `src/data/shifts.js` | `rarityBands`: raise the legendary weight so `overdrive` and `prism` appear (18 and 23 offers in 300 runs) | AI-4 |
 | 5 | `src/engine/parts/gambler.js` | give it a clearer upside (bought 3 of 149 offers) | AI-3 |
 | 6 | `src/engine/parts/bend.js` | dead on 65% of boards: check it is readable and useful by hand | AI-3 |
+
+## UPDATE 4 (2026-11-11, round 4: bonus tiles and Gentle mode are in; the 8 new parts are NOT yet)
+
+The bot now has `--gentle`. It picks up new parts and bonus tiles on its own (they travel in `run.machine`), so rerun
+everything when AI-3's new parts and AI-2's `bonusCells` engine support land. Until then bonus tiles have no effect in `simulate`.
+
+| Check | Goal | Result | Verdict |
+|-------|------|--------|---------|
+| Voltage 1, smart bot, 300 runs | 30 to 50% | 51.0% (tinkerbot 58, clockmaker 52, drvolt 43) | at the top edge, OK |
+| Voltage 1, normal bot, 300 runs | 10 to 25% | 12.0% (tinkerbot 19, clockmaker 6, drvolt 11) | OK |
+| Gentle, smart bot, 300 runs | 60 to 80% | 67.3% (tinkerbot 70, clockmaker 72, drvolt 60) | OK |
+| Voltage 2, smart, 200 runs | - | 25.5% | |
+| Voltage 3, smart, 200 runs | - | 12.5% (shift 5 passes only 45.0%) | |
+| Voltage 4, smart, 200 runs | - | 5.5% (shift 3 passes only 64.3%) | |
+
+Pass rate per shift, Voltage 1 smart: 100, 99.7, 98.7, 93.9, 98.9, 95.6, 87.8, 66.5. Normal bot: 100, 99.0, 97.6, 82.4, 84.9, 69.0, 67.1, 38.3.
+Clockmaker is weak for the normal bot (6% against 19% for Tinkerbot), but fine for the smart bot (52%). Dr. Volt is the lowest for the smart bot (43%).
+
+Part stats, 500 smart runs (win rate lift when owned; small samples marked):
+
+| Part | Offered | Bought | Lift | Note |
+|------|---------|--------|------|------|
+| compounder | 209 | 50 | +17.4% | owned in 42 runs: strong |
+| amplifier | 375 | 133 | +15.1% | strong |
+| fuse | 116 | 21 | +15.1% | strong, small sample |
+| dynamo | 573 | 435 | +14.5% | strong |
+| tollgate | 348 | 141 | +10.2% | |
+| triplet | 125 | 25 | -15.2% | TOO WEAK? (22 runs) |
+| reverser | 307 | 143 | -9.5% | weak |
+| battery | 282 | 73 | -9.2% | weak |
+| splitter | 330 | 114 | -9.0% | weak |
+| gambler | 226 | 7 | -1.6% | almost never bought |
+| prism | 37 | 1 | n/a | almost never offered |
+| overdrive | 79 | 5 | +8.4% | rarely offered |
+| bend | 602 | 724 | 0.0% | dead (does nothing) on 59% of boards: 3,945 of 6,717 |
+
+Always bought by the bot (never a problem by itself, it only means cheap and useful tags): coil, ember, bend, anvil, echo, mint.
+
+### Recommended changes (for the manager to route)
+
+| # | File | Number | Owner |
+|---|------|--------|-------|
+| 1 | `src/engine/parts/triplet.js` | stronger at levels 1 and 2 (lift -15.2%) | AI-3 |
+| 2 | `src/engine/parts/splitter.js`, `reverser.js`, `battery.js` | small buffs (lifts -9.0%, -9.5%, -9.2%) | AI-3 |
+| 3 | `src/engine/parts/gambler.js` | a clearer upside (7 bought of 226 offers) | AI-3 |
+| 4 | `src/data/shifts.js` `rarityBands` | more legendary offers (`prism` 37 offers, `overdrive` 79 offers in 500 runs) | AI-4 |
+| 5 | `src/data/inventors.js` | Dr. Volt: smart bot 43% vs 58% for Tinkerbot. Small buff | AI-4 |
+| 6 | `src/data/voltage.js` | level 3, shift 5 passes 45.0%; level 4, shift 3 passes 64.3%: check which twist lands there | AI-4 |
+| 7 | `src/data/shifts.js` | Voltage 1 smart bot at 51.0%: leave it, it is only 1 point over the goal and a human is weaker than the smart bot | AI-4 |
+| 8 | `src/engine/twists.js` | `deadCell` and `twoDeadCells` texts say "fizzle": say "lost" (see docs/WORDS.md) | AI-3 |

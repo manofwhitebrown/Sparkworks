@@ -115,3 +115,18 @@ The automated numbers (board top minus HUD bottom per size) are in docs/notes/AI
 - [ ] Close and reopen the app: the tutorial does not start again, Home still has no Continue.
 - [ ] Settings > Replay tutorial: the tutorial starts again from step 1. Finish it: Home has no Continue.
 - [ ] Start a normal run, place a part, close the app: Home shows "Continue run" and it resumes the same board.
+
+## 15. Round 4 screens (add to the phone checklist in section 13)
+
+Check each one at all 7 sizes, normal and Large text. The same rules apply: no sideways scroll, nothing under 44 px,
+no text under 12 px, nothing hidden under FIRE or "Next shift".
+- [ ] How to Play: opens from Home and from Settings. Every page can be reached. Back works. The words match docs/WORDS.md.
+- [ ] Hint button: visible on the run screen without scrolling. Press it: a part is placed or highlighted, the chime plays, the number of hints left goes down. With an empty bench it says so politely.
+- [ ] Overload banner (shifts 4 and 8): it explains the rule in plain words. It does not cover the board or the HUD. Tap to close works.
+- [ ] Gentle mode switch on Home: it can be switched on and off, it is at least 44 px tall, it says what it does in one short line. A Gentle run shows a Gentle mark on the run screen and on the results.
+- [ ] Results tip after a loss: it says why (for example "A part was never touched") and what to try. It is not blaming ("You failed" must not appear). The Next/New run button stays visible.
+- [ ] Path preview: the line shows where the spark will go. It does not show numbers. The toggle "Show path" works.
+- [ ] Bonus tiles: they glow on the board and do not hide the part on them. A spark that touches one makes the pop sound.
+- [ ] Tutorial v2 (11 steps): Place Coil, Fire, Amplifier before, swap (bigger number), the steering step, build the detour (Bend down, Coil below, Bend right), Fire. Then try it WRONG once (only the first Bend and the Coil): the text must say the spark was lost off the bottom and let you add a Bend. The shop opens only after the detour lesson. "Skip tutorial" works on every step.
+- [ ] Sounds: a soft sigh when a spark is lost (not a harsh buzz), a pop for a bonus tile, a chime for Hint. All quiet enough to hear over the music.
+

@@ -65,14 +65,14 @@ export function newStats() {
   return { offered: {}, bought: {}, onBoard: {}, dead: {} };
 }
 
-// A fresh run for the bot. options: { inventorId, voltage, seed }
+// A fresh run for the bot. options: { inventorId, voltage, seed, gentle }
 export function newBotRun(options, api) {
   return api.newRun({
     inventorId: options.inventorId,
     voltage: options.voltage,
     seed: options.seed,
     poolIds: api.allPartIds(),
-    bonuses: {},
+    bonuses: options.gentle ? { gentle: true } : {},
     daily: false
   });
 }

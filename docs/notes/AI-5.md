@@ -16,8 +16,15 @@
 
 - Round 4 (2026-11-11): Gentle mode meta side, first-visit help lines (`meta.seenIntro`), Patent Book detail window (text + example + unlock hint per level, count from the real library), `repairMeta` keeps new inventors, 10 new achievements (planned list switches on when the parts/inventors exist), Whole Crew from the real inventor list. See docs/META.md "Round 4 additions". Tests: tests/meta-round4.test.js.
 
+## Round 5 (aesthetics)
+- **Done:** `docs/SKINS.md` (design only: 6 things a skin may change, 5 first skins, `meta.skins = { owned, active }`, `data/skins.js`, `setSkin` on the board view, tests list, 3 questions for the manager).
+- **Done:** Workshop, Patent Book, Daily and Settings restyled (hero number panels, card surfaces with a static gradient, uppercase section labels, bigger level pips, dashed silhouette frame for locked parts, grouped Settings). All styles live in `src/meta/screenKit.js` and `patentBook.js`. Checked in Chromium at 360x740 and 390x844: four screens open, no sideways scroll, no page errors.
+- **Colors:** only existing tokens (`--panel`, `--panel2`, `--line`, `--spark`, `--sparkHot`, `--textDim`, `--bg`). No new colors invented.
+- **Waiting on AI-1:** the new surface tokens (gradients, noise, button states) were not in `main` yet at my last pull. When they land I swap my `linear-gradient(var(--panel2), var(--panel))` lines in `screenKit.js` for the new surface tokens and re-check the 4 screens.
+- **Waiting on AI-6:** the new part tile look. The Patent Book uses `makePartCard`, so rarity borders follow automatically; I will re-check when AI-1/AI-6 push the new tile CSS.
+
 ## Blocked / Questions for manager
-- None.
+- Skins: see the 3 open questions at the end of docs/SKINS.md.
 
 ## Changes I need from other AIs
 - **AI-4 (inventor ids):** I used `msbounce` (Ms. Bounce) and `banker` (The Banker). Please use exactly these ids in `inventors.js`, or tell me yours. A test fails if an inventor has no unlock achievement.

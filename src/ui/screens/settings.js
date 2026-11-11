@@ -45,7 +45,7 @@ function applyChange(meta, key) {
 
 function makeToggleRow(meta, item) {
   const on = meta.settings[item.key] === true;
-  const row = el('div', 'panel metaRow');
+  const row = el('div', 'metaCard');
   const text = el('div', 'grow');
   text.appendChild(el('div', 'metaName', item.label));
   text.appendChild(el('div', 'dim', item.hint));
@@ -64,7 +64,9 @@ function makeToggleRow(meta, item) {
 }
 
 function makeQualityRow(meta) {
-  const panel = el('div', 'panel');
+  const panel = el('div', 'metaCard');
+  panel.style.flexDirection = 'column';
+  panel.style.alignItems = 'stretch';
   panel.appendChild(el('div', 'metaName', 'Graphics quality'));
   panel.appendChild(el('div', 'dim', 'Auto picks for your phone. Lower = smoother on old devices.'));
   const tabs = el('div', 'metaTabs');
@@ -112,8 +114,14 @@ function replayTutorial() {
 function render() {
   const meta = getMeta();
   list.replaceChildren();
-  for (let i = 0; i < TOGGLES.length; i++) list.appendChild(makeToggleRow(meta, TOGGLES[i]));
+  for (let i = 0; i < TOGGLES.length; i++) {
+    if (i === 0) list.appendChild(el('div', 'metaLabel', 'Sound and feel'));
+    if (TOGGLES[i].key === 'reduceMotion') list.appendChild(el('div', 'metaLabel metaGroup', 'Easier to see'));
+    list.appendChild(makeToggleRow(meta, TOGGLES[i]));
+  }
+  list.appendChild(el('div', 'metaLabel metaGroup', 'Graphics'));
   list.appendChild(makeQualityRow(meta));
+  list.appendChild(el('div', 'metaLabel metaGroup', 'Other'));
   list.appendChild(makeButton('Replay tutorial', replayTutorial, { kind: 'secondary' }));
   list.appendChild(makeButton('Reset all progress', askReset, { kind: 'danger' }));
   list.appendChild(el('p', 'dim metaCenter', 'Sparkworks. Made from code, light and a lot of sparks. Font: Inter (OFL).'));

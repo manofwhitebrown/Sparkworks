@@ -17,11 +17,12 @@ let dustPill = null;
 function makeCard(meta, upgrade) {
   const level = upgradeLevel(meta, upgrade.id);
   const cost = upgradeCost(meta, upgrade.id);
-  const card = el('div', 'panel metaRow');
+  const card = el('div', 'metaCard');
   const info = el('div', 'grow');
   info.appendChild(el('div', 'metaName', upgrade.name));
   info.appendChild(el('div', 'dim', upgrade.description));
   info.appendChild(makePips(level, upgrade.maxLevel));
+  if (level >= upgrade.maxLevel) card.classList.add('isDone');
   card.appendChild(info);
   const buy = el('div', 'metaCenter');
   const label = cost === null ? 'Maxed' : 'Buy';
@@ -49,7 +50,7 @@ function onBuy(upgrade) {
 
 function render() {
   const meta = getMeta();
-  dustPill.textContent = 'Dust ' + formatNumber(meta.dust);
+  dustPill.textContent = formatNumber(meta.dust);
   list.replaceChildren();
   for (let i = 0; i < WORKSHOP_UPGRADES.length; i++) {
     list.appendChild(makeCard(meta, WORKSHOP_UPGRADES[i]));
@@ -58,11 +59,16 @@ function render() {
 
 export function mount(root, params) {
   const screen = makeScreen(root);
-  dustPill = el('div', 'pill dust num', '');
-  screen.appendChild(makeHeader('Workshop', function () { saveCurrentMeta(); go('home'); }, dustPill));
+  screen.appendChild(makeHeader('Workshop', function () { saveCurrentMeta(); go('home'); }));
+  const hero = el('div', 'metaHero');
+  hero.appendChild(el('div', 'metaLabel', 'Spark Dust'));
+  dustPill = el('div', 'metaHeroNum', '');
+  hero.appendChild(dustPill);
+  hero.appendChild(el('div', 'dim', 'Earn it at the end of every run. Upgrades last forever.'));
+  screen.appendChild(hero);
   const intro = makeIntro(getMeta(), 'workshop', 'Spend Spark Dust here to get stronger for every run.', saveCurrentMeta);
   if (intro) screen.appendChild(intro);
-  screen.appendChild(el('p', 'dim', 'Earn Spark Dust at the end of every run. Upgrades last forever.'));
+  screen.appendChild(el('div', 'metaLabel metaGroup', 'Upgrades'));
   list = el('div', 'metaList');
   screen.appendChild(list);
   render();

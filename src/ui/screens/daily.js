@@ -79,19 +79,21 @@ function onPlay(meta, today) {
 function makeContractPanel(today) {
   const config = dailyConfig(today);
   const inventor = getInventor(config.inventorId);
-  const panel = el('div', 'panel');
-  panel.appendChild(el('div', 'dim num', today));
-  panel.appendChild(el('div', 'metaBig', inventor ? inventor.name : config.inventorId));
-  panel.appendChild(el('div', '', 'Voltage ' + config.voltage));
+  const panel = el('div', 'metaHero');
+  panel.appendChild(el('div', 'metaLabel', 'Today ' + today));
+  panel.appendChild(el('div', 'metaHeroNum', inventor ? inventor.name : config.inventorId));
+  panel.appendChild(el('div', 'num', 'Voltage ' + config.voltage));
   panel.appendChild(el('div', 'dim', 'Same machine seed for everyone today.'));
   return panel;
 }
 
 function makeResultPanel(meta, today) {
-  const panel = el('div', 'panel');
+  const panel = el('div', 'metaCard');
+  panel.style.flexDirection = 'column';
+  panel.style.alignItems = 'stretch';
   const best = meta.daily.best;
   if (hasPlayedDaily(meta, today) && best) {
-    panel.appendChild(el('div', 'metaName', 'Best today'));
+    panel.appendChild(el('div', 'metaLabel', 'Best today'));
     panel.appendChild(el('div', 'num', (best.won ? 'Won' : 'Shift ' + best.shiftReached + ' of 8') + ' | best fire ' + formatNumber(best.bestFire)));
   } else {
     panel.appendChild(el('div', 'dim', 'You have not played today yet.'));

@@ -16,6 +16,9 @@ const CSS = [
   '.pbNew { position: absolute; top: var(--s1); right: var(--s1); padding: 0 var(--s2); border-radius: var(--r1);',
   '  background: var(--spark); color: var(--bg); font-size: var(--fs-tiny); font-weight: 700; z-index: 1; }',
   '.pbHint { font-size: var(--fs-small); color: var(--textDim); text-align: center; }',
+  '.pbCell.isLocked { padding: var(--s1); border: 1px dashed var(--line); border-radius: var(--r2); background: var(--bg); }',
+  '.pbCell.isLocked .partCard { opacity: 0.35; }',
+  '.pbCell.isLocked .pbHint { padding-bottom: var(--s1); }',
   '.pbLevel { margin-top: var(--s2); }',
   '.pbChips { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s2); }',
   '.pbChip { padding: var(--s1) var(--s2); border: 1px solid var(--line); border-radius: var(--r1); font-size: var(--fs-small); }',
@@ -106,6 +109,7 @@ function makeCell(meta, partId) {
   const status = partStatus(meta, partId);
   const cell = el('div', 'pbCell');
   if (status === 'locked') {
+    cell.classList.add('isLocked');
     cell.appendChild(makePartCard(partId, { locked: true }));
     cell.appendChild(el('div', 'pbHint', unlockHint(partId)));
     return cell;
@@ -121,12 +125,14 @@ function buildParts(meta) {
   for (let i = 0; i < ids.length; i++) {
     if (partStatus(meta, ids[i]) !== 'locked') found++;
   }
-  const top = el('div', 'panel');
-  top.appendChild(el('div', 'metaName num', found + ' of ' + ids.length + ' found'));
+  const top = el('div', 'metaHero');
+  top.appendChild(el('div', 'metaLabel', 'Parts found'));
+  top.appendChild(el('div', 'metaHeroNum', found + ' of ' + ids.length));
   const bar = el('div', 'bar');
   const fill = el('div', 'fill');
   fill.style.transform = 'scaleX(' + (ids.length > 0 ? found / ids.length : 0) + ')';
   bar.appendChild(fill);
+  bar.style.marginTop = 'var(--s3)';
   top.appendChild(bar);
   body.appendChild(top);
   const grid = el('div', 'pbGrid');
@@ -136,7 +142,9 @@ function buildParts(meta) {
 
 function makeInventorCard(meta, inventor) {
   const unlocked = meta.unlockedInventors.indexOf(inventor.id) !== -1;
-  const card = el('div', 'panel');
+  const card = el('div', unlocked ? 'metaCard isDone' : 'metaCard');
+  card.style.flexDirection = 'column';
+  card.style.alignItems = 'stretch';
   card.appendChild(el('div', 'metaName', unlocked ? inventor.name : 'Locked inventor'));
   if (!unlocked) {
     card.appendChild(el('div', 'dim', 'To unlock: ' + (inventorUnlockHint(inventor.id) || 'keep playing')));

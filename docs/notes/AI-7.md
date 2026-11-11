@@ -43,4 +43,5 @@ Cheat support, tested with Playwright Chromium 360x740 on the dev server (emitti
 - [x] `cheat:speed` 'instant': Fire banner after about 0.2 s; speed 1 again afterwards
 - [x] Cheated results show the "Cheated run: no rewards" line, no dust ticker; a normal run still shows Spark Dust
 - [x] No console errors
-Not yet tested: daily Share button, real Android back button, a physical device, the real cheat menu overlay (src/cheats has only gate.js and sha256.js so far: AI-2).
+- [x] Daily Share button (Playwright, clipboard allowed): toast "Copied to clipboard.", clipboard holds the share code, "New run" is hidden for daily runs
+Not yet tested: real Android back button, a physical device, the real cheat menu overlay (src/cheats has only gate.js and sha256.js so far: AI-2).

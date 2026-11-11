@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ownedCount, ownedHintText, recapText, untouchedParts, untouchedText, sourcePathCells,
-  showPathDefault, lossTipText, neededText, twistInfos, overloadText } from '../src/ui/teach.js';
+  showPathDefault, lossTipText, neededText, twistInfos, overloadText, arrowGlyph, arrowWord, partDescribe, exampleLine } from '../src/ui/teach.js';
 
 test('ownedCount counts the same part and level on the bench and the board', () => {
   const run = {
@@ -97,5 +97,42 @@ test('every real twist has a plain description the banner can show', async () =>
   const infos = twistInfos(names);
   for (let i = 0; i < infos.length; i++) {
     assert.ok(infos[i].description.length > 0, infos[i].name + ' has no description');
+  }
+});
+
+test('arrowGlyph and arrowWord follow the rotation, bad numbers count as right', () => {
+  assert.equal(arrowWord(0), 'right');
+  assert.equal(arrowWord(1), 'down');
+  assert.equal(arrowWord(2), 'left');
+  assert.equal(arrowWord(3), 'up');
+  assert.equal(arrowWord(9), 'right');
+  assert.equal(arrowWord(undefined), 'right');
+  assert.notEqual(arrowGlyph(0), arrowGlyph(1));
+  assert.equal(arrowGlyph(-1), arrowGlyph(0));
+});
+
+test('partDescribe passes the rotation, exampleLine shows before -> after or nothing', () => {
+  const part = { describe: (level, rot) => 'L' + level + ' R' + rot, example: () => ({ before: 2, after: 5 }) };
+  assert.equal(partDescribe(part, 2, 3), 'L2 R3');
+  assert.equal(partDescribe(part, 1), 'L1 R0');
+  assert.equal(exampleLine(part, 1), '2 -> 5');
+  assert.equal(exampleLine({ example: () => null }, 1), '');
+  assert.equal(exampleLine({ example: () => ({ before: 1, after: NaN }) }, 1), '');
+  assert.equal(exampleLine({ example: () => { throw new Error('x'); } }, 1), '');
+  assert.equal(exampleLine({}, 1), '');
+  assert.equal(partDescribe(null, 1, 0), '');
+});
+
+test('every real part gives a text and a valid example line', async () => {
+  const { allPartIds, getPart } = await import('../src/engine/parts/index.js');
+  const ids = allPartIds();
+  assert.ok(ids.length >= 24);
+  for (let i = 0; i < ids.length; i++) {
+    const part = getPart(ids[i]);
+    for (let level = 1; level <= 3; level++) {
+      assert.ok(partDescribe(part, level, 1).length > 0, ids[i] + ' level ' + level + ' has no text');
+      const line = exampleLine(part, level);
+      assert.ok(line === '' || line.indexOf(' -> ') > 0, ids[i] + ' has a bad example line');
+    }
   }
 });

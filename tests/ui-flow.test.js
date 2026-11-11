@@ -44,7 +44,7 @@ test('backAction', () => {
 import { reasonText, shownTotalDuring } from '../src/ui/flow.js';
 
 test('reasonText has a sentence for known codes and a fallback', () => {
-  assert.equal(reasonText('bench_full'), 'Your bench is full.');
+  assert.equal(reasonText('bench_full'), 'Bench is full. Sell or place a part.');
   assert.equal(reasonText('???'), 'That did not work.');
 });
 

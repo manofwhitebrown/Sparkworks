@@ -69,7 +69,7 @@ function selectedInfo() {
     return item ? { partId: item.partId, level: item.level, where: 'bench' } : null;
   }
   const cell = getCellAt(run.machine, selected.x, selected.y);
-  return cell ? { partId: cell.partId, level: cell.level, where: 'board' } : null;
+  return cell ? { partId: cell.partId, level: cell.level, where: 'board', rot: cell.rot } : null;
 }
 
 // ---------- drawing ----------

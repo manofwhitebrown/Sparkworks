@@ -56,7 +56,7 @@ const REASONS = {
   outside_board: 'That is outside the board.',
   blocked_cell: 'That cell is blocked this shift.',
   cell_occupied: 'That cell is taken.',
-  bench_full: 'Your bench is full.',
+  bench_full: 'Bench is full. Sell or place a part.',
   wrong_phase: 'You cannot do that right now.',
   not_shop_phase: 'The shop is closed.',
   no_fires_left: 'No Fires left.',

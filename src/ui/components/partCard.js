@@ -4,6 +4,7 @@
 import { getPart } from '../../engine/parts/index.js';
 import { getPartIconUrl } from '../../render/partIcons.js';
 import { formatNumber } from '../../core/format.js';
+import { partDescribe, exampleLine, arrowGlyph, arrowWord } from '../teach.js';
 
 const RARITY_LABEL = { common: 'Common', rare: 'Rare', legendary: 'Legendary' };
 
@@ -41,7 +42,8 @@ function addText(card, className, text) {
   card.appendChild(el);
 }
 
-// options: { level, price, selected, compact, locked, onClick, showDesc }
+// options: { level, price, selected, compact, locked, onClick, showDesc, rot, note }
+// rot (0..3) names the way a directional part points; note is one small extra line (for example "You have 2.").
 export function makePartCard(partId, options) {
   const opts = options || {};
   const part = getPart(partId);
@@ -63,7 +65,20 @@ export function makePartCard(partId, options) {
     addText(card, 'pcName', part.name);
     addText(card, 'pcRarity', RARITY_LABEL[part.rarity] || part.rarity);
     card.appendChild(makePips(level, part.maxLevel || 3));
-    if (opts.showDesc) addText(card, 'pcDesc', part.describe(level));
+    if (part.directional) {
+      const arrow = document.createElement('div');
+      arrow.className = 'pcArrow';
+      arrow.textContent = arrowGlyph(opts.rot);
+      arrow.setAttribute('role', 'img');
+      arrow.setAttribute('aria-label', 'points ' + arrowWord(opts.rot));
+      card.appendChild(arrow);
+    }
+    if (opts.showDesc) {
+      addText(card, 'pcDesc', partDescribe(part, level, opts.rot));
+      const example = exampleLine(part, level);
+      if (example) addText(card, 'pcExample num', example);
+    }
+    if (opts.note) addText(card, 'pcOwned', opts.note);
     if (typeof opts.price === 'number') addText(card, 'pcPrice', formatNumber(opts.price));
   }
   if (opts.onClick) card.addEventListener('click', opts.onClick);

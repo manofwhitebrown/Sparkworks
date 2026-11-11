@@ -8,7 +8,7 @@ import { makeBenchRow } from '../components/benchRow.js';
 import { makeSelectedPanel } from '../components/selectedPanel.js';
 import { showToast } from '../components/toast.js';
 import { createBoardView } from '../../render/boardView.js';
-import { loadRun, saveRun } from '../../core/save.js';
+import { loadRun, saveRun, getFlag, setFlag } from '../../core/save.js';
 import { emit, on, off } from '../../core/events.js';
 import { formatNumber } from '../../core/format.js';
 import { playSfx } from '../../audio/sfx.js';
@@ -19,6 +19,7 @@ import { buyOffer, sellPart, rerollOffers, rerollPrice } from '../../run/shop.js
 import { startNextShift } from '../../run/runState.js';
 import { benchSizeOf } from '../../run/runRules.js';
 import { reasonText, screenForPhase } from '../flow.js';
+import { ownedCount, ownedHintText, SHOP_TIP } from '../teach.js';
 
 let run = null;
 let view = null;
@@ -58,7 +59,8 @@ function drawOffers() {
   }
   run.offers.forEach(function (offer, index) {
     const card = makePartCard(offer.partId, {
-      level: offer.level, price: offer.price, showDesc: true,
+      level: offer.level, price: offer.price, showDesc: true, rot: 0,
+      note: offer.sold ? '' : ownedHintText(ownedCount(run, offer.partId, offer.level)),
       onClick: function () { onBuy(index); }
     });
     card.classList.add('offerCard');
@@ -82,7 +84,7 @@ function drawBench() {
   }
   els.bench.replaceChildren(bench);
   const item = selectedBench >= 0 ? run.bench[selectedBench] : null;
-  const info = item ? { partId: item.partId, level: item.level, where: 'bench' } : null;
+  const info = item ? { partId: item.partId, level: item.level, where: 'bench', rot: 0 } : null;
   els.panel.replaceChildren(makeSelectedPanel(info, { onSell: onSell },
     { emptyText: 'Parts you buy go to your bench. You place them on the next shift.' }));
 }
@@ -192,6 +194,11 @@ export function mount(root, params) {
   // The offers, bench and so on scroll inside the body; Next shift stays below it,
   // always reachable, with the screen's own padding as the space under it.
   const body = el('div', 'shopBody');
+  // One short tip the very first time the shop opens, then never again (remembered in the flags).
+  if (!getFlag('shopTip')) {
+    body.appendChild(el('div', 'tipLine', SHOP_TIP));
+    setFlag('shopTip', true);
+  }
   body.append(offers, reroll, mini, bench, panel);
   screen.append(top, body, next);
   root.appendChild(screen);

@@ -185,3 +185,12 @@ html.reduceMotion .partCard.legendary::after { animation: none; opacity: 0.6; }
   font-size: var(--fs-tiny);
   white-space: nowrap;
 }
+
+/* part texts: the example line, the direction arrow and the "You have 2." note */
+.pcExample { font-size: var(--fs-tiny); color: var(--spark); }
+.pcOwned { font-size: var(--fs-tiny); color: var(--accent); }
+.partCard { position: relative; }
+.pcArrow { position: absolute; top: var(--s1); right: var(--s2); font-size: var(--fs-base); color: var(--accent); line-height: 1; }
+.selArrow { margin-left: var(--s2); color: var(--accent); }
+.selExample { color: var(--spark); white-space: nowrap; }
+.tipLine { font-size: var(--fs-small); color: var(--accent); padding: var(--s1) 0; }

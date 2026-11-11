@@ -4,6 +4,7 @@
 import { getPart } from '../../engine/parts/index.js';
 import { sellValueOf } from '../../run/runRules.js';
 import { makeButton } from './button.js';
+import { partDescribe, exampleLine, arrowGlyph, arrowWord } from '../teach.js';
 
 function el(tag, className, text) {
   const node = document.createElement(tag);
@@ -12,7 +13,7 @@ function el(tag, className, text) {
   return node;
 }
 
-// selected: null, or { partId, level, where: 'bench' | 'board' }
+// selected: null, or { partId, level, where: 'bench' | 'board', rot }
 // handlers: { onRotate, onToBench, onSell }
 // options (optional): { emptyText } the hint shown when nothing is selected
 export function makeSelectedPanel(selected, handlers, options) {
@@ -23,8 +24,18 @@ export function makeSelectedPanel(selected, handlers, options) {
     panel.appendChild(el('div', 'dim selHint', hint));
     return panel;
   }
-  panel.appendChild(el('div', 'selName', part.name + ' (level ' + selected.level + ')'));
-  panel.appendChild(el('div', 'dim selDesc', part.describe(selected.level)));
+  const name = el('div', 'selName', part.name + ' (level ' + selected.level + ')');
+  if (part.directional) {
+    const arrow = el('span', 'selArrow', arrowGlyph(selected.rot));
+    arrow.setAttribute('role', 'img');
+    arrow.setAttribute('aria-label', 'points ' + arrowWord(selected.rot));
+    name.appendChild(arrow);
+  }
+  panel.appendChild(name);
+  const example = exampleLine(part, selected.level);
+  const desc = el('div', 'dim selDesc', partDescribe(part, selected.level, selected.rot));
+  if (example) desc.appendChild(el('span', 'selExample num', ' ' + example));
+  panel.appendChild(desc);
   const actions = el('div', 'row selActions');
   if (selected.where === 'board') {
     if (part.directional) {

@@ -148,3 +148,35 @@ export function overloadText(infos) {
   }
   return { title: 'Overload!', body: parts.join(' ') };
 }
+
+// ---------- part texts ----------
+const ARROWS = ['\u2192', '\u2193', '\u2190', '\u2191']; // right, down, left, up (rot 0..3)
+const ARROW_WORDS = ['right', 'down', 'left', 'up'];
+
+// The arrow glyph for a rotation (0..3). Anything else counts as 0 (right).
+export function arrowGlyph(rot) {
+  return ARROWS[rot >= 0 && rot <= 3 ? Math.floor(rot) : 0];
+}
+
+export function arrowWord(rot) {
+  return ARROW_WORDS[rot >= 0 && rot <= 3 ? Math.floor(rot) : 0];
+}
+
+// The plain text of a part for a level and rotation (directional parts name the way in words).
+export function partDescribe(part, level, rot) {
+  if (!part || typeof part.describe !== 'function') return '';
+  return part.describe(level, rot >= 0 ? rot : 0);
+}
+
+// "2 -> 5" from the part's own example(level), or '' when it has none (for example Bend).
+export function exampleLine(part, level) {
+  if (!part || typeof part.example !== 'function') return '';
+  let ex = null;
+  try {
+    ex = part.example(level);
+  } catch (err) {
+    return '';
+  }
+  if (!ex || !isFinite(ex.before) || !isFinite(ex.after)) return '';
+  return formatNumber(ex.before) + ' -> ' + formatNumber(ex.after);
+}
